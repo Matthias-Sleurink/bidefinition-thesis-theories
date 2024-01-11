@@ -81,4 +81,18 @@ lemma optional_well_formed_minimal:
   shows "bidef_well_formed (optional b) \<longleftrightarrow> is_error (parse b) []"
   by (auto simp add: assms optional_well_formed optional_well_formed_rev)
 
+lemma optional_well_formed_minimal2:
+  shows "bidef_well_formed (optional b) \<longleftrightarrow> (is_error (parse b) [] \<and> bidef_well_formed b)"
+  unfolding bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def
+  unfolding fp_NER NER_simps
+  unfolding is_error_def has_result_def p_has_result_def p_is_error_def
+  apply auto
+  subgoal by (metis (mono_tags, lifting) option.case_eq_if)
+  subgoal by (metis (mono_tags, lifting) option.case(2))
+  subgoal by (metis (mono_tags, lifting) option.simps(5))
+  subgoal by (metis (mono_tags, lifting) option.case_eq_if)
+  subgoal by (metis (mono_tags, lifting) option.case_eq_if)
+  done
+
+
 end
