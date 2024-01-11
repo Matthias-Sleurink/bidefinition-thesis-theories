@@ -4,6 +4,7 @@ theory basic_definitions
           basic_transform
           basic_dependent_if_then_else
           basic_fail
+          basic_return
                 \<comment> \<open>Add other basic definitions here.\<close>
 begin
 
