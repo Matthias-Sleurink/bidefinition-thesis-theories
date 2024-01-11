@@ -91,6 +91,13 @@ definition p_is_error :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow
   "p_is_error fp v \<longleftrightarrow> fp v = None"
 
 
+section \<open>Bidefinition types\<close>
+
+type_synonym '\<alpha> bidef = "('\<alpha> parser \<times> '\<alpha> printer)"
+
+abbreviation parse :: "'\<alpha> bidef \<Rightarrow> '\<alpha> parser" where "parse \<equiv> fst"
+abbreviation print :: "'\<alpha> bidef \<Rightarrow> '\<alpha> printer" where "print \<equiv> snd"
+
 
 
 end
