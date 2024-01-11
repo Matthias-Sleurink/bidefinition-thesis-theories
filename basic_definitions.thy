@@ -2,6 +2,7 @@ theory basic_definitions
   imports types
           basic_partial_fun_for_parser
           basic_transform
+          basic_dependent_if_then_else
                 \<comment> \<open>Add other basic definitions here.\<close>
 begin
 
