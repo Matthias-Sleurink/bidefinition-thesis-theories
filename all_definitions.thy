@@ -1,6 +1,7 @@
 theory all_definitions
   imports basic_definitions
           derived_or
+          derived_dep_then
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
