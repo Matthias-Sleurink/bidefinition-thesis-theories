@@ -1,5 +1,6 @@
 theory types
   imports Main
+          "HOL-Eisbach.Eisbach" \<comment> \<open>For the method bidef_init\<close>
 begin
 
 section \<open>Introduction\<close>
@@ -90,6 +91,8 @@ definition p_has_result :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarr
 definition p_is_error :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow> bool" where
   "p_is_error fp v \<longleftrightarrow> fp v = None"
 
+named_theorems fp_NER
+
 
 section \<open>Bidefinition types\<close>
 
@@ -97,6 +100,30 @@ type_synonym '\<alpha> bidef = "('\<alpha> parser \<times> '\<alpha> printer)"
 
 abbreviation parse :: "'\<alpha> bidef \<Rightarrow> '\<alpha> parser" where "parse \<equiv> fst"
 abbreviation print :: "'\<alpha> bidef \<Rightarrow> '\<alpha> printer" where "print \<equiv> snd"
+
+
+section \<open>Well formed\<close>
+
+definition parser_can_parse_print_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
+  "parser_can_parse_print_result par pri \<longleftrightarrow>
+      (\<forall>(t :: '\<alpha>) pr. p_has_result pri t pr \<longrightarrow> (\<exists>l. has_result par pr t l))"
+
+\<comment> \<open>note how due to the parse '015' = 15 print 15 = '15' issue we cannot attach the text here.\<close>
+definition printer_can_print_parse_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
+  "printer_can_print_parse_result par pri \<longleftrightarrow>
+      (\<forall>(t :: '\<alpha>) i l. has_result par i t l \<longrightarrow> (\<exists>pr. p_has_result pri t pr))"
+
+
+definition bidef_well_formed :: "'\<alpha> bidef \<Rightarrow> bool" where
+  "bidef_well_formed bi = (parser_can_parse_print_result (parse bi) (print bi) \<and>
+                           printer_can_print_parse_result (parse bi) (print bi))"
+named_theorems bi_well_formed_simps
+
+lemma conjI3:
+  "A \<Longrightarrow> B \<Longrightarrow> C \<Longrightarrow> A \<and> B \<and> C"
+  by blast
+
+method wf_init = ((simp only: bidef_well_formed_def); (rule conjI))
 
 
 
