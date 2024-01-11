@@ -1,6 +1,7 @@
 theory basic_definitions
   imports types
           basic_partial_fun_for_parser
+          basic_transform
                 \<comment> \<open>Add other basic definitions here.\<close>
 begin
 
