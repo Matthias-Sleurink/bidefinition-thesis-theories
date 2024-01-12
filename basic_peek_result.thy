@@ -47,7 +47,7 @@ lemma peek_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
-lemma peek_fp_is_error[fp_NER]:
+lemma peek_p_is_error[fp_NER]:
   "p_is_error (print (peek b)) i \<longleftrightarrow> p_is_error (print b) i"
   "p_is_error (peek_pr p)      i \<longleftrightarrow> p_is_error p         i"
   by (simp add: peek_def p_is_error_def split:option.splits)+
