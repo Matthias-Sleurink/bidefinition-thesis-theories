@@ -93,6 +93,22 @@ definition p_is_error :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow
 
 named_theorems fp_NER
 
+lemma p_has_result_impl_not_error:
+  "p_has_result fp v s \<Longrightarrow> \<not>p_is_error fp v"
+  unfolding p_has_result_def p_is_error_def
+  by simp
+
+lemma p_is_error_impl_not_result:
+  "p_is_error fp v \<Longrightarrow> \<nexists> s. p_has_result fp v s"
+  unfolding p_is_error_def p_has_result_def
+  by simp
+
+lemma p_has_result_eq_not_is_error:
+  "(\<exists> s. p_has_result fp v s) \<longleftrightarrow> \<not>p_is_error fp v"
+  unfolding p_is_error_def p_has_result_def
+  by simp
+
+
 
 section \<open>Bidefinition types\<close>
 
