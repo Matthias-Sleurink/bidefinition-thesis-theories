@@ -5,6 +5,7 @@ theory basic_definitions
           basic_dependent_if_then_else
           basic_fail
           basic_return
+          basic_peek_result
                 \<comment> \<open>Add other basic definitions here.\<close>
 begin
 
