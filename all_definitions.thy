@@ -4,6 +4,7 @@ theory all_definitions
           derived_dep_then
           derived_then
           derived_optional
+          derived_peek_boolean
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
