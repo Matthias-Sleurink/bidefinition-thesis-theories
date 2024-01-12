@@ -6,6 +6,7 @@ theory basic_definitions
           basic_fail
           basic_return
           basic_peek_result
+          basic_one_char
                 \<comment> \<open>Add other basic definitions here.\<close>
 begin
 
