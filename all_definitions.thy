@@ -5,6 +5,7 @@ theory all_definitions
           derived_then
           derived_optional
           derived_peek_boolean
+          derived_any_from_set
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
