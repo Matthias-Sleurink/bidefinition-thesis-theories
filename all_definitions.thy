@@ -6,6 +6,7 @@ theory all_definitions
           derived_optional
           derived_peek_boolean
           derived_any_from_set
+          derived_this_char
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
