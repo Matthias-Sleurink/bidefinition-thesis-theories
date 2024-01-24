@@ -48,7 +48,7 @@ lemma m_map_is_nonterm[NER_simps]:
                             (\<exists> r l. has_result (parse (tc a)) i r l \<and> is_nonterm (parse (m_map tc as)) l)"
   by (simp add: m_map_def is_nonterm_def has_result_def split: option.splits)+
 
-lemma m_map_not_nonterm_if_param_never_nonterm:
+lemma mmap_not_nonterm_if_param_never_nonterm:
   assumes "\<forall>x s. \<not>is_nonterm (p x) s"
   shows "\<not>is_nonterm (mmap p l) s"
   using assms
