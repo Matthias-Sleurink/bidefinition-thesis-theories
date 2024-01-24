@@ -5,6 +5,7 @@ theory all_definitions
           derived_then
           derived_optional
           derived_peek_boolean
+          derived_char_for_predicate
           derived_any_from_set
           derived_this_char
           derived_this_string
