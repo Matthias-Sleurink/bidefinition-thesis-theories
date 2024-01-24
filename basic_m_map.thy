@@ -4,8 +4,7 @@ begin
 
 \<comment> \<open>THEORY: It seems like it should be possible to derive this from dep_then?\<close>
 
-
-fun mmap where
+fun mmap :: "('\<alpha> \<Rightarrow> '\<beta> parser) \<Rightarrow> '\<alpha> list \<Rightarrow> '\<beta> list parser" where
   "mmap _ []     i = terminate_with (Some ([], i))"
 | "mmap f (x#xs) i = (
     case f x i of
@@ -18,6 +17,9 @@ fun mmap where
       | Some (Some (r', l')) \<Rightarrow> (
           terminate_with (Some (r#r', l'))
 )))"
+print_theorems
+
+
 
 fun m_map_pr :: "('\<alpha> \<Rightarrow> '\<beta> printer) \<Rightarrow> '\<alpha> list \<Rightarrow> '\<beta> list printer" where
   "m_map_pr _      []     []     = Some []"
@@ -44,10 +46,31 @@ lemma m_map_is_nonterm[NER_simps]:
   "is_nonterm (parse (m_map tc []    )) i \<longleftrightarrow> False"
   "is_nonterm (parse (m_map tc (a#as))) i \<longleftrightarrow> is_nonterm (parse (tc a)) i \<or>
                             (\<exists> r l. has_result (parse (tc a)) i r l \<and> is_nonterm (parse (m_map tc as)) l)"
-  "is_nonterm (fst   (m_map tc []    )) i \<longleftrightarrow> False"
-  "is_nonterm (fst   (m_map tc (a#as))) i \<longleftrightarrow> is_nonterm (parse (tc a)) i \<or>
-                            (\<exists> r l. has_result (parse (tc a)) i r l \<and> is_nonterm (parse (m_map tc as)) l)"
   by (simp add: m_map_def is_nonterm_def has_result_def split: option.splits)+
+
+lemma m_map_not_nonterm_if_param_never_nonterm:
+  assumes "\<forall>x s. \<not>is_nonterm (p x) s"
+  shows "\<not>is_nonterm (mmap p l) s"
+  using assms
+  apply (induction l arbitrary: s)
+  subgoal (* [] *) by (simp add: is_nonterm_def)
+  subgoal for a as s
+    apply (unfold mmap.simps(2))
+    apply (unfold is_nonterm_def)
+    apply (cases \<open>p a s\<close>)
+    subgoal (* p a s = None *) by blast
+    subgoal for res (* p a s = Some res *)
+      apply (cases res)
+      subgoal (* p a s = Some None *) by auto
+      subgoal for rl (* p a s = Some Some rl *)
+        apply (cases \<open>mmap p as (snd rl)\<close>)
+        subgoal (* mmap p as (snd rl) = None *) by blast
+        by (simp add: case_prod_unfold option.case_eq_if)
+      done
+    done
+  done
+
+
 
 lemma m_map_is_error[NER_simps]:
   "is_error (parse (m_map tc []    )) i \<longleftrightarrow> False"
