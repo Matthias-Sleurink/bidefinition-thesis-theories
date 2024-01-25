@@ -72,6 +72,29 @@ lemma mmap_not_nonterm_if_param_never_nonterm:
 
 
 
+lemma mmap_not_nonterm_if_param_never_nonterm2:
+  assumes "\<forall>x \<in> set l . \<forall> s. \<not>is_nonterm (p x) s"
+  shows "\<not>is_nonterm (mmap p l) s"
+  using assms
+  apply (induction l arbitrary: s)
+  subgoal (* [] *) by (simp add: is_nonterm_def)
+  subgoal for a as s
+    apply (unfold mmap.simps(2))
+    apply (unfold is_nonterm_def)
+    apply (cases \<open>p a s\<close>)
+    subgoal (* p a s = None *) by (meson list.set_intros(1))
+    subgoal for res (* p a s = Some res *)
+      apply (cases res)
+      subgoal (* p a s = Some None *) by auto
+      subgoal for rl (* p a s = Some Some rl *)
+        apply (cases \<open>mmap p as (snd rl)\<close>)
+        subgoal (* mmap p as (snd rl) = None *) by (meson list.set_intros(2))
+        by (simp add: case_prod_unfold option.case_eq_if)
+      done
+    done
+  done
+
+
 lemma m_map_is_error[NER_simps]:
   "is_error (parse (m_map tc []    )) i \<longleftrightarrow> False"
   "is_error (parse (m_map tc (a#as))) i \<longleftrightarrow> is_error (parse (tc a)) i \<or>
