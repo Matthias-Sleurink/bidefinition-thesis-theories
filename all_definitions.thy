@@ -10,6 +10,7 @@ theory all_definitions
           derived_this_char
           derived_this_string
           derived_digit_char
+          derived_alphabet_char
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
