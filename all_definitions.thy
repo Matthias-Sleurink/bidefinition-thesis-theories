@@ -9,6 +9,7 @@ theory all_definitions
           derived_any_from_set
           derived_this_char
           derived_this_string
+          derived_digit_char
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 

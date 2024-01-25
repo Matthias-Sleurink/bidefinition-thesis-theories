@@ -1,0 +1,62 @@
+theory derived_digit_char
+  imports basic_definitions
+          derived_any_from_set
+begin
+
+definition digit_chars :: "char set" where
+  "digit_chars = {CHR ''0'', CHR ''1'', CHR ''2'', CHR ''3'', CHR ''4'',
+                  CHR ''5'', CHR ''6'', CHR ''7'', CHR ''8'', CHR ''9''}"
+
+lemma char_in_digit_chars:
+  "CHR ''0'' \<in> digit_chars"
+  "CHR ''1'' \<in> digit_chars"
+  "CHR ''2'' \<in> digit_chars"
+  "CHR ''3'' \<in> digit_chars"
+  "CHR ''4'' \<in> digit_chars"
+  "CHR ''5'' \<in> digit_chars"
+  "CHR ''6'' \<in> digit_chars"
+  "CHR ''7'' \<in> digit_chars"
+  "CHR ''8'' \<in> digit_chars"
+  "CHR ''9'' \<in> digit_chars"
+  unfolding digit_chars_def
+  by fast+
+
+definition digit_char :: "char bidef" where
+  "digit_char = any_from_set digit_chars"
+
+
+
+\<comment> \<open>NER\<close>
+lemma digit_char_is_nonterm[NER_simps]:
+  "is_nonterm (parse digit_char) i \<longleftrightarrow> False"
+  by (simp add: digit_char_def any_from_set_is_nonterm)
+
+lemma digit_char_is_error[NER_simps]:
+  "is_error (parse digit_char) i \<longleftrightarrow> i = [] \<or> (hd i \<notin> digit_chars)"
+  by (simp add: digit_char_def any_from_set_is_error)
+
+lemma digit_char_has_result[NER_simps]:
+  "has_result (parse digit_char) i r l \<longleftrightarrow> i \<noteq> [] \<and> (r = hd i \<and> l = tl i \<and> r \<in> digit_chars)"
+  by (auto simp add: digit_char_def any_from_set_has_result)
+
+
+
+\<comment> \<open>fp NER\<close>
+lemma digit_char_p_is_error[fp_NER]:
+  "p_is_error (print digit_char) i \<longleftrightarrow> i \<notin> digit_chars"
+  by (simp add: digit_char_def any_from_set_p_is_error)
+
+lemma digit_char_p_has_result[fp_NER]:
+  "p_has_result (print digit_char) i s \<longleftrightarrow> i \<in> digit_chars \<and> s = [i]"
+  by (simp add: digit_char_def any_from_set_p_has_result)
+
+
+
+\<comment> \<open>Well Formed\<close>
+lemma digit_char_well_formed:
+  "bidef_well_formed digit_char"
+  by (simp add: digit_char_def any_from_set_well_formed)
+
+
+
+end
