@@ -118,7 +118,8 @@ lemma transform_well_formed2:
   subgoal
     using assms[unfolded bidef_well_formed_def
                          well_formed_transform_funcs2_def]
-    by (simp add: parser_can_parse_print_result_def fp_NER NER_simps)
+    apply (simp add: parser_can_parse_print_result_def fp_NER NER_simps)
+    by metis
   subgoal
     using assms[unfolded bidef_well_formed_def
                          well_formed_transform_funcs2_def]

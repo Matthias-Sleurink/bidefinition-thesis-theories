@@ -122,7 +122,7 @@ section \<open>Well formed\<close>
 
 definition parser_can_parse_print_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
   "parser_can_parse_print_result par pri \<longleftrightarrow>
-      (\<forall>(t :: '\<alpha>) pr. p_has_result pri t pr \<longrightarrow> (\<exists>l. has_result par pr t l))"
+      (\<forall>(t :: '\<alpha>) pr. p_has_result pri t pr \<longrightarrow> has_result par pr t [])"
 
 \<comment> \<open>note how due to the parse '015' = 15 print 15 = '15' issue we cannot attach the text here.\<close>
 definition printer_can_print_parse_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where

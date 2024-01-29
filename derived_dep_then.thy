@@ -39,13 +39,14 @@ lemma dep_then_p_has_result[fp_NER]:
 
 
 \<comment> \<open>Well Formed\<close>
-definition appended_results_must_be_parsable :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> bool" where
-  "appended_results_must_be_parsable b1 a2b2 b2a \<longleftrightarrow>
-          (\<forall> v1 v2 pr1 pr2 a.
-            (p_has_result (print b1) v1 pr1 \<and> p_has_result (print (a2b2 a)) v2 pr2) \<longrightarrow>
-               (\<exists>l1 l2. has_result (parse b1) (pr1@pr2) v1 l1 \<and> has_result (parse (a2b2 a)) l1 v2 l2)
-)
-"
+
+\<comment> \<open>For all two print texts, the parser for ba only consumes its own section.\<close>
+definition pa_does_not_eat_into_pb :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
+  "pa_does_not_eat_into_pb ba a2bb \<longleftrightarrow> (
+    \<forall> t1 pr1 t2 pr2. p_has_result (print ba) t1 pr1 \<and> p_has_result (print (a2bb t1)) t2 pr2
+        \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
+)"
+
 definition b2_wf_for_all_res_of_b1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
   "b2_wf_for_all_res_of_b1 b1 a2bi \<longleftrightarrow> (\<forall> i ra la. has_result (parse b1) i ra la \<longrightarrow> bidef_well_formed (a2bi ra))"
 
@@ -61,8 +62,9 @@ definition well_formed_dep_then_pair :: "'\<alpha> bidef \<Rightarrow> ('\<alpha
   "well_formed_dep_then_pair bi1 a2bi2 b2a \<longleftrightarrow>
                               b2_wf_for_all_res_of_b1 bi1 a2bi2 \<and>
                               reversed_b2_result_is_b1_result bi1 a2bi2 b2a \<and>
-                              appended_results_must_be_parsable bi1 a2bi2 b2a
+                              pa_does_not_eat_into_pb bi1 a2bi2
 "
+
 
 lemma dep_then_well_formed:
   assumes "bidef_well_formed ba"
@@ -72,18 +74,19 @@ lemma dep_then_well_formed:
   subgoal
     using assms
     unfolding bidef_well_formed_def
-              well_formed_dep_then_pair_def
-              appended_results_must_be_parsable_def
               parser_can_parse_print_result_def
+              well_formed_dep_then_pair_def
+              b2_wf_for_all_res_of_b1_def
+              pa_does_not_eat_into_pb_def
     unfolding dep_then_has_result(1) dep_then_p_has_result(1)
     by metis
   subgoal
     using assms
     unfolding bidef_well_formed_def
+              printer_can_print_parse_result_def
               well_formed_dep_then_pair_def
               b2_wf_for_all_res_of_b1_def
               reversed_b2_result_is_b1_result_def
-              printer_can_print_parse_result_def
     unfolding dep_then_p_has_result(1) dep_then_has_result(1)
     by metis
   done

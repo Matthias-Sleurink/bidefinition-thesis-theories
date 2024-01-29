@@ -153,6 +153,13 @@ definition b1_cannot_parse_b3_print_result :: "'\<alpha> bidef \<Rightarrow> '\<
     \<forall> i pr. p_has_result (print b3) i pr \<longrightarrow> is_error (parse b1) pr
 )"
 
+definition pa_does_not_eat_into_pb :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
+  "pa_does_not_eat_into_pb ba a2bb \<longleftrightarrow> (
+    \<forall> t1 pr1 t2 pr2. p_has_result (print ba) t1 pr1 \<and> p_has_result (print (a2bb t1)) t2 pr2
+        \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
+)"
+
+\<comment> \<open>We for sure should not need all of these assms.\<close>
 lemma if_then_else_well_formed:
   assumes "bidef_well_formed ab"
   assumes "b2_wf_for_res_of_b1 ab a2bb"
@@ -160,6 +167,7 @@ lemma if_then_else_well_formed:
   assumes "b2_res_trans_is_b1_res ab a2bb b2a"
   assumes "b1_then_b2_print_parse_loop ab a2bb b2a"
   assumes "b1_cannot_parse_b3_print_result ab cb"
+  assumes "pa_does_not_eat_into_pb ab a2bb"
   shows "bidef_well_formed (if_then_else ab a2bb cb b2a)"
   apply wf_init
   subgoal
@@ -168,11 +176,15 @@ lemma if_then_else_well_formed:
               parser_can_parse_print_result_def
               b1_then_b2_print_parse_loop_def
               b1_cannot_parse_b3_print_result_def
+              pa_does_not_eat_into_pb_def
+              b2_wf_for_res_of_b1_def
     apply clarsimp
     subgoal for t pr
       apply (cases t)
-      apply (auto simp add: fp_NER)
-      by (meson if_then_else_has_result(1, 2))+
+       apply (auto simp add: fp_NER)
+      subgoal by (metis if_then_else_has_result(1))
+      subgoal by (meson if_then_else_has_result(2))
+      done
     done
   subgoal
     using assms
