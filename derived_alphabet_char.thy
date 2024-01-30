@@ -1,22 +1,28 @@
 theory derived_alphabet_char
   imports basic_definitions
           derived_any_from_set
+          derived_lowercase_char
+          derived_uppercase_char
 begin
 
 definition alphabet_chars :: "char set" where
-  "alphabet_chars = {CHR ''a'', CHR ''b'', CHR ''c'', CHR ''d'', CHR ''e'', CHR ''f'', CHR ''g'',
-                     CHR ''h'', CHR ''i'', CHR ''j'', CHR ''k'', CHR ''l'', CHR ''m'', CHR ''n'',
-                     CHR ''o'', CHR ''p'', CHR ''q'', CHR ''r'', CHR ''s'', CHR ''t'', CHR ''u'',
-                     CHR ''v'', CHR ''w'', CHR ''x'', CHR ''y'', CHR ''z'',
-                     CHR ''A'', CHR ''B'', CHR ''C'', CHR ''D'', CHR ''E'', CHR ''F'', CHR ''G'',
-                     CHR ''H'', CHR ''I'', CHR ''J'', CHR ''K'', CHR ''L'', CHR ''M'', CHR ''N'',
-                     CHR ''O'', CHR ''P'', CHR ''Q'', CHR ''R'', CHR ''S'', CHR ''T'', CHR ''U'',
-                     CHR ''V'', CHR ''W'', CHR ''X'', CHR ''Y'', CHR ''Z''}"
+  "alphabet_chars = lowercase_chars \<union> uppercase_chars"
 
 
 definition alphabet_char :: "char bidef" where
   "alphabet_char = any_from_set alphabet_chars"
+(*
+fun sum_take :: "('\<alpha> + '\<alpha>) \<Rightarrow> '\<alpha>" where
+  "sum_take (Inl a) = a"
+| "sum_take (Inr a) = a"
 
+
+definition alphabet_char :: "char bidef" where
+  "alphabet_char = transform
+                   (sum_take :: (char+char) \<Rightarrow> char)
+                   ((\<lambda>c. if c \<in> lowercase_chars then Inl c else Inr c) :: char \<Rightarrow> (char + char))
+                   ((or lowercase_char uppercase_char) :: (char + char) bidef)"
+*)
 
 
 \<comment> \<open>NER\<close>
