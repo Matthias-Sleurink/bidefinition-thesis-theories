@@ -11,6 +11,7 @@ theory all_definitions
           derived_this_string
           derived_digit_char
           derived_alphabet_char
+          derived_eof
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
