@@ -91,31 +91,20 @@ lemma b_then_wf_derived:
     done
   oops
 
-
-\<comment> \<open>For all the parse results that the two can have, ensure that they can be re-parsed from the text if appended.\<close>
-definition well_formed_b_then_pair :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
-  "well_formed_b_then_pair b1 b2 \<longleftrightarrow>
-          (\<forall> v1 v2 pr1 pr2.
-            (p_has_result (print b1) v1 pr1 \<and> p_has_result (print b2) v2 pr2) \<longrightarrow>
-              (\<exists>l1 l2. has_result (parse b1) (pr1@pr2) v1 l1 \<and> has_result (parse b2) l1 v2 l2)
-)"
-
 lemma b_then_well_formed:
   assumes "bidef_well_formed b1"
   assumes "bidef_well_formed b2"
-  assumes "well_formed_b_then_pair b1 b2"
   assumes "pa_does_not_eat_into_pb_nondep b1 b2"
   shows   "bidef_well_formed (b_then b1 b2)"
   apply wf_init
   subgoal
-    using assms(3, 3)
-    unfolding parser_can_parse_print_result_def
-              well_formed_b_then_pair_def
-              pa_does_not_eat_into_pb_nondep_def
+    using assms(2, 3)
+    unfolding bidef_well_formed_def (* assms(2) *)
+                parser_can_parse_print_result_def
+              pa_does_not_eat_into_pb_nondep_def (* assms(4) *)
     apply (unfold b_then_has_result(3))
     apply (unfold b_then_p_has_result(3))
-    apply auto
-    by (meson assms(2) assms(4) bidef_well_formed_def pa_does_not_eat_into_pb_nondep_def parser_can_parse_print_result_def)
+    by fast
   subgoal
     using assms(1,2)
     unfolding printer_can_print_parse_result_def
