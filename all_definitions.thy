@@ -13,6 +13,7 @@ theory all_definitions
           derived_alphabet_char
           derived_eof
           derived_alphanumeric_char
+          derived_char_not_in_set
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
