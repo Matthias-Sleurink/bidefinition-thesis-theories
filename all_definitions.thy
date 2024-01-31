@@ -12,6 +12,7 @@ theory all_definitions
           derived_digit_char
           derived_alphabet_char
           derived_eof
+          derived_alphanumeric_char
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
