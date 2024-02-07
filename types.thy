@@ -142,5 +142,28 @@ lemma conjI3:
 method wf_init = ((simp only: bidef_well_formed_def); (rule conjI))
 
 
+lemma print_results_always_same:
+  assumes "p_has_result printer ojb res1"
+  assumes "p_has_result printer ojb res2"
+  shows "res1 = res2"
+  using assms
+  by (simp add: p_has_result_def)
+
+
+lemma print_result_is_canon_result:
+  assumes "bidef_well_formed (parser, printer)"
+  assumes "p_has_result printer obj canon"
+  shows "has_result parser canon obj []"
+  using assms
+  by (simp add: bidef_well_formed_def parser_can_parse_print_result_def)
+
+lemma print_result_is_canon_result2:
+  assumes "bidef_well_formed (parser, printer)"
+  assumes "p_has_result printer obj canon"
+  assumes "has_result parser canon obj2 []"
+  shows "obj = obj2"
+  using assms
+  unfolding bidef_well_formed_def parser_can_parse_print_result_def
+  by (simp add: p_has_result_def has_result_def)
 
 end
