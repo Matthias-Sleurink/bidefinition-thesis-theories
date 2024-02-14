@@ -44,6 +44,28 @@ lemma optional_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma optional_PNGI:
+  assumes "PNGI (parse p)"
+  shows "PNGI (parse (optional p))"
+  unfolding optional_def
+  unfolding transform_PNGI[symmetric]
+  apply (rule PNGI_dep_if_then_else)
+  subgoal by (rule assms(1))
+  subgoal using return_PNGI by blast
+  subgoal using return_PNGI by fast
+  done
+
+
+lemma optional_PASI:
+  assumes "PASI (parse p)"
+  assumes "\<nexists>i. is_error (parse p) i"
+  shows "PASI (parse (optional p))"
+  using assms
+  by (auto simp add: PASI_def NER_simps split: option.splits)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma optional_well_formed:
   assumes "is_error (parse b) []"

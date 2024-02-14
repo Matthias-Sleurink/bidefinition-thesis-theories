@@ -46,6 +46,33 @@ lemma b_then_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma then_PNGI:
+  assumes "PNGI (parse ab)"
+  assumes "PNGI (parse bb)"
+  shows "PNGI (parse (b_then ab bb))"
+  unfolding b_then_def
+  apply (rule dep_then_PNGI)
+  subgoal by (rule assms(1))
+  subgoal
+    using transform_PNGI assms(2)
+    by blast
+  done
+
+lemma then_PASI:
+  assumes "PASI (parse ab)"
+  assumes "PASI (parse bb)"
+  shows "PASI (parse (b_then ab bb))"
+  unfolding b_then_def
+  apply (rule dep_then_PASI)
+  subgoal by (rule assms(1))
+  subgoal
+    using transform_PASI assms(2)
+    by blast
+  done
+
+
+
 \<comment> \<open>well formed\<close>
 
 definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where

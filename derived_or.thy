@@ -53,6 +53,25 @@ lemma or_p_is_error[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma or_PNGI:
+  assumes "PNGI (parse a)"
+  assumes "PNGI (parse b)"
+  shows "PNGI (parse (or a b))"
+  using assms
+  apply (simp add: PNGI_def NER_simps split: sum.splits)
+  by fast
+
+lemma or_PASI:
+  assumes "PASI (parse a)"
+  assumes "PASI (parse b)"
+  shows "PASI (parse (or a b))"
+  using assms
+  apply (simp add: PASI_def NER_simps split: sum.splits)
+  by blast
+
+
+
 \<comment> \<open>Well Formed\<close>
 \<comment> \<open>A print result of b2 must not be parsable by b1\<close>
 definition well_formed_or_pair :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where

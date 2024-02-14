@@ -56,6 +56,26 @@ lemma peek_bool_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma peek_bool_PNGI:
+  shows "PNGI (parse (peek_bool a oracle))"
+  by (metis peek_PNGI peek_bool_def transform_PNGI)
+
+lemma peek_bool_PASI:
+  assumes "\<exists> i r l. has_result (parse a) i r l"
+  shows "PASI (parse (peek_bool a oracle)) \<longleftrightarrow> False"
+  unfolding peek_bool_def
+  unfolding transform_PASI[symmetric]
+  apply (subst peek_PASI)
+  subgoal
+    unfolding optional_has_result
+    using assms
+    by (auto split: option.splits)
+  subgoal by simp
+  done
+
+
+
 \<comment> \<open>Well Formed\<close>
 text \<open>
 See the notes on well formedness in basic_peek_result.

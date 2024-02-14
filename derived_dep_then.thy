@@ -38,6 +38,33 @@ lemma dep_then_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma dep_then_PNGI:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall>i. PNGI (parse (a2bb i))"
+  shows "PNGI (parse (dep_then ab a2bb b2a))"
+  unfolding dep_then_def
+  unfolding transform_PNGI[symmetric, of projl Inl]
+  apply (rule PNGI_dep_if_then_else)
+  subgoal by (rule assms(1))
+  subgoal by (rule assms(2))
+  subgoal by (rule fail_PNGI)
+  done
+
+lemma dep_then_PASI:
+  assumes "PASI (parse ab)"
+  assumes "\<forall>i. PASI (parse (a2bb i))"
+  shows "PASI (parse (dep_then ab a2bb b2a))"
+  unfolding dep_then_def
+  unfolding transform_PASI[symmetric, of projl Inl]
+  apply (rule PASI_dep_if_then_else)
+  subgoal by (rule assms(1))
+  subgoal by (rule assms(2))
+  subgoal by (rule fail_PASI)
+  done
+
+
+
 \<comment> \<open>Well Formed\<close>
 
 \<comment> \<open>For all two print texts, the parser for ba only consumes its own section.\<close>
