@@ -44,6 +44,10 @@ lemma peek_has_result[NER_simps]:
   "has_result (peek_p p)       i r l \<longleftrightarrow> i=l \<and> (\<exists> l'. has_result p         i r l')"
   by (auto simp add: peek_def has_result_def split: option.splits)
 
+lemma peek_has_result_simple:
+  "has_result (parse (peek b)) i r l \<longrightarrow> l = i"
+  by (simp add: peek_has_result(1))
+
 
 
 \<comment> \<open>FP NER\<close>
@@ -56,6 +60,18 @@ lemma peek_p_has_result[fp_NER]:
   "p_has_result (print (peek b)) v t \<longleftrightarrow> t=[] \<and> (\<exists> t'. p_has_result (print b) v t')"
   "p_has_result (peek_pr p)      v t \<longleftrightarrow> t=[] \<and> (\<exists> t'. p_has_result p         v t')"
   by (auto simp add: peek_def p_has_result_def split: option.splits)
+
+
+
+\<comment> \<open>PNGI, PASI\<close>
+lemma peek_PNGI:
+  "PNGI (parse (peek b))"
+  by (simp add: PNGI_def NER_simps)
+
+lemma peek_PASI:
+  assumes "\<exists> i r l. has_result (parse b) i r l"
+  shows "PASI (parse (peek b)) \<longleftrightarrow> False"
+  by (simp add: assms PASI_def NER_simps)
 
 
 

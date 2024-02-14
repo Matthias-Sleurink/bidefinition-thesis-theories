@@ -52,6 +52,17 @@ lemma one_char_p_is_error[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma one_char_PNGI:
+  "PNGI (parse one_char)"
+  by (simp add: PNGI_def NER_simps)
+
+lemma one_char_PASI:
+  "PASI (parse one_char)"
+  by (simp add: PASI_def NER_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma one_char_well_formed[bi_well_formed_simps]:
   "bidef_well_formed one_char"

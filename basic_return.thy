@@ -49,6 +49,17 @@ lemma return_fp_is_error[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma return_PNGI:
+  "PNGI (parse (return t))"
+  by (simp add: PNGI_def NER_simps)
+
+lemma return_PASI:
+  "PASI (parse (return t)) \<longleftrightarrow> False"
+  by (simp add: PASI_def NER_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma b_return_well_formed:
   "bidef_well_formed (return v)"

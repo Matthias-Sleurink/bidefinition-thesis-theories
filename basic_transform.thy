@@ -77,6 +77,19 @@ lemma transform_p_is_error[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma transform_PASI:
+  shows "PASI (parse b) \<longleftrightarrow> PASI (parse (transform f f' b))"
+  apply (simp add: PASI_def NER_simps)
+  by blast
+
+lemma transform_PNGI:
+  shows "PNGI (parse b) \<longleftrightarrow> PNGI (parse (transform f f' b))"
+  apply (simp add: PNGI_def NER_simps)
+  by blast
+
+
+
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>
 definition well_formed_transform_funcs :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
   "well_formed_transform_funcs f f' b \<longleftrightarrow> ((\<forall> i v l. has_result (parse b) i v l \<longrightarrow> f' (f v) = v)

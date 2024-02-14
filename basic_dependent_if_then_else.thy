@@ -130,6 +130,28 @@ lemma if_then_else_p_has_result[fp_NER]:
   by (auto simp add: if_then_else_def p_has_result_def Let_def split: option.splits)+
 
 
+
+\<comment> \<open>PNGI, PASI\<close>
+lemma PNGI_dep_if_then_else:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall> i. PNGI (parse (a2bb i))"
+  assumes "PNGI (parse cb)"
+  shows "PNGI (parse (if_then_else ab a2bb cb b2a))"
+  using assms
+  apply (simp add: PNGI_def NER_simps split: sum.splits)
+  by fastforce
+
+lemma PASI_dep_if_then_else:
+  assumes "PASI (parse ab)"
+  assumes "\<forall> i. PASI (parse (a2bb i))"
+  assumes "PASI (parse cb)"
+  shows "PASI (parse (if_then_else ab a2bb cb b2a))"
+  using assms
+  apply (simp add: PASI_def NER_simps split: sum.splits)
+  by fastforce
+
+
+
 \<comment> \<open>Well Formed\<close>
 definition b2_wf_for_res_of_b1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
   "b2_wf_for_res_of_b1 b1 a2bi \<longleftrightarrow> (\<forall> i ra la. has_result (parse b1) i ra la \<longrightarrow> bidef_well_formed (a2bi ra))"

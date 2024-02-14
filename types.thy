@@ -170,7 +170,7 @@ lemma print_result_is_canon_result2:
 
 \<comment> \<open>PASI, Parser Always Shrinks Input (Including it being a tail of the input)\<close>
 definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
-  "PASI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. i = c @ l \<and> c \<noteq> []))"
+  "PASI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. (i = c @ l \<and> c \<noteq> [])))"
 
 \<comment> \<open>PNGI, Parser Never Grows Input (Including it being a tail of the input)\<close>
 definition PNGI :: "'\<alpha> parser \<Rightarrow> bool" where

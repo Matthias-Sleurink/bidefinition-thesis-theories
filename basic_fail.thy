@@ -47,6 +47,17 @@ lemma fail_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma fail_PNGI:
+  "PNGI (parse fail)"
+  by (simp add: PNGI_def NER_simps)
+
+lemma fail_PASI:
+  "PASI (parse fail)"
+  by (simp add: PASI_def NER_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma fail_well_formed:
   "bidef_well_formed fail"
