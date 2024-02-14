@@ -166,4 +166,25 @@ lemma print_result_is_canon_result2:
   unfolding bidef_well_formed_def parser_can_parse_print_result_def
   by (simp add: p_has_result_def has_result_def)
 
+
+
+\<comment> \<open>PASI, Parser Always Shrinks Input (Including it being a tail of the input)\<close>
+definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
+  "PASI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. i = c @ l \<and> c \<noteq> []))"
+
+\<comment> \<open>PNGI, Parser Never Grows Input (Including it being a tail of the input)\<close>
+definition PNGI :: "'\<alpha> parser \<Rightarrow> bool" where
+  "PNGI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. i = c @ l))"
+
+lemma PASI_implies_PNGI:
+  "PASI p \<longrightarrow> PNGI p"
+  using PASI_def PNGI_def
+  by fast
+
+lemma PASI_implies_res_length_shorter:
+  assumes "PASI p"
+  shows "has_result p i r l \<longrightarrow> length i > length l"
+  using PASI_def assms
+  by fastforce
+
 end
