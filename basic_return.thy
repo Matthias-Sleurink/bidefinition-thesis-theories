@@ -53,8 +53,10 @@ lemma return_fp_is_error[fp_NER]:
 lemma b_return_well_formed:
   "bidef_well_formed (return v)"
   apply wf_init
-  subgoal by (simp add: parser_can_parse_print_result_def  return_def fp_NER NER_simps)
-  subgoal by (simp add: printer_can_print_parse_result_def return_def fp_NER NER_simps)
+  subgoal by (simp add: parser_can_parse_print_result_def
+                        return_def fp_NER NER_simps)
+  subgoal by (simp add: printer_can_print_parse_result_def
+                        return_def fp_NER NER_simps)
   done
 
 

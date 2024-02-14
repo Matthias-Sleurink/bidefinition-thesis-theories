@@ -40,9 +40,9 @@ fun transform_pr :: "('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> 
 
 
 definition transform :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> '\<beta> bidef" where
-  "transform t t' tri = (
-    transform_p t (parse tri),
-    transform_pr t' (print tri)
+  "transform t t' bi = (
+    transform_p t (parse bi),
+    transform_pr t' (print bi)
 )"
 
 
