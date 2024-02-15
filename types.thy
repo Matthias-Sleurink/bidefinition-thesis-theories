@@ -187,4 +187,18 @@ lemma PASI_implies_res_length_shorter:
   using PASI_def assms
   by fastforce
 
+lemma if_PNGI:
+  assumes "PNGI (parse T)"
+  assumes "PNGI (parse F)"
+  shows "PNGI (parse (if P then T else F))"
+  by (simp add: assms)
+
+lemma if_PNGI_p:
+  assumes "PNGI (parse (T p))"
+  assumes "PNGI (parse (F p))"
+  shows "PNGI (parse (if P p then T p else F p))"
+  using assms
+  by (rule if_PNGI)
+
+
 end
