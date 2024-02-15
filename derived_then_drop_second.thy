@@ -38,6 +38,32 @@ lemma then_drop_second_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma then_drop_second_PNGI:
+  assumes "PNGI (parse ab)"
+  assumes "PNGI (parse bb)"
+  shows "PNGI (parse (then_drop_second ab bb b))"
+  unfolding then_drop_second_def
+  unfolding transform_PNGI[symmetric]
+  apply (rule then_PNGI)
+  subgoal by (rule assms(1))
+  subgoal by (rule assms(2))
+  done
+
+
+lemma then_drop_second_PASI:
+  assumes "PASI (parse ab)"
+  assumes "PASI (parse bb)"
+  shows "PASI (parse (then_drop_second ab bb b))"
+  unfolding then_drop_second_def
+  unfolding transform_PASI[symmetric]
+  apply (rule then_PASI)
+  subgoal by (rule assms(1))
+  subgoal by (rule assms(2))
+  done
+
+
+
 \<comment> \<open>well formed\<close>
 
 lemma b_then_drop_second_wf_derived:

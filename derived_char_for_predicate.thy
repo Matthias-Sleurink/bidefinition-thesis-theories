@@ -37,6 +37,24 @@ lemma char_for_predicate_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma char_for_predicate_PNGI:
+  "PNGI (parse (char_for_predicate p))"
+  unfolding char_for_predicate_def
+  apply (rule dep_then_PNGI)
+  subgoal by (rule one_char_PNGI)
+  by (auto simp add: return_PNGI fail_PNGI)
+
+
+lemma char_for_predicate_PASI:
+  "PASI (parse (char_for_predicate p))"
+  unfolding char_for_predicate_def
+  apply (rule dep_then_PASI_PASI_PNGI)
+  subgoal by (rule one_char_PASI)
+  by (simp add: return_PNGI fail_PNGI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma char_for_predicate_well_formed:
   "bidef_well_formed (char_for_predicate p)"

@@ -51,6 +51,19 @@ lemma alphabet_char_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma alphabet_char_PNGI:
+  "PNGI (parse alphabet_char)"
+  unfolding alphabet_char_def
+  by (rule any_from_set_PNGI)
+
+lemma alphabet_char_PASI:
+  "PASI (parse alphabet_char)"
+  unfolding alphabet_char_def
+  by (rule any_from_set_PASI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma alphabet_char_well_formed:
   "bidef_well_formed alphabet_char"

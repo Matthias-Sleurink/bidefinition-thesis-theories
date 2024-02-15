@@ -41,6 +41,19 @@ lemma uppercase_char_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma uppercase_char_PNGI:
+  "PNGI (parse uppercase_char)"
+  unfolding uppercase_char_def
+  by (rule any_from_set_PNGI)
+
+lemma uppercase_char_PASI:
+  "PASI (parse uppercase_char)"
+  unfolding uppercase_char_def
+  by (rule any_from_set_PASI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma uppercase_char_well_formed:
   "bidef_well_formed uppercase_char"

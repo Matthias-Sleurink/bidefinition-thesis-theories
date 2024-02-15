@@ -40,6 +40,19 @@ lemma this_char_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma this_char_PNGI:
+  "PNGI (parse (this_char c))"
+  unfolding this_char_def
+  by (rule any_from_set_PNGI)
+
+lemma this_char_PASI:
+  "PASI (parse (this_char c))"
+  unfolding this_char_def
+  by (rule any_from_set_PASI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma this_char_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (this_char c)"

@@ -15,6 +15,8 @@ theory all_definitions
           derived_eof
           derived_alphanumeric_char
           derived_char_not_in_set
+          derived_uppercase_char
+          derived_lowercase_char
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 

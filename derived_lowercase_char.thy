@@ -41,6 +41,19 @@ lemma lowercase_char_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma lowercase_char_PNGI:
+  "PNGI (parse lowercase_char)"
+  unfolding lowercase_char_def
+  by (rule any_from_set_PNGI)
+
+lemma lowercase_char_PASI:
+  "PASI (parse lowercase_char)"
+  unfolding lowercase_char_def
+  by (rule any_from_set_PASI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma lowercase_char_well_formed:
   "bidef_well_formed lowercase_char"

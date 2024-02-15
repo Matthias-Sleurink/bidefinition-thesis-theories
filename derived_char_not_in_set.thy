@@ -43,6 +43,19 @@ lemma char_not_in_set_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma char_not_in_set_PNGI:
+  "PNGI (parse (char_not_in_set s))"
+  unfolding char_not_in_set_def
+  by (rule char_for_predicate_PNGI)
+
+lemma char_not_in_set_PASI:
+  "PASI (parse (char_not_in_set s))"
+  unfolding char_not_in_set_def
+  by (rule char_for_predicate_PASI)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma char_not_in_set_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (char_not_in_set s)"

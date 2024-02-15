@@ -52,6 +52,19 @@ lemma digit_char_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma digit_char_PNGI:
+  "PNGI (parse digit_char)"
+  unfolding digit_char_def
+  by (rule any_from_set_PNGI)
+
+lemma digit_char_PASI:
+  "PASI (parse digit_char)"
+  unfolding digit_char_def
+  by (rule any_from_set_PASI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma digit_char_well_formed:
   "bidef_well_formed digit_char"

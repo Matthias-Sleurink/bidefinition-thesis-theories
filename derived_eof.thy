@@ -43,6 +43,25 @@ lemma eof_p_has_result[fp_NER]:
   by (simp add: eof_def fp_NER)
 
 
+
+\<comment> \<open>PNGI, PASI\<close>
+lemma eof_PNGI:
+  "PNGI (parse eof)"
+  unfolding eof_def
+  unfolding transform_PNGI[symmetric]
+  apply (rule PNGI_dep_if_then_else)
+  subgoal by (rule one_char_PNGI)
+  subgoal by (simp add: fail_PNGI)
+  subgoal by (rule return_PNGI)
+  done
+
+lemma eof_PASI:
+  "PASI (parse eof) \<longleftrightarrow> False"
+  unfolding PASI_def
+  by (simp add: NER_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma eof_well_formed:
   "bidef_well_formed eof"

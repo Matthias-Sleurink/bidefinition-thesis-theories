@@ -51,6 +51,19 @@ lemma alphanumeric_char_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma alphanumeric_char_PNGI:
+  "PNGI (parse alphanumeric_char)"
+  unfolding alphanumeric_char_def
+  by (rule any_from_set_PNGI)
+
+lemma alphanumeric_char_PASI:
+  "PASI (parse alphanumeric_char)"
+  unfolding alphanumeric_char_def
+  by (rule any_from_set_PASI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma alphanumeric_char_well_formed:
   "bidef_well_formed alphanumeric_char"

@@ -43,6 +43,19 @@ lemma any_from_set_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma any_from_set_PNGI:
+  "PNGI (parse (any_from_set s))"
+  unfolding any_from_set_def
+  by (rule char_for_predicate_PNGI)
+
+lemma any_from_set_PASI:
+  "PASI (parse (any_from_set s))"
+  unfolding any_from_set_def
+  by (rule char_for_predicate_PASI)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma any_from_set_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (any_from_set s)"
