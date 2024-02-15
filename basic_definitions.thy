@@ -47,6 +47,11 @@ My hope is that this will improve startup times,
 
 \<close>
 
+lemma return_mono[partial_function_mono]:
+  shows "\<forall>i. mono_parser (\<lambda>f. return_p i)"
+  by (simp add: monotoneI parser.leq_refl)
+
+
 
 
 end
