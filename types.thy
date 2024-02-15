@@ -81,6 +81,21 @@ lemma if_has_result[NER_simps]:
 
 
 
+subsection \<open>NER for inlined bind\<close>
+lemma bind_is_nonterm[NER_simps]:
+  "is_nonterm (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) i \<longleftrightarrow> is_nonterm A i \<or> (\<exists>r l. has_result A i r l \<and> is_nonterm (B r) l)"
+  by (simp add: is_nonterm_def has_result_def split: option.splits)
+
+lemma bind_is_error[NER_simps]:
+  "is_error (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) i \<longleftrightarrow> is_error A i \<or> (\<exists>r l. has_result A i r l \<and> is_error (B r) l)"
+  by (clarsimp simp add: is_error_def has_result_def split: option.splits)
+
+lemma bind_has_result[NER_simps]:
+  "has_result (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) i r l \<longleftrightarrow> (\<exists>r' l'. has_result A i r' l' \<and> has_result (B r') l' r l)"
+  by (clarsimp simp add: has_result_def split: option.splits)
+
+
+
 section \<open>Types for the printer\<close>
 type_synonym '\<alpha> printer = "'\<alpha> \<Rightarrow> string option"
 
