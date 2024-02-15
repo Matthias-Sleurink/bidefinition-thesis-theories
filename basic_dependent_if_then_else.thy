@@ -150,6 +150,14 @@ lemma PASI_dep_if_then_else:
   apply (simp add: PASI_def NER_simps split: sum.splits)
   by fastforce
 
+lemma dep_if_then_else_PASI_PASI_PNGI_PASI:
+  assumes "PASI (parse ab)"
+  assumes "\<forall> i. PNGI (parse (a2bb i))"
+  assumes "PASI (parse cb)"
+  shows "PASI (parse (if_then_else ab a2bb cb b2a))"
+  using assms
+  apply (simp add: PASI_def PNGI_def NER_simps split: sum.splits)
+  by fastforce
 
 
 \<comment> \<open>Well Formed\<close>
