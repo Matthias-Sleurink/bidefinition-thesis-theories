@@ -121,6 +121,39 @@ lemma many_p_has_result:
 )"
   by (cases l) (clarsimp simp add: many_p_has_result_safe)+
 
+lemma many_p_has_result_when_first_parse_fails:
+  assumes "is_error p l"
+  shows "has_result (many_p p) l [] l"
+  apply (subst many_p.simps)
+  by (auto simp add: assms NER_simps split: sum.splits)
+
+
+\<comment> \<open>Induction\<close>
+
+(*
+Basically, If Q holds for the cases where the parser fails (and thus the list ends)
+           And if for some success, with some succeeding list, we can make another longer succeeding list
+           Then we know that it holds for any time that it succeeds.
+*)
+lemma many0_induct:
+  assumes pasi: "PASI p"
+
+  assumes step: "\<And> i r l. has_result p i r l \<longrightarrow> (\<forall>rr l'. (length l < length i \<and> Q l rr l') \<longrightarrow> Q i (r # rr) l')"
+  assumes last_step: "\<And> i. is_error p i \<longrightarrow> Q i [] i"
+
+  shows "has_result (many_p p) i r l \<longrightarrow> Q i r l"
+  apply (induction i arbitrary: r l rule: length_induct)
+  apply (subst many_p.simps)
+  apply (auto simp add: NER_simps split: sum.splits)
+  subgoal for xs r l r'
+    apply (cases r')
+    subgoal using step pasi PASI_implies_res_length_shorter by fastforce
+    subgoal using last_step many_is_error(2) by force
+    done
+  done
+
+
+
 subsection \<open>Well formed\<close>
 lemma many_well_formed:
   assumes "is_error (parse b) []"
@@ -145,7 +178,6 @@ lemma many_well_formed:
         subgoal for ir ir'
           unfolding many_has_result_safe(2)[of b \<open>ir@ir'\<close>]
           unfolding many_p_has_result[of b rs ir']
-        sledgehammer
           \<comment> \<open>We need many0 induct for this?\<close>
           sorry
         done
@@ -162,7 +194,6 @@ lemma many_well_formed:
       done
     done
   oops
-
 
 
 
