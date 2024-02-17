@@ -191,6 +191,20 @@ definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
 definition PNGI :: "'\<alpha> parser \<Rightarrow> bool" where
   "PNGI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. i = c @ l))"
 
+
+lemma PASI_as_has_result:
+  assumes "PASI p"
+  shows "has_result p i r l \<longrightarrow> length i > length l"
+  using assms PASI_def
+  by fastforce
+
+lemma PNGI_as_has_result:
+  assumes "PNGI p"
+  shows "has_result p i r l \<longrightarrow> length i \<ge> length l"
+  using assms PNGI_def
+  by fastforce
+
+
 lemma PASI_implies_PNGI:
   "PASI p \<longrightarrow> PNGI p"
   using PASI_def PNGI_def
