@@ -14,8 +14,8 @@ fun sum_take :: "('\<alpha> + '\<alpha>) \<Rightarrow> '\<alpha>" where
 (* We claim that this is a derived parser, yet we are operating on the input string directly here. Make basic? *)
 partial_function (parser) many_p :: "'a parser \<Rightarrow> 'a list parser"
   where [code]:
-  "many_p a = transform_p
-                  sum_take
+  "many_p a = ftransform_p
+                  (Some o sum_take)
                   (if_then_else_p
                     ((\<lambda> i:: string. 
                       case a i of
