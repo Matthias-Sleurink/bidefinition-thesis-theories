@@ -58,14 +58,17 @@ definition ftransform :: "('\<alpha> \<Rightarrow> '\<beta> option) \<Rightarrow
 \<comment> \<open>NER\<close>
 lemma ftransform_is_nonterm[NER_simps]:
   "is_nonterm (parse (ftransform t t' bi)) i \<longleftrightarrow> is_nonterm (parse bi) i"
-  by (simp add: ftransform_def is_nonterm_def split: option.splits)
+  "is_nonterm (ftransform_p t p) i \<longleftrightarrow> is_nonterm p i"
+  by (simp add: ftransform_def is_nonterm_def split: option.splits)+
 
 lemma ftransform_is_error[NER_simps]:
   "is_error (parse (ftransform t t' bi)) i \<longleftrightarrow> is_error (parse bi) i \<or> (\<exists> r l. has_result (parse bi) i r l \<and> t r = None)"
-  by (simp add: ftransform_def is_error_def has_result_def split: option.splits)
+  "is_error (ftransform_p t p) i \<longleftrightarrow> is_error p i \<or> (\<exists> r l. has_result p i r l \<and> t r = None)"
+  by (simp add: ftransform_def is_error_def has_result_def split: option.splits)+
 
 lemma ftransform_has_result[NER_simps]:
   "has_result (parse (ftransform t t' bi)) i r l \<longleftrightarrow> (\<exists> r'. has_result (parse bi) i r' l \<and> t r' = Some r)"
+  "has_result (ftransform_p t p) i r l \<longleftrightarrow> (\<exists> r'. has_result p i r' l \<and> t r' = Some r)"
   by (auto simp add: ftransform_def has_result_def split: option.splits)
 
 
@@ -73,13 +76,23 @@ lemma ftransform_has_result[NER_simps]:
 \<comment> \<open>FP NER\<close>
 lemma ftransform_p_is_error[fp_NER]:
   "p_is_error (print (ftransform t t' bi)) i \<longleftrightarrow> t' i = None \<or> (\<exists> i'. Some i' = t' i \<and> p_is_error (print bi) i')"
-  apply (simp add: ftransform_def p_is_error_def)
-  by (cases \<open>t' i\<close>) simp_all
+  "p_is_error (ftransform_pr t' p) i \<longleftrightarrow> t' i = None \<or> (\<exists> i'. Some i' = t' i \<and> p_is_error p i')"
+  apply (auto simp add: ftransform_def p_is_error_def)
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  done
 
 lemma f_transform_p_has_result[fp_NER]:
   "p_has_result (print (ftransform t t' bi)) i r \<longleftrightarrow> (\<exists> i'. Some i' = t' i \<and> p_has_result (print bi) i' r)"
-  apply (simp add: ftransform_def p_has_result_def)
-  by (cases \<open>t' i\<close>) simp_all
+  "p_has_result (ftransform_pr t' p) i r \<longleftrightarrow> (\<exists> i'. Some i' = t' i \<and> p_has_result p i' r)"
+  apply (auto simp add: ftransform_def p_has_result_def)
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  done
 
 
 
