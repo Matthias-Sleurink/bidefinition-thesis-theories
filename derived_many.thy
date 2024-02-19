@@ -154,6 +154,28 @@ lemma many0_induct:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma many_PNGI_from_PNGI:
+  assumes "PNGI (parse p)"
+  shows "PNGI (parse (many p))"
+  using assms
+  unfolding PNGI_def
+  apply (subst many_has_result)
+  apply (auto split: list.splits)
+  oops
+
+lemma many_PNGI:
+  assumes "PASI (parse p)"
+  shows "PNGI (parse (many p))"
+  (*Should really figure out some way of exposing the input so that we can say is PASI when at least one success*)
+  unfolding PASI_def PNGI_def many_def
+  apply clarsimp
+  apply (subst many0_induct[of \<open>parse p\<close> \<open>\<lambda> i r l. (\<exists>c. i = c @ l)\<close>])
+  apply (auto simp add: assms)
+  by (metis append_assoc assms[unfolded PASI_def])
+
+
+
 subsection \<open>Well formed\<close>
 lemma many_well_formed:
   assumes "is_error (parse b) []"
