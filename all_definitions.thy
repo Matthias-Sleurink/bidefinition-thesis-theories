@@ -7,6 +7,7 @@ theory all_definitions
           derived_peek_boolean
           derived_then_drop_second
           derived_many
+          derived_many1
           derived_char_for_predicate
           derived_any_from_set
           derived_this_char
