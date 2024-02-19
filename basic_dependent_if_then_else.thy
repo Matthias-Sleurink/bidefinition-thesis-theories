@@ -15,12 +15,12 @@ fun if_then_else_p :: "'\<alpha> parser \<Rightarrow> ('\<alpha> \<Rightarrow> '
   "if_then_else_p ap a2bp cp i = (
     case ap i of
       None \<Rightarrow> None \<comment> \<open>a is nonterm\<close>
-    | Some None \<Rightarrow> (transform_p (Inr :: '\<gamma> \<Rightarrow> ('\<beta> + '\<gamma>)) cp i)\<comment> \<open>a fails, run c\<close>
+    | Some None \<Rightarrow> (ftransform_p ((Some o Inr) :: '\<gamma> \<Rightarrow> ('\<beta> + '\<gamma>) option) cp i)\<comment> \<open>a fails, run c\<close>
     | Some (Some (ar, al)) \<Rightarrow> ( \<comment> \<open>a succeeds, create b and run it.\<close>
-        transform_p (Inl :: '\<beta> \<Rightarrow> ('\<beta> + '\<gamma>)) (a2bp ar) al)
+        ftransform_p ((Some o Inl) :: '\<beta> \<Rightarrow> ('\<beta> + '\<gamma>) option) (a2bp ar) al)
 )"
 
-\<comment> \<open>I've not used the monotone transform_p proof in here anywhere.
+\<comment> \<open>I've not used the monotone ftransform_p proof in here anywhere.
     I assume that this proof would be easier if we had.\<close>
 lemma mono_if_then_else[partial_function_mono]:
   assumes ma: "mono_parser A"
@@ -40,7 +40,8 @@ lemma mono_if_then_else[partial_function_mono]:
     subgoal by simp
     subgoal for a
       apply (cases a)
-      subgoal by (smt (verit) option.simps(4) option.simps(5) transform_p.simps)
+      subgoal
+        by (smt (verit) ftransform_p.simps option.case_eq_if option.sel)
       subgoal for aa
         apply (cases aa)
         apply (clarsimp split: option.splits)
