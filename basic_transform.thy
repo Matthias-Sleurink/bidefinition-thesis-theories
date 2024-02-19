@@ -1,6 +1,7 @@
 theory basic_transform
   imports types
           basic_partial_fun_for_parser
+          basic_fallible_transform
 begin
 
 text \<open>
@@ -39,41 +40,40 @@ fun transform_pr :: "('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> 
   "transform_pr t p i = p (t i)"
 
 
-definition transform :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> '\<beta> bidef" where
-  "transform t t' bi = (
+definition transform_old :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> '\<beta> bidef" where
+  "transform_old t t' bi = (
     transform_p t (parse bi),
     transform_pr t' (print bi)
 )"
 
+definition transform :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> '\<beta> bidef" where
+  "transform t t' bi = ftransform (Some o t) (Some o t') bi"
 
 
+
+\<comment> \<open>NER\<close>
 lemma transform_is_nonterm[NER_simps]:
   "is_nonterm (parse (transform f f' p)) i \<longleftrightarrow> is_nonterm (parse p) i"
-  "is_nonterm (transform_p f p') i \<longleftrightarrow> is_nonterm p' i"
-  by (simp add: transform_def is_nonterm_def split: option.splits)+
+  by (simp add: transform_def NER_simps)
 
 lemma transform_is_error[NER_simps]:
   "is_error (parse (transform f f' p)) i \<longleftrightarrow> is_error (parse p) i"
-  "is_error (transform_p f p') i \<longleftrightarrow> is_error p' i"
-  by (simp add: transform_def is_error_def split: option.splits)+
+  by (simp add: transform_def NER_simps)
 
 lemma transform_has_result[NER_simps]:
   "has_result (parse (transform f f' p)) i r l \<longleftrightarrow> (\<exists>r'. has_result (parse p) i r' l \<and> r = f r')"
-  "has_result (transform_p f p') i r l \<longleftrightarrow> (\<exists>r'. has_result p' i r' l \<and> r = f r')"
-  apply (simp_all add: transform_def has_result_def split: option.splits)
-  by auto
+  by (auto simp add: transform_def NER_simps)
 
 
 
+\<comment> \<open>FP ner\<close>
 lemma transform_p_has_result[fp_NER]:
   "p_has_result (print (transform f f' b)) i t \<longleftrightarrow> p_has_result (print b) (f' i) t"
-  "p_has_result (transform_pr f' p) i t \<longleftrightarrow> p_has_result p (f' i) t"
-  by (simp_all add: transform_def p_has_result_def)
+  by (simp add: transform_def fp_NER)
 
 lemma transform_p_is_error[fp_NER]:
   "p_is_error (print (transform f f' b)) i \<longleftrightarrow> p_is_error (print b) (f' i)"
-  "p_is_error (transform_pr f' p) i \<longleftrightarrow> p_is_error p (f' i)"
-  by (simp_all add: transform_def p_is_error_def)
+  by (simp add: transform_def fp_NER)
 
 
 
