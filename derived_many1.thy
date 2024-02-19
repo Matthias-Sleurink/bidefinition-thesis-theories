@@ -41,4 +41,15 @@ lemma many1_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma many1_PNGI:
+  assumes "PNGI (parse p)"
+  shows "PNGI (parse (many1 p))"
+  unfolding many1_def
+  apply (rule ftransform_PNGI)
+  apply (rule then_PNGI)
+  subgoal by (rule assms)
+  apply (rule many_PNGI)
+  oops
+
 end
