@@ -1,6 +1,8 @@
 theory derived_many
   imports basic_definitions
           derived_then
+
+          derived_char_for_predicate (*Only needed for the NER simps rule. Maybe split out to other file?*)
 begin            
 
 
@@ -32,6 +34,17 @@ partial_function (parser) many_p :: "'a parser \<Rightarrow> 'a list parser"
                   )"
 print_theorems
 
+
+partial_function (parser) many_p1 :: "'a parser \<Rightarrow> 'a list parser"
+  where [code]:
+  "many_p1 a = ftransform_p 
+                    (Some o sum_take)
+                    (if_then_else_p a (\<lambda>r. ftransform_p (Some o (#) r) (many_p1 a)) (return_p []))
+"
+print_theorems
+
+
+
 fun many_pr :: "'\<alpha> printer \<Rightarrow> '\<alpha> list printer" where
   "many_pr p []     = Some []"
 | "many_pr p (x#xs) =(
@@ -45,25 +58,25 @@ fun many_pr :: "'\<alpha> printer \<Rightarrow> '\<alpha> list printer" where
 
 definition many :: "'\<alpha> bidef \<Rightarrow> '\<alpha> list bidef" where
   "many b = (
-    many_p (parse b),
+    many_p1 (parse b),
     many_pr (print b)
 )"
 
 subsection \<open>NER\<close>
 lemma many_is_nonterm: \<comment> \<open>not added to nersimp since it will unfold forever\<close>
   "is_nonterm (parse (many b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
-  "is_nonterm (many_p (parse b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
+  "is_nonterm (many_p1 (parse b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
   by ((clarsimp simp add: many_def);
-  (subst many_p.simps);
+  (subst many_p1.simps);
   (clarsimp simp add: NER_simps))+
 
 lemma many_is_error[NER_simps]:
   "is_error (parse (many b)) i \<longleftrightarrow> False"
-  "is_error (many_p (parse b)) i \<longleftrightarrow> False"
+  "is_error (many_p1 (parse b)) i \<longleftrightarrow> False"
   by ((clarsimp simp add: many_def);
-      (subst (asm) many_p.simps);
+      (subst (asm) many_p1.simps);
       (simp add: NER_simps)
-     )+
+     )
 
 \<comment> \<open>Since these explicitly match on the constructors of list they are safe to be in NER.\<close>
 lemma many_has_result_safe[NER_simps]:
@@ -175,6 +188,48 @@ lemma many_PNGI:
   by (metis append_assoc assms[unfolded PASI_def])
 
 
+\<comment> \<open>TODO: split out to other file?\<close>
+lemma takeWhile_hd_no_match:
+  assumes "\<not> p (hd i)"
+  shows "[] = takeWhile p i"
+  using assms
+  by (induction i) simp_all
+
+lemma dropWhile_hd_no_match:
+  assumes "\<not> p (hd i)"
+  shows "i = dropWhile p i"
+  using assms
+  by (induction i) simp_all
+
+
+\<comment> \<open>Has result for many for_predicate has some nice properties\<close>
+lemma many_char_for_predicate_has_result[NER_simps]:
+  shows "has_result (parse (many (char_for_predicate p))) i r l \<longleftrightarrow> r = takeWhile p i \<and> l = dropWhile p i"
+  apply (clarsimp simp add: many_def)
+  using many0_induct[of \<open>parse (char_for_predicate p)\<close> \<open>\<lambda>i r l. (r = takeWhile p i \<and> l = dropWhile p i)\<close> i r l]
+  apply (subst many0_induct[of \<open>parse (char_for_predicate p)\<close> \<open>\<lambda>i r l. (r = takeWhile p i \<and> l = dropWhile p i)\<close> i r l])
+  subgoal by (rule char_for_predicate_PASI)
+  subgoal by (auto simp add: char_for_predicate_has_result)
+  subgoal by (auto simp add: char_for_predicate_is_error dropWhile_hd_no_match takeWhile_hd_no_match)
+  subgoal
+    apply (auto simp add: NER_simps)
+    apply (induction i arbitrary: r l)
+    subgoal for r l
+      apply auto
+      
+      sorry                        
+    subgoal sorry
+    done
+  subgoal
+    apply (auto simp add: NER_simps)
+    subgoal
+      by (metis \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l\<close> append_Nil char_for_predicate_PASI list.sel(1) takeWhile_dropWhile_id takeWhile_hd_no_match)
+    subgoal
+      by (metis \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> PASI (parse (char_for_predicate p))\<close> \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l\<close> dropWhile_hd_no_match list.sel(1) takeWhile_hd_no_match)
+    subgoal
+      using \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l\<close> by fastforce
+    done
+  oops
 
 subsection \<open>Well formed\<close>
 lemma many_well_formed:
