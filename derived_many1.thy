@@ -28,6 +28,12 @@ lemma many1_has_result[NER_simps]:
   apply (clarsimp simp add: many1_def NER_simps)
   by fastforce
 
+lemma many1_result_only_if_nonempty:
+  assumes "has_result (parse (many1 bi)) i r l"
+  shows "r \<noteq> []"
+  using assms
+  by (simp add: NER_simps)
+
 
 
 \<comment> \<open>FP ner\<close>
@@ -38,6 +44,12 @@ lemma many1_p_is_error[fp_NER]:
 lemma many1_p_has_result[fp_NER]:
   "p_has_result (print (many1 a)) i r \<longleftrightarrow> (\<exists> r1 r2. r = r1@r2 \<and> i \<noteq> [] \<and> p_has_result (print a) (hd i) r1 \<and> p_has_result (print (many a)) (tl i) r2)"
   by (auto simp add: many1_def fp_NER)
+
+lemma many1_p_has_result_only_if_nonempty:
+  assumes "p_has_result (print (many1 a)) i r"
+  shows "i \<noteq> []"
+  using assms
+  by (auto simp add: fp_NER)
 
 
 
