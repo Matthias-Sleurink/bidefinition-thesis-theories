@@ -43,7 +43,19 @@ partial_function (parser) many_p1 :: "'a parser \<Rightarrow> 'a list parser"
 "
 print_theorems
 
+find_consts "_ \<Rightarrow> 'a parser"
 
+lemma manyp_manyp1:
+  "many_p a i = many_p1 a i"
+  apply (subst many_p.simps)
+  apply (subst many_p1.simps)
+  apply (subst ftransform_p.simps)
+  apply (subst ftransform_p.simps)
+  oops
+  
+    
+  
+  
 
 fun many_pr :: "'\<alpha> printer \<Rightarrow> '\<alpha> list printer" where
   "many_pr p []     = Some []"
@@ -58,25 +70,25 @@ fun many_pr :: "'\<alpha> printer \<Rightarrow> '\<alpha> list printer" where
 
 definition many :: "'\<alpha> bidef \<Rightarrow> '\<alpha> list bidef" where
   "many b = (
-    many_p1 (parse b),
+    many_p (parse b),
     many_pr (print b)
 )"
 
 subsection \<open>NER\<close>
 lemma many_is_nonterm: \<comment> \<open>not added to nersimp since it will unfold forever\<close>
   "is_nonterm (parse (many b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
-  "is_nonterm (many_p1 (parse b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
+  "is_nonterm (many_p (parse b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
   by ((clarsimp simp add: many_def);
-  (subst many_p1.simps);
+  (subst many_p.simps);
   (clarsimp simp add: NER_simps))+
 
 lemma many_is_error[NER_simps]:
   "is_error (parse (many b)) i \<longleftrightarrow> False"
-  "is_error (many_p1 (parse b)) i \<longleftrightarrow> False"
+  "is_error (many_p (parse b)) i \<longleftrightarrow> False"
   by ((clarsimp simp add: many_def);
-      (subst (asm) many_p1.simps);
-      (simp add: NER_simps)
-     )
+  (subst (asm) many_p.simps);
+  (clarsimp simp add: NER_simps))+
+    
 
 \<comment> \<open>Since these explicitly match on the constructors of list they are safe to be in NER.\<close>
 lemma many_has_result_safe[NER_simps]:

@@ -132,18 +132,6 @@ type_synonym '\<alpha> bidef = "('\<alpha> parser \<times> '\<alpha> printer)"
 abbreviation parse :: "'\<alpha> bidef \<Rightarrow> '\<alpha> parser" where "parse \<equiv> fst"
 abbreviation print :: "'\<alpha> bidef \<Rightarrow> '\<alpha> printer" where "print \<equiv> snd"
 
-definition bidef_nonterm where
-  "bidef_nonterm = ((\<lambda>i. None), (\<lambda>i. None))"
-
-
-definition "bidef_ord = fun_ord option_ord"
-definition "bidef_lub = fun_lub option_lub"
-
-interpretation bidef:
-partial_function_definitions "parser_ord" "parser_lub"
-rewrites "flat_lub None {} \<equiv> None"
-  apply (rule parser_pfd)
-  by(simp add: flat_lub_def)
 
 
 section \<open>Well formed\<close>
@@ -168,16 +156,6 @@ lemma conjI3:
   by blast
 
 method wf_init = ((simp only: bidef_well_formed_def); (rule conjI))
-
-
-lemma nonterm_wf:
-  "bidef_well_formed bidef_nonterm"
-  apply wf_init
-  subgoal unfolding parser_can_parse_print_result_def has_result_def p_has_result_def bidef_nonterm_def
-    by (simp)
-  subgoal unfolding printer_can_print_parse_result_def has_result_def p_has_result_def bidef_nonterm_def
-    by (simp)
-  done
 
 lemma print_results_always_same:
   assumes "p_has_result printer ojb res1"
