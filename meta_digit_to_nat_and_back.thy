@@ -88,6 +88,10 @@ lemma print_nat_never_empty[simp]:
   "print_nat n \<noteq> []"
   by (simp add: print_nat_def)
 
+lemma print_nat_hd[simp]:
+  "hd (print_nat a) \<in> digit_chars"
+  using hd_in_set print_nat_domain print_nat_never_empty by blast
+
 lemma print_nat_10_one_or_more_chars:
   "size (print_nat n) \<ge> 1"
   by (simp add: print_nat_def)
