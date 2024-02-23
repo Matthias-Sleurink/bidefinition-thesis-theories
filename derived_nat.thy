@@ -60,4 +60,31 @@ lemma nat_has_result[NER_simps]:
 
 
 
+\<comment> \<open>FP ner\<close>
+lemma digit_char_p_no_error[fp_NER]:
+  shows "\<forall>x\<in>set (print_nat i). \<not> p_is_error (print digit_char) x"
+  apply (simp add: fp_NER)
+  using print_nat_domain by force
+
+
+lemma nat_p_is_error[fp_NER]:
+  "p_is_error (print (nat_b)) i \<longleftrightarrow> False"
+  apply (auto simp add: nat_b_def transform_p_is_error many1_p_is_error digit_char_p_is_error )
+  subgoal
+    by (metis digit_chars_def in_mono list.set_sel(1) print_nat_domain print_nat_never_empty)
+  subgoal
+    using many_p_no_error[of \<open>(tl (print_nat i))\<close> digit_char]
+    apply (auto simp add: fp_NER)
+    by (meson digit_char_p_is_error digit_char_p_no_error list.set_sel(2) print_nat_never_empty)
+  done
+
+
+lemma nat_p_has_result[fp_NER]:
+  "p_has_result (print (nat_b)) i r \<longleftrightarrow> r = print_nat i"
+  apply (auto simp add: nat_b_def fp_NER)
+  oops
+
+
+
+
 end
