@@ -39,19 +39,19 @@ partial_function (parser) many_p1 :: "'a parser \<Rightarrow> 'a list parser"
   where [code]:
   "many_p1 a = ftransform_p 
                     (Some o sum_take)
-                    (if_then_else_p a (\<lambda>r. ftransform_p (Some o (#) r) (many_p1 a)) (return_p []))
+                    (if_then_else_p
+                        a
+                        (\<lambda>r. ftransform_p (Some o (#) r) (many_p1 a))
+                        (return_p []))
 "
 print_theorems
 
-find_consts "_ \<Rightarrow> 'a parser"
-
-lemma manyp_manyp1:
-  "many_p a i = many_p1 a i"
-  apply (subst many_p.simps)
-  apply (subst many_p1.simps)
-  apply (subst ftransform_p.simps)
-  apply (subst ftransform_p.simps)
-  oops
+lemma error_test:
+  "is_error (many_p1 p) i \<longleftrightarrow> False"
+  apply (auto simp add: is_error_def)
+  apply (induction rule: many_p1.fixp_induct)
+  subgoal
+    oops
   
     
   
