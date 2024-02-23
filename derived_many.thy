@@ -133,6 +133,15 @@ lemma many_p_is_error:
 )"
   by (cases rs) (clarsimp simp add: many_p_is_error_safe)+
 
+
+lemma many_p_no_error:
+  assumes "\<forall> x \<in> set i. \<not>p_is_error (print p) x"
+  shows "\<not>p_is_error (print (many p)) i"
+  using assms
+  apply (induction i)
+  by (simp_all add: many_p_is_error_safe(1, 2))
+
+
 lemma many_p_has_result_safe[fp_NER]:
   "p_has_result (print (many b)) [] r \<longleftrightarrow> r = []"
   "p_has_result (print (many b)) (e#es) r \<longleftrightarrow> (\<exists> ir ir'. ir@ir' = r \<and> p_has_result (print b) e ir \<and> p_has_result (print (many b)) es ir')"
