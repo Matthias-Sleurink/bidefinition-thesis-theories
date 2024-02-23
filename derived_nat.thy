@@ -42,20 +42,22 @@ lemma nat_is_error[NER_simps]:
   by (clarsimp simp add: NER_simps)
 
 lemma nat_has_result[NER_simps]:
-  "has_result (parse nat_b) i r l \<longleftrightarrow> i \<noteq> [] \<and> (\<exists> consumed . consumed \<noteq> [] \<and> i = consumed @ l \<and> r = (nat_from consumed) \<and> consumed = takeWhile (\<lambda>x. x\<in>digit_chars) i \<and> l = dropWhile (\<lambda>x. x\<in>digit_chars) i)"
-  unfolding nat_b_def
-  apply (auto simp add: NER_simps)
-  subgoal by (simp add: takeWhile_eq_Nil_iff)
+  "has_result (parse nat_b) i r l \<longleftrightarrow>
+        i \<noteq> [] \<and>
+        (\<exists> consumed .
+              consumed \<noteq> [] \<and>
+              consumed @ l = i \<and>
+              r = (nat_from consumed) \<and>
+              consumed = takeWhile (\<lambda>x. x\<in>digit_chars) i \<and>
+              l = dropWhile (\<lambda>x. x\<in>digit_chars) i)"
+  apply (simp only: nat_b_def NER_simps digit_char_def any_from_set_def)
+  apply auto
   subgoal
-          
-    sorry
+    using list.collapse by fastforce
   subgoal
-    
-    sorry
-  subgoal by (metis \<open>\<And>r'. \<lbrakk>r' \<noteq> []; i \<noteq> []; hd r' = hd i; hd i \<in> derived_digit_char.digit_chars; has_result (parse (many digit_char)) (tl i) (tl r') l; r = nat_from r'\<rbrakk> \<Longrightarrow> i = takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) i @ l\<close> append_eq_conv_conj dropWhile_eq_drop)
-  subgoal
-    
-    sorry
+    by (metis dropWhile.simps(2) hd_append2 list.collapse list.sel(3) takeWhile.simps(2) takeWhile_dropWhile_id)
+  done
+
 
 
 end
