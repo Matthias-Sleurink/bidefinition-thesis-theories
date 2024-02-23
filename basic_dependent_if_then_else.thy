@@ -160,6 +160,15 @@ lemma dep_if_then_else_PASI_PASI_PNGI_PASI:
   apply (simp add: PASI_def PNGI_def NER_simps split: sum.splits)
   by fastforce
 
+lemma dep_if_then_else_PASI_PNGI_PASI_PASI:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall> i. PASI (parse (a2bb i))"
+  assumes "PASI (parse cb)"
+  shows "PASI (parse (if_then_else ab a2bb cb b2a))"
+  using assms
+  apply (simp add: PASI_def PNGI_def NER_simps split: sum.splits)
+  by fastforce
+
 
 \<comment> \<open>Well Formed\<close>
 definition b2_wf_for_res_of_b1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where

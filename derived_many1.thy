@@ -64,4 +64,16 @@ lemma many1_PNGI:
   apply (rule many_PNGI)
   oops
 
+lemma many1_PASI:
+  assumes "PASI (parse p)"
+  shows "PASI (parse (many1 p))"
+  unfolding many1_def
+  apply (rule ftransform_PASI)
+  apply (rule then_PASI_from_pasi_pngi)
+  subgoal by (rule assms(1))
+  apply (rule many_PNGI)
+  by (rule assms(1))
+
+
+
 end

@@ -71,6 +71,30 @@ lemma then_PASI:
     by blast
   done
 
+lemma then_PASI_from_pasi_pngi:
+  assumes "PASI (parse ab)"
+  assumes "PNGI (parse bb)"
+  shows "PASI (parse (b_then ab bb))"
+  unfolding b_then_def
+  apply (rule dep_then_PASI_PASI_PNGI)
+  subgoal by (rule assms(1))
+  subgoal
+    apply (subst transform_PNGI[symmetric])
+    by (clarsimp simp add: assms(2))
+  done
+
+lemma then_PASI_from_pngi_pasi:
+  assumes "PNGI (parse ab)"
+  assumes "PASI (parse bb)"
+  shows "PASI (parse (b_then ab bb))"
+  unfolding b_then_def
+  apply (rule dep_then_PASI_PNGI_PASI)
+  subgoal by (rule assms(1))
+  subgoal
+    apply (subst transform_PASI[symmetric])
+    by (clarsimp simp add: assms(2))
+  done
+
 
 
 \<comment> \<open>well formed\<close>

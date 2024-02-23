@@ -76,6 +76,18 @@ lemma dep_then_PASI_PASI_PNGI:
   subgoal by (rule fail_PASI)
   done
 
+lemma dep_then_PASI_PNGI_PASI:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall>i. PASI (parse (a2bb i))"
+  shows "PASI (parse (dep_then ab a2bb b2a))"
+  unfolding dep_then_def
+  unfolding transform_PASI[symmetric, of projl Inl]
+  apply (rule dep_if_then_else_PASI_PNGI_PASI_PASI)
+  subgoal by (rule assms(1))
+  subgoal by (rule assms(2))
+  subgoal by (rule fail_PASI)
+  done
+
 
 
 \<comment> \<open>Well Formed\<close>
