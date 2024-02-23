@@ -34,6 +34,11 @@ lemma many1_result_only_if_nonempty:
   using assms
   by (simp add: NER_simps)
 
+lemma many1_no_result_if_empty:
+  shows "\<not>has_result (parse (many1 bi)) i [] l"
+  by (simp add: many1_has_result)
+
+
 
 
 \<comment> \<open>FP ner\<close>
@@ -50,6 +55,10 @@ lemma many1_p_has_result_only_if_nonempty:
   shows "i \<noteq> []"
   using assms
   by (auto simp add: fp_NER)
+
+lemma many1_p_no_result_empty:
+  shows "\<not>p_has_result (print (many1 bi)) [] r"
+  using many1_p_has_result_only_if_nonempty by blast
 
 
 
