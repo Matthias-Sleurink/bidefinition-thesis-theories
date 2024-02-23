@@ -215,33 +215,27 @@ lemma dropWhile_hd_no_match:
 
 
 \<comment> \<open>Has result for many for_predicate has some nice properties\<close>
-lemma many_char_for_predicate_has_result[NER_simps]:
-  shows "has_result (parse (many (char_for_predicate p))) i r l \<longleftrightarrow> r = takeWhile p i \<and> l = dropWhile p i"
+lemma many_char_for_predicate_has_result_forwards:
+  shows "has_result (parse (many (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i"
   apply (clarsimp simp add: many_def)
   using many0_induct[of \<open>parse (char_for_predicate p)\<close> \<open>\<lambda>i r l. (r = takeWhile p i \<and> l = dropWhile p i)\<close> i r l]
   apply (subst many0_induct[of \<open>parse (char_for_predicate p)\<close> \<open>\<lambda>i r l. (r = takeWhile p i \<and> l = dropWhile p i)\<close> i r l])
-  subgoal by (rule char_for_predicate_PASI)
-  subgoal by (auto simp add: char_for_predicate_has_result)
-  subgoal by (auto simp add: char_for_predicate_is_error dropWhile_hd_no_match takeWhile_hd_no_match)
-  subgoal
-    apply (auto simp add: NER_simps)
-    apply (induction i arbitrary: r l)
-    subgoal for r l
-      apply auto
-      
-      sorry                        
-    subgoal sorry
-    done
-  subgoal
-    apply (auto simp add: NER_simps)
-    subgoal
-      by (metis \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l\<close> append_Nil char_for_predicate_PASI list.sel(1) takeWhile_dropWhile_id takeWhile_hd_no_match)
-    subgoal
-      by (metis \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> PASI (parse (char_for_predicate p))\<close> \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l\<close> dropWhile_hd_no_match list.sel(1) takeWhile_hd_no_match)
-    subgoal
-      using \<open>(\<lbrakk>PASI (parse (char_for_predicate p)); \<And>i r l. has_result (parse (char_for_predicate p)) i r l \<longrightarrow> (\<forall>rr l'. length l < length i \<and> rr = takeWhile p l \<and> l' = dropWhile p l \<longrightarrow> r # rr = takeWhile p i \<and> l' = dropWhile p i); \<And>i. is_error (parse (char_for_predicate p)) i \<longrightarrow> [] = takeWhile p i \<and> i = dropWhile p i\<rbrakk> \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i) \<Longrightarrow> has_result (many_p (parse (char_for_predicate p))) i r l\<close> by fastforce
-    done
-  oops
+      apply (auto simp add: NER_simps char_for_predicate_PASI takeWhile_hd_no_match dropWhile_hd_no_match)
+  by fastforce
+
+lemma many_char_for_predicate_has_result_reverse:
+  shows "r = takeWhile p i \<and> l = dropWhile p i \<longrightarrow> has_result (parse (many (char_for_predicate p))) i r l"
+  apply (auto simp add: many_def)
+  apply (induction i arbitrary: r l)
+  apply (auto simp add: NER_simps many_p_has_result_when_first_parse_fails)
+  by (metis char_for_predicate_has_result fst_conv list.distinct(1) list.sel(1) many_def many_has_result_safe(2))
+
+lemma many_char_for_predicate_has_result[NER_simps]:
+  shows "has_result (parse (many (char_for_predicate p))) i r l \<longleftrightarrow> r = takeWhile p i \<and> l = dropWhile p i"
+  using many_char_for_predicate_has_result_forwards[of p i r l]
+        many_char_for_predicate_has_result_reverse[of r p i l]
+  by fast
+
 
 subsection \<open>Well formed\<close>
 lemma many_well_formed:
