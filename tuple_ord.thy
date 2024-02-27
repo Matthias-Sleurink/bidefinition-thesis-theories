@@ -16,7 +16,7 @@ definition tuple_lub :: "('a set \<Rightarrow> 'a) \<Rightarrow> (('a \<times> '
   "tuple_lub lub s = (lub (fst ` s), lub (snd ` s))"
 \<comment> \<open>Sadly, parsers and printers have a different exact type.
     But in a perfect world this may work.\<close>
-
+\<comment> \<open>Like for example we could change the types to be (str+a) => ('a+str)\<close>
 
 \<comment> \<open>Unnamed in partial function sources\<close>
 abbreviation "option_lub \<equiv> flat_lub None"
@@ -58,9 +58,6 @@ lemma partial_function_definitions_tuple_lift:
         by (smt (verit, best) A chain_imageI fst_conv g imageE lub_least snd_conv tuple_ord_def)
     qed
   qed
-      
-    
-    oops \<comment> \<open>DANGEROUS! COUNTEREXAMPLE FOUND!\<close>
 
 \<comment> \<open>Main proof for the interpretation below\<close>
 lemma bidef_tuple_pfd: "partial_function_definitions tuple_bidef_ord tuple_bidef_lub"
@@ -81,7 +78,7 @@ interpretation tuple_bidef:
 
 declaration \<open>Partial_Function.init "tuple_bidef" \<^term>\<open>tuple_bidef.fixp_fun\<close>
   \<^term>\<open>tuple_bidef.mono_body\<close> @{thm tuple_bidef.fixp_rule_uc} @{thm tuple_bidef.fixp_induct_uc}
-  (SOME @{thm fixp_induct_option})\<close> \<comment> \<open>Not sure if the fixp_induct_option rule here is good?\<close>
+  (NONE)\<close> \<comment> \<open>Not sure if the fixp_induct_option rule here is good?\<close>
 
 
 
@@ -97,12 +94,37 @@ type_synonym '\<alpha> printer = "'\<alpha> \<Rightarrow> string option"
 type_synonym '\<alpha> bidef = "('\<alpha> parser \<times> '\<alpha> printer)"
 
 \<comment> \<open>partial function fails when there are no arguments\<close>
-partial_function (tuple_bidef) test :: "'a bidef" where [code]:
-  "test = ((\<lambda>x. None), (\<lambda>x. None))"
+partial_function (tuple_bidef) test :: "unit \<Rightarrow> 'a bidef" where [code]:
+  "test _ = ((\<lambda>x. None), (\<lambda>x. None))"
 
 \<comment> \<open>Sadly, adding a dummy argument does not work since that is not in our partial_function setup\<close>
 partial_function (tuple_bidef) test :: "'dummy \<Rightarrow> 'a bidef" where [code]:
   "test _ = ((\<lambda>x. None), (\<lambda>x. None))"
+
+
+
+
+\<comment> \<open>An attempt at adding a dummy parameter, might not be usable\<close>
+
+definition "t = (\<lambda>ord a b. fun_ord ord)"
+
+
+interpretation fun_to_tuple_bidef:
+  partial_function_definitions "tuple_bidef_ord" "tuple_bidef_lub"
+  rewrites "flat_lub None {} \<equiv> None"
+ \<comment> \<open>What does this line above do? It kinda looks like it appears in the proof goal, but what does it do?\<close>
+  by (rule bidef_tuple_pfd)(simp add: flat_lub_def)
+
+
+
+declaration \<open>Partial_Function.init "fun_to_tuple_bidef" \<^term>\<open>fun_to_tuple_bidef.fixp_fun\<close>
+  \<^term>\<open>fun_to_tuple_bidef.mono_body\<close> @{thm fun_to_tuple_bidef.fixp_rule_uc} @{thm fun_to_tuple_bidef.fixp_induct_uc}
+  (SOME @{thm fixp_induct_option})\<close> \<comment> \<open>Not sure if the fixp_induct_option rule here is good?\<close>
+
+\<comment> \<open>Sadly, adding a dummy argument does not work since that is not in our partial_function setup\<close>
+partial_function (tuple_bidef) test :: "'dummy \<Rightarrow> 'a bidef" where [code]:
+  "test _ = ((\<lambda>x. None), (\<lambda>x. None))"
+
 
 
 end
