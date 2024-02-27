@@ -45,14 +45,14 @@ declaration \<open>Partial_Function.init "bidef" \<^term>\<open>bidef.fixp_fun\<
   \<^term>\<open>bidef.mono_body\<close> @{thm bidef.fixp_rule_uc} @{thm bidef.fixp_induct_uc}
   (NONE)\<close>
 
-definition fail where
-  "fail = Some ((\<lambda>i. None), (\<lambda>i. None))"
+definition fail1 where
+  "fail1 = Some ((\<lambda>i. None), (\<lambda>i. None))"
 
-definition return :: "'a \<Rightarrow> 'a bidef" where
-  "return x = Some ((\<lambda>i. Some (x, i)), (\<lambda>i. if i=x then Some [] else None))"
+definition return1 :: "'a \<Rightarrow> 'a bidef" where
+  "return1 x = Some ((\<lambda>i. Some (x, i)), (\<lambda>i. if i=x then Some [] else None))"
 
-definition if_then_else :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> '\<gamma> bidef \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> ('\<beta> + '\<gamma>) bidef" where
-  "if_then_else a a2b c b2a = ( do {
+definition if_then_else1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> '\<gamma> bidef \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> ('\<beta> + '\<gamma>) bidef" where
+  "if_then_else1 a a2b c b2a = ( do {
       p_a \<leftarrow> a; \<comment> \<open>Not sure what this means, we are supposed to create a bidef in this monad, where None means nonterm\<close>
       
       undefined
@@ -60,7 +60,6 @@ definition if_then_else :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarro
 
 
 \<comment> \<open>IDEA: We let the bidef be one function\<close>
-(*WF should also include Inl \<Rightarrow> Inl and Inr \<Rightarrow> Inr in wf*)
 type_synonym 'a bd_aux = "(string + 'a) \<Rightarrow> ((('a \<times> string)) + string) option"
 
 
@@ -181,19 +180,54 @@ ite, bind (derive?), (derive) then, else, etc
 For partial function needs a parameter, add a unit/dummy parameter
 *)
 
-\<comment> \<open>problem here, the types are all wrong. a expects a str+'a, but we get a str+('a+'c)\<close>
-\<comment> \<open>This might be resolvable, but I'll have to think about it more.\<close>
-definition ite :: "'a bd_aux \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> 'c bd_aux \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('a + 'c) bd" where
-  "ite a a2b c b2a i = (
-      case i of
-        \<comment> \<open>parsing\<close>
-        Inl l \<Rightarrow> undefined
-        \<comment> \<open>printing 'a\<close>
-      | Inr (Inl rl) \<Rightarrow> undefined
-        \<comment> \<open>printing 'c\<close>
-      | Inr (Inr rr) \<Rightarrow> c rr
+definition fail :: "'a bd" where
+  "fail = bd_bottom"
 
+definition return :: "'a \<Rightarrow> 'a bd" where
+  "return t = bdc (\<lambda>i. Some (t, i)) (\<lambda>t'. if t' = t then Some [] else None)"
+
+fun pr_map :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a parse_result \<Rightarrow>  'b parse_result" where
+  "pr_map f (pr, pl) = (f pr, pl)"
+
+fun opr_map :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a parse_result option \<Rightarrow>  'b parse_result option" where
+  "opr_map f None = None"
+| "opr_map f (Some p) = Some (pr_map f p)"
+
+fun ite_parser :: "'a parser \<Rightarrow> ('a \<Rightarrow> 'b parser) \<Rightarrow> 'c parser \<Rightarrow> ('b + 'c) parser" where
+  "ite_parser a a2b c i = (
+    case a i of
+      None \<Rightarrow> opr_map Inr (c i)
+    | Some (r, l) \<Rightarrow> opr_map Inl (a2b r l)
+  )"
+
+fun ite_printer :: "'a printer \<Rightarrow> ('a \<Rightarrow> 'b printer) \<Rightarrow> 'c printer \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b + 'c) printer" where
+  "ite_printer pa a2pb pc b2a (Inl b) = (let a = b2a b in
+    Option.bind (pa a) (\<lambda> pra.
+      Option.bind (a2pb a b) (\<lambda> prb.
+        Some (pra@prb)
+        )))"
+| "ite_printer pa a2pb pc b2a (Inr c) = (
+    pc c
 )"
+
+definition ite :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> 'c bd \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b + 'c) bd" where
+  "ite a a2b c b2a = bdc (ite_parser (parse a) (parse o a2b) (parse c)) (ite_printer (print a) (print o a2b) (print c) b2a)"
+
+definition transform :: "('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a bd \<Rightarrow> 'b bd" where
+  "transform a2b b2a bd = bdc
+                            ((opr_map a2b) o (parse bd))
+                            ((print bd) o b2a)"
+
+\<comment> \<open>or, dep_then\<close>
+definition bind :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'b bd" where
+  "bind a a2bd b2a = transform projl Inl  (ite a a2bd (fail :: unit bd) b2a)"
+
+
+
+
+
+
+
 
 
 end
