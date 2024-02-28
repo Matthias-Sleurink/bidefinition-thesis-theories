@@ -98,7 +98,6 @@ lemma bdc_aux_tuple:
   subgoal for x
     apply (cases x)
     subgoal for a
-      
       apply( cases \<open>bd x\<close>; simp; cases \<open>bd' x\<close>; simp)
         apply (auto  dest: spec[of _ a])
       by (metis option.inject option.simps(9) sum.expand)
@@ -122,7 +121,7 @@ print_theorems
 
 setup_lifting type_definition_bd
 
-lift_definition parse :: "'a bd \<Rightarrow> 'a parser" is parse_aux . 
+lift_definition parse :: "'a bd \<Rightarrow> 'a parser" is parse_aux .
 lift_definition print :: "'a bd \<Rightarrow> 'a printer" is print_aux .
 lift_definition bdc :: "'a parser \<Rightarrow> 'a printer \<Rightarrow> 'a bd" is bdc_aux by (simp add: bd_aux_wf_bdc)
 
@@ -139,8 +138,8 @@ lemma bdc'_all:
 lifting_update bd.lifting
 lifting_forget bd.lifting
 
-definition bd_bottom :: "'a bd" where
-  "bd_bottom = bdc (\<lambda>x. None) (\<lambda>x. None)"
+abbreviation bd_bottom :: "'a bd" where
+  "bd_bottom \<equiv> bdc (\<lambda>x. None) (\<lambda>x. None)"
 
 
 
@@ -171,6 +170,7 @@ declaration \<open>Partial_Function.init "bd" \<^term>\<open>bd.fixp_fun\<close>
   \<^term>\<open>bd.mono_body\<close> @{thm bd.fixp_rule_uc} @{thm bd.fixp_induct_uc}
   (NONE)\<close> (*SOME @{thm fixp_induct_option}*)
 
+
 \<comment> \<open>Define basics here\<close>
 (*
 return, fail(bottom?)
@@ -180,7 +180,7 @@ ite, bind (derive?), (derive) then, else, etc
 For partial function needs a parameter, add a unit/dummy parameter
 *)
 
-definition fail :: "'a bd" where
+definition fail :: "'x bd" where
   "fail = bd_bottom"
 
 definition return :: "'a \<Rightarrow> 'a bd" where
@@ -199,6 +199,7 @@ fun ite_parser :: "'a parser \<Rightarrow> ('a \<Rightarrow> 'b parser) \<Righta
       None \<Rightarrow> opr_map Inr (c i)
     | Some (r, l) \<Rightarrow> opr_map Inl (a2b r l)
   )"
+print_theorems
 
 fun ite_printer :: "'a printer \<Rightarrow> ('a \<Rightarrow> 'b printer) \<Rightarrow> 'c printer \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b + 'c) printer" where
   "ite_printer pa a2pb pc b2a (Inl b) = (let a = b2a b in
@@ -209,9 +210,27 @@ fun ite_printer :: "'a printer \<Rightarrow> ('a \<Rightarrow> 'b printer) \<Rig
 | "ite_printer pa a2pb pc b2a (Inr c) = (
     pc c
 )"
+print_theorems
 
 definition ite :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> 'c bd \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b + 'c) bd" where
   "ite a a2b c b2a = bdc (ite_parser (parse a) (parse o a2b) (parse c)) (ite_printer (print a) (print o a2b) (print c) b2a)"
+
+declare [[show_types]]
+lemma mono_ite[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
+  assumes mc: "mono_bd C"
+  shows "mono_bd (\<lambda>f. ite (A f) (\<lambda>y. B y f) (C f) trans_f)"
+  using assms
+  apply -
+  apply (rule monotoneI)
+  subgoal for x y
+    unfolding ite_def ite_parser.simps bdc_def bdc_aux_def monotone_def fun_ord_def flat_ord_def map_fun_def comp_def print_def parse_def print_aux_def parse_aux_def
+    apply (auto simp add: fun_eq_iff  split: option.splits sum.splits)
+    apply (cases \<open>A x\<close>; cases \<open>A y\<close>; cases \<open>C x\<close>; cases \<open>C y\<close>; clarsimp)
+    subgoal for aa ab ac ad \<comment> \<open>These are parsers and printers, sadly not the inputs\<close>
+      \<comment> \<open>The actual parameters are hidden inside the function applications, how to get out to case on?\<close>
+
 
 definition transform :: "('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a bd \<Rightarrow> 'b bd" where
   "transform a2b b2a bd = bdc
@@ -220,14 +239,66 @@ definition transform :: "('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> '
 
 \<comment> \<open>or, dep_then\<close>
 definition bind :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'b bd" where
-  "bind a a2bd b2a = transform projl Inl  (ite a a2bd (fail :: unit bd) b2a)"
+  "bind a a2bd b2a = transform projl Inl (ite a a2bd (fail :: unit bd) b2a)"
+
+definition or :: "'a bd \<Rightarrow> 'b bd \<Rightarrow> ('a + 'b) bd" where
+  "or a b = ite a return b id"
+
+definition bthen :: "'a bd \<Rightarrow> 'b bd \<Rightarrow> ('a \<times> 'b) bd"  where
+  "bthen a b = bind a (\<lambda>ar. transform (Pair ar) snd b) fst"
 
 
+fun one_char_parser :: "char parser" where
+  "one_char_parser [] = None"
+| "one_char_parser (c#cs) = Some (c, cs)"
+
+fun one_char_printer :: "char printer" where
+  "one_char_printer c = Some [c]"
+
+definition one_char :: "char bd" where
+  "one_char = bdc one_char_parser one_char_printer"
+
+definition char_if :: "(char \<Rightarrow> bool) \<Rightarrow> char bd" where
+  "char_if p = bind one_char (\<lambda>r. if p r then (return r) else (fail :: char bd)) id"
+
+definition this_char :: "char \<Rightarrow> char bd" where
+  "this_char c = char_if ((=) c)"
+
+definition in_set :: "char set \<Rightarrow> char bd" where
+  "in_set s = char_if (\<lambda>i. i \<in> s)"
+
+definition " t \<equiv> parse (in_set {CHR ''a''}) ''apple''"
+
+\<comment> \<open>NOTE: I assume that it's the lifted type here that causes issues?\<close>
+\<comment> \<open>       Show the two files to Peter to see what he thinks and if this is solvable\<close>
+value "t"
+
+export_code parse fail t  in SML
+  module_name test file f.ml
 
 
+definition eof :: "unit bd" where
+  "eof = transform
+          \<comment> \<open>Undefined here is safe since the ite below never returns a Inl\<close>
+          (\<lambda>r. case r of Inl _ \<Rightarrow> undefined | Inr () \<Rightarrow> ())
+          (Inr :: unit \<Rightarrow> (char+unit))
+          (ite one_char (\<lambda>_. fail :: char bd) (return ()) id)"
 
+fun sum_take :: "('a + 'a) \<Rightarrow> 'a" where
+  "sum_take (Inl a) = a"
+| "sum_take (Inr a) = a"
 
-
-
+\<comment> \<open>bind a (\r. bind (many a) \rr. r#rr) sounds like a great idea, but does not allow an empty list result\<close>
+partial_function (bd) many :: "'a bd \<Rightarrow> 'a list bd" where [code]:
+  "many a = transform
+              sum_take
+              Inl
+              (ite
+                a \<comment> \<open>test\<close>
+                (\<lambda>r. bind (many a) (\<lambda> rr. return (r#rr)) tl) \<comment> \<open>then\<close>
+                (return []) \<comment> \<open>else\<close>
+                (hd) \<comment> \<open>'a list \<Rightarrow> 'a (transform result of b back into result for a)\<close>
+               )
+"
 
 end

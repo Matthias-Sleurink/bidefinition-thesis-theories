@@ -6,7 +6,8 @@ begin
 definition char_for_predicate :: "(char \<Rightarrow> bool) \<Rightarrow> char bidef" where
   "char_for_predicate p = dep_then one_char (\<lambda>found. if p found then return found else fail) id"
 
-
+export_code char_for_predicate in SML
+  module_name tes
 
 \<comment> \<open>NER\<close>
 lemma char_for_predicate_is_nonterm[NER_simps]:
