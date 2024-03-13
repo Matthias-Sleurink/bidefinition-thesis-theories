@@ -406,7 +406,6 @@ fun else_printer :: "'a printer \<Rightarrow> 'b printer \<Rightarrow> ('a + 'b)
 definition belse :: "'a bd \<Rightarrow> 'b bd \<Rightarrow> ('a + 'b) bd" where
   "belse a b = bdc (else_parser (parse a) (parse b)) (else_printer (print a) (print b))"
 
-declare [[show_types]]
 lemma mono_else[partial_function_mono]:
   assumes ma: "mono_bd A"
   assumes mb: "mono_bd B"
@@ -553,6 +552,22 @@ definition transform :: "('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> '
   "transform a2b b2a bd = bdc
                             ((oopr_map a2b) o (parse bd))
                             ((print bd) o b2a)"
+
+
+declare [[show_types=false]]
+lemma mono_transform[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. transform f_trans f_trans' (A f))"
+  using assms
+  unfolding transform_def monotone_def bd_ord_def flat_ord_def fun_ord_def
+  apply (auto simp add: oopr_map_cases split: option.splits)
+  subgoal by (smt (verit, del_insts) option.simps(3))
+  subgoal by (smt (verit, ccfv_threshold) option.discI option.inject)
+  subgoal by (smt (verit, ccfv_threshold) option.distinct(1))
+  subgoal by (smt (verit, ccfv_threshold) option.discI option.inject)
+  subgoal by (smt (verit, ccfv_threshold) fst_conv option.distinct(1) option.sel)
+  subgoal by (smt (verit, del_insts) option.distinct(1) option.inject prod.inject)
+  done
 
 
 \<comment> \<open>or, dep_then\<close>
