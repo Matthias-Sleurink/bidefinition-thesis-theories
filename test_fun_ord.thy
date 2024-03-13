@@ -600,16 +600,6 @@ definition in_set :: "char set \<Rightarrow> char bd" where
 
 value "parse one_char ''apple''"
 
-definition "t \<equiv> parse (in_set {CHR ''a''}) ''apple''"
-
-\<comment> \<open>NOTE: I assume that it's the lifted type here that causes issues?\<close>
-\<comment> \<open>       Show the two files to Peter to see what he thinks and if this is solvable\<close>
-
-SML_file f.ml
-export_code t  in SML
-  module_name test file f.ml
-
-value "t"
 
 definition eof :: "unit bd" where
   "eof = transform
