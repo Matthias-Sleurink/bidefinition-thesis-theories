@@ -1,4 +1,4 @@
-theory test
+theory test_fun_ord
   imports Main 
   HOL.Partial_Function
   "HOL-Library.Monad_Syntax"
@@ -121,6 +121,9 @@ lemma bdc_eq_iff:
 lemma bd_eq_iff:
   "a = b \<longleftrightarrow> (parse a = parse b) \<and> (print a = print b)"
   using bdc'_tuple by auto
+
+definition "t1 = fun_ord"
+definition "t2 = flat_ord"
 
 interpretation bd:
   partial_function_definitions "flat_ord bd_bottom" "flat_lub bd_bottom"
@@ -272,7 +275,96 @@ lemma oopr_map_Inl_Inr_neq_iff[simp]:
   "oopr_map Inl pr1 \<noteq> oopr_map Inl pr2 \<longleftrightarrow> pr1 \<noteq> pr2"
   by auto
 
+fun else_parser :: "'a parser \<Rightarrow> 'b parser \<Rightarrow> ('a + 'b) parser" where
+  "else_parser a b i = (
+    case a i of
+      None \<Rightarrow> None
+    | Some (Some (r, l)) \<Rightarrow> Some (Some (Inl r, l))
+    | Some None \<Rightarrow> (
+        case b i of
+          None \<Rightarrow> None
+        | Some None \<Rightarrow> Some None
+        | Some (Some (r, l)) \<Rightarrow> Some (Some (Inr r, l))
+))"
 
+fun else_printer :: "'a printer \<Rightarrow> 'b printer \<Rightarrow> ('a + 'b) printer" where
+  "else_printer a b i = (
+    case i of
+      Inl l \<Rightarrow> a l
+    | Inr r \<Rightarrow> b r
+)"
+
+definition belse :: "'a bd \<Rightarrow> 'b bd \<Rightarrow> ('a + 'b) bd" where
+  "belse a b = bdc (else_parser (parse a) (parse b)) (else_printer (print a) (print b))"
+
+(*
+  assumes wfa: "\<And>f. bidef_well_formed (A f)"
+  assumes wfc: "\<And>f. bidef_well_formed (B f)"
+
+  assumes PASIA: "\<And>f. PASI (parse (A f))"
+  assumes PASIC: "\<And>f. PASI (parse (B f))"
+*)
+
+declare [[show_types]]
+lemma mono_else[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  shows "mono_bd (\<lambda>f. belse (A f) (B f))"
+  using assms
+  apply -
+  unfolding belse_def else_parser.simps else_printer.simps
+            monotone_def le_fun_def flat_ord_def fun_ord_def
+  apply (auto simp add: bdc_eq_iff fun_eq_iff)
+  subgoal sorry
+  subgoal sorry
+  subgoal 
+    apply (auto split: sum.splits option.splits)
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      \<comment> \<open>\<forall>xa. x xa = bd_bottom \<or> x xa = y xa\<close>
+      \<comment> \<open>print (B x) x2 \<noteq> print (B y) x2\<close>
+      \<comment> \<open>parse (B x) xb = None\<close>
+      \<comment> \<open>parse (A x) xb = Some (Some (a, b))\<close>
+      \<comment> \<open>goal: False\<close>
+      \<comment> \<open>connection? only through x, xb\<close>
+      sorry
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    subgoal
+      by (metis option.distinct(1) pp_bdc'(1))
+    sorry
+  subgoal 
+    apply (auto split: sum.splits)
+    subgoal by (metis pp_bdc'(2))
+    subgoal
+      \<comment> \<open>\<forall>xa. x xa = bd_bottom \<or> x xa = y xa;\<close>
+      \<comment> \<open>A x x1 != A y x1\<close>
+      \<comment> \<open>goal: B x x2 = None\<close>
+      \<comment> \<open>Only related through x.\<close>
+      sorry
+    subgoal
+      \<comment> \<open> \<forall>xa. x xa = bd_bottom \<or> x xa = y xa;\<close>
+      \<comment> \<open>print (B x) x2 \<noteq> print (B y) x2\<close>
+      \<comment> \<open>goal: print (A x) x1 = None\<close>
+      \<comment> \<open>only related to x.\<close>
+      sorry
+    subgoal
+      by (metis pp_bdc'(2))
+    done
+  oops
 
 fun ite_parser :: "'a parser \<Rightarrow> ('a \<Rightarrow> 'b parser) \<Rightarrow> 'c parser \<Rightarrow> ('b + 'c) parser" where
   "ite_parser a a2b c i = (
@@ -340,6 +432,27 @@ lemma forall_eq_schematic2:
   by blast
 
 
+declare [[show_types=false]]
+lemma mono_ite[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
+  assumes mc: "mono_bd C"
+  shows "mono_bd (\<lambda>f. ite (A f) (\<lambda>y. B y f) (C f) trans_f)"
+  using assms
+  apply -
+  unfolding ite_def
+  unfolding monotone_def 
+  apply auto
+  unfolding fun_ord_def
+  
+  
+  
+  unfolding ite_def ite_parser.simps ite_printer_cases
+            monotone_def le_fun_def flat_ord_def fun_ord_def
+  
+
+
+
 
 declare [[show_types]]
 lemma mono_ite[partial_function_mono]:
@@ -389,12 +502,22 @@ lemma mono_ite[partial_function_mono]:
       subgoal for b
         \<comment> \<open>It's requiring the result to be None here, but it's not entirely clear to me why.\<close>
         \<comment> \<open>Could it be that the flat_ord is making it hard here? Possibly we just need a fun_ord here?\<close>
+        
         apply auto
-        nitpick
+        supply [[show_types=false]]
+        apply (rule spec[of _ x])
+        
         sorry
              \<comment> \<open>not found\<close> sorry
     subgoal  \<comment> \<open>found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close>  sorry
+    subgoal for s opr s' d s''
+      apply (cases opr)
+      subgoal \<comment> \<open>opr = None\<close>
+        apply auto
+        
+        sorry
+      subgoal by (metis (no_types) option.distinct(1) option.sel pp_bdc'(1))
+             \<comment> \<open>not found\<close>  sorry
     subgoal  \<comment> \<open>not found\<close> sorry
     subgoal  \<comment> \<open>found\<close> sorry
     subgoal  \<comment> \<open>not found\<close> sorry

@@ -1,4 +1,4 @@
-theory test
+theory test_fun_ord
   imports Main 
   HOL.Partial_Function
   "HOL-Library.Monad_Syntax"
@@ -37,6 +37,7 @@ definition second :: "'a bd_aux \<Rightarrow> 'a printer" where
 fun bdc_aux :: "'a parser \<Rightarrow> 'a printer \<Rightarrow> 'a bd_aux" where
   "bdc_aux parser printer (Inl s) = map_option Inl (parser s)"
 | "bdc_aux parser printer (Inr t) = map_option Inr (printer t)"
+
 
 lemma bdc_aux_def:
   "bdc_aux parser printer = (\<lambda> Inl s \<Rightarrow> map_option Inl (parser s) | Inr t \<Rightarrow> map_option Inr (printer t))"
@@ -78,6 +79,71 @@ lemma bd_aux_wf_bdc:
   unfolding bdc_aux.simps wf_bd_aux_def
   by auto
 
+
+\<comment> \<open>a bd takes an argument and returns either the result, or terminates\<close>
+abbreviation bd_aux_ord :: "'a bd_aux \<Rightarrow> 'a bd_aux \<Rightarrow> bool" where "bd_aux_ord \<equiv> fun_ord (flat_ord None)"
+
+lemma bd_aux_ord_f_f:
+  assumes "wf_bd_aux bd"
+  assumes "wf_bd_aux bd'"
+  shows "bd_aux_ord bd bd' \<longleftrightarrow> fun_ord (flat_ord None) (first bd) (first bd') \<and> fun_ord (flat_ord None) (second bd) (second bd')"
+  using assms
+  unfolding wf_bd_aux_def
+            fun_ord_def flat_ord_def first_def second_def
+  apply auto
+  by (smt (z3) assms(1) assms(2) bdc_aux.simps(1) bdc_aux.simps(2) bdc_aux_first_second first_def second_def set_sum_sel(1) setl.cases sum.collapse(2))
+
+definition bd_aux_lub :: "'a bd_aux set \<Rightarrow> 'a bd_aux" where "bd_aux_lub = fun_lub (flat_lub None)"
+
+
+\<comment> \<open> 1. \<And>x1. \<forall>bd\<in>s. (\<forall>s r. bd (Inl s) = Some r \<longrightarrow> isl r) \<and> (\<forall>t r. bd (Inr t) = Some r \<longrightarrow> \<not> isl r) \<Longrightarrow>
+          option_lub {y. \<exists>f\<in>s. y = f (Inl x1)} =
+          map_option Inl (option_lub {y. \<exists>f\<in>s. y = map_option projl (f (Inl x1))})\<close>
+
+
+lemma map_option_trans:
+  assumes "\<forall>bd \<in> s. wf_bd_aux bd"
+  shows "{y. \<exists>f\<in>s. y = f (Inl x1)} = map_option Inl ` {y. \<exists>f\<in>s. y = map_option projl (f (Inl x1))}"
+  using assms
+  apply (auto simp add: wf_bd_aux_def)
+  by (smt (verit, best) assms bdc_aux.simps(1) bdc_aux_first_second first_def image_eqI mem_Collect_eq)+
+
+
+lemma map_option_trans2:
+  assumes "\<forall>bd \<in> s. wf_bd_aux bd"
+  shows "{y. \<exists>f\<in>s. y = f (Inr x1)} = map_option Inr ` {y. \<exists>f\<in>s. y = map_option projr (f (Inr x1))}"
+  using assms
+  apply (auto simp add: wf_bd_aux_def)
+  by (smt (verit, best) assms bdc_aux.simps(2) bdc_aux_first_second second_def image_eqI mem_Collect_eq)+
+
+lemma flat_lub_map_option:
+  assumes "Complete_Partial_Order.chain option_ord s"
+  shows "flat_lub None (map_option f ` s) = map_option f (flat_lub None s)"
+  using assms
+  by (smt (verit) chain_imageI flat_lub_in_chain flat_ord_def image_iff option.lub_upper option.simps(8))
+
+
+lemma bd_lub_componentwise:
+  assumes "Complete_Partial_Order.chain (fun_ord option_ord) s"
+  assumes "\<forall>bd \<in> s. wf_bd_aux bd"
+  shows "bd_aux_lub s = bdc_aux (fun_lub (flat_lub None) (first ` s)) (fun_lub (flat_lub None) (second ` s))"
+  unfolding wf_bd_aux_def bdc_aux_def bd_aux_lub_def
+            fun_lub_def first_def second_def
+  apply (auto simp add: fun_eq_iff map_option_trans assms(2) map_option_trans2 split: sum.splits)
+  subgoal
+    apply (subst flat_lub_map_option)
+    subgoal
+      using assms(1)
+      by (smt (verit) CollectD chain_def flat_ord_def fun_ord_def option.map_disc_iff)
+    by simp
+  subgoal 
+    apply (subst flat_lub_map_option)
+    subgoal
+      using assms(1)
+      by (smt (verit) CollectD chain_def flat_ord_def fun_ord_def option.map_disc_iff)
+    by simp
+  done
+
 typedef 'a bd = "Collect wf_bd_aux :: 'a bd_aux set"
   apply (rule exI[of _ \<open>\<lambda>x. None\<close>])
   by (simp add: wf_bd_aux_def)
@@ -88,6 +154,13 @@ setup_lifting type_definition_bd
 lift_definition parse :: "'a bd \<Rightarrow> 'a parser" is first .
 lift_definition print :: "'a bd \<Rightarrow> 'a printer" is second .
 lift_definition bdc :: "'a parser \<Rightarrow> 'a printer \<Rightarrow> 'a bd" is bdc_aux by (simp add: bd_aux_wf_bdc)
+
+
+definition bd_ord :: "'a bd \<Rightarrow> 'a bd \<Rightarrow> bool" where
+  "bd_ord bd bd' \<longleftrightarrow> fun_ord (flat_ord None) (parse bd) (parse bd') \<and> fun_ord (flat_ord None) (print bd) (print bd')"
+
+definition bd_lub :: "'a bd set \<Rightarrow> 'a bd" where
+  "bd_lub s = bdc (fun_lub (flat_lub None) (parse ` s)) (fun_lub (flat_lub None) (print ` s))"
 
 \<comment> \<open>We need to move all the stuff from the typedef and lifting below to the typedef and lifting here\<close>
 \<comment> \<open>After that we focus on making ITE, and then mono ITE, and then many0, and after that the other basics\<close>
@@ -107,12 +180,25 @@ lemma pp_bdc'[simp]:
   "print (bdc p pr) = pr"
    by (transfer; (simp_all add: bdc_first_second))+
 
+lemma test1:
+  "Abs_bd (bdc_aux a b) = bdc a b"
+  by (simp add: bdc.abs_eq)
+
+lemma bd_lub_aux_trans:
+  assumes "Complete_Partial_Order.chain (fun_ord option_ord) (Rep_bd ` s)"
+  shows "bd_lub s = Abs_bd (fun_lub (flat_lub None) (Rep_bd ` s))"
+  unfolding bd_lub_def
+  apply (subst bd_lub_componentwise[unfolded bd_aux_lub_def])
+  subgoal by (simp add: assms)
+  subgoal apply simp
+    using Rep_bd by blast
+  apply (simp add: test1)
+  apply transfer
+  by fastforce
+  
+
 lifting_update bd.lifting
 lifting_forget bd.lifting
-
-
-abbreviation bd_bottom :: "'a bd" where
-  "bd_bottom \<equiv> bdc (\<lambda>x. None) (\<lambda>x. None)"
 
 lemma bdc_eq_iff:
   "bdc a b = bdc a' b' \<longleftrightarrow> a=a' \<and> b=b'"
@@ -122,18 +208,57 @@ lemma bd_eq_iff:
   "a = b \<longleftrightarrow> (parse a = parse b) \<and> (print a = print b)"
   using bdc'_tuple by auto
 
+
+lemma bd_ord_f:
+  "bd_ord a b = fun_ord (flat_ord None) (Rep_bd a) (Rep_bd b)"
+  by (metis Rep_bd bd_aux_ord_f_f bd_ord_def mem_Collect_eq parse.rep_eq print.rep_eq)
+
+lemma partial_fun_defs_cong:
+  assumes "partial_function_definitions ord lub"
+  assumes "\<forall>c. Complete_Partial_Order.chain (ord) c \<longrightarrow> lub c = lub' c"
+  shows "partial_function_definitions ord lub'"
+proof -
+  interpret partial_function_definitions ord lub by fact
+  show ?thesis
+    apply unfold_locales
+    subgoal
+      using leq_refl by blast
+    subgoal
+      using leq_trans by blast
+    subgoal
+      using leq_antisym by blast
+    subgoal 
+      using assms(2) lub_upper by force
+    subgoal
+      using assms(2) lub_least by force
+    done
+  qed
+
 interpretation bd:
-  partial_function_definitions "flat_ord bd_bottom" "flat_lub bd_bottom"
-  rewrites "flat_lub bd_bottom {} \<equiv> bd_bottom"
-by (rule flat_interpretation)(simp add: flat_lub_def)
-                          
-abbreviation "bd_ord \<equiv> flat_ord bd_bottom"
+  partial_function_definitions "bd_ord" "bd_lub"
+  (*rewrites "bd_lub {} \<equiv> ()"*)
+  unfolding bd_ord_f \<comment> \<open>bd_aux_ord is a fun_ord\<close>
+
+  
+  
+  unfolding bd_lub_def
+  
+  using partial_fun_defs_cong bd_lub_aux_trans
+  
+  using partial_function_lift 
+  oops \<comment> \<open>Do the mono proofs before we try and do this, if it doesn't work don't do it anyways\<close>
+  
+
 abbreviation "mono_bd \<equiv> monotone (fun_ord bd_ord) bd_ord"
 
+\<comment> \<open>Old bd_ord definition\<close>
+(*
 lemma bd_ord_piecewise:
   "bd_ord a b = (parse a = (\<lambda>x. None) \<and> print a = (\<lambda>x. None) \<or> parse a = parse b \<and> print a = print b)"
   unfolding flat_ord_def
   by (simp add: bd_eq_iff)
+*)
+
 
 (*
 lemma fixp_induct_bd:
@@ -200,10 +325,10 @@ For partial function needs a parameter, add a unit/dummy parameter
 \<comment> \<open>And then use the fail' and fail = fail' () fun and lemma\<close>
 \<comment> \<open>to create the code equations for codegen.\<close>
 definition fail :: "'x bd" where [code del]:
-  "fail = bd_bottom"
+  "fail = bdc (\<lambda>_. None) (\<lambda>_. None)"
 
 fun fail' :: "unit \<Rightarrow> 'a bd" where
-  "fail' _ = bd_bottom"
+  "fail' _ = bdc (\<lambda>_. None) (\<lambda>_. None)"
 
 lemma [code_unfold]: "fail = fail' ()"
   by (simp add: fail_def)
@@ -272,7 +397,57 @@ lemma oopr_map_Inl_Inr_neq_iff[simp]:
   "oopr_map Inl pr1 \<noteq> oopr_map Inl pr2 \<longleftrightarrow> pr1 \<noteq> pr2"
   by auto
 
+fun else_parser :: "'a parser \<Rightarrow> 'b parser \<Rightarrow> ('a + 'b) parser" where
+  "else_parser a b i = (
+    case a i of
+      None \<Rightarrow> None
+    | Some (Some (r, l)) \<Rightarrow> Some (Some (Inl r, l))
+    | Some None \<Rightarrow> (
+        case b i of
+          None \<Rightarrow> None
+        | Some None \<Rightarrow> Some None
+        | Some (Some (r, l)) \<Rightarrow> Some (Some (Inr r, l))
+))"
 
+fun else_printer :: "'a printer \<Rightarrow> 'b printer \<Rightarrow> ('a + 'b) printer" where
+  "else_printer a b i = (
+    case i of
+      Inl l \<Rightarrow> a l
+    | Inr r \<Rightarrow> b r
+)"
+
+definition belse :: "'a bd \<Rightarrow> 'b bd \<Rightarrow> ('a + 'b) bd" where
+  "belse a b = bdc (else_parser (parse a) (parse b)) (else_printer (print a) (print b))"
+
+declare [[show_types]]
+lemma mono_else[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  shows "mono_bd (\<lambda>f. belse (A f) (B f))"
+  using assms
+  apply -
+  unfolding belse_def else_parser.simps else_printer.simps
+            monotone_def le_fun_def flat_ord_def fun_ord_def bd_ord_def
+  apply (auto simp add: bdc_eq_iff fun_eq_iff)
+  subgoal
+    apply (clarsimp split: option.splits)
+    apply (smt (verit, ccfv_threshold) option.distinct(1))+
+    subgoal by (smt (verit, del_insts) option.distinct(1) option.inject)
+    subgoal by (smt (verit, ccfv_threshold) option.distinct(1) option.inject)
+    subgoal by (smt option.distinct(1) option.inject)
+    subgoal by (smt (verit, ccfv_threshold) option.distinct(1) option.inject)
+    subgoal by (smt (verit, ccfv_threshold) fst_eqD option.discI option.sel snd_eqD)
+    subgoal by (smt option.distinct(1) option.inject)
+    subgoal by (smt (verit, del_insts) option.distinct(1) option.inject)
+    subgoal by (smt (verit, ccfv_threshold) option.discI option.inject)
+    subgoal by (smt (z3) fstI option.inject option.simps(3) sndI)
+    done
+  subgoal
+    apply (clarsimp split: sum.splits)
+    subgoal by blast
+    subgoal by blast
+    done
+  done
 
 fun ite_parser :: "'a parser \<Rightarrow> ('a \<Rightarrow> 'b parser) \<Rightarrow> 'c parser \<Rightarrow> ('b + 'c) parser" where
   "ite_parser a a2b c i = (
@@ -317,182 +492,76 @@ definition ite :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> 'c
 \<comment> \<open>We can use this special const case if the passed in function is not used in the parser or printer constructors\<close>
 lemma mono_bdc_const[partial_function_mono]:
   shows "mono_bd (\<lambda>f. (bdc parser printer))"
-  by (rule bd.const_mono)
-
-lemma mono_bdc[partial_function_mono]:
-  assumes "mono_bd (\<lambda>f. (bdc (parser f) (\<lambda>_. None)))"
-  assumes "mono_bd (\<lambda>f. (bdc (\<lambda>_. None) (printer f)))"
-  shows "mono_bd (\<lambda>f. (bdc (parser f) (printer f)))"
-  using assms
-  oops \<comment> \<open>There is something here, but it'd be best to escape from bdc, not use it again in the assms\<close>
-  
-lemma mono_bdc_bdc_aux[partial_function_mono]:
-  assumes "mono_bd (\<lambda>f. bdc_aux (parser f) (printer f))"
-  shows "mono_bd (\<lambda>f. bdc (parser f) (printer f))"
-  oops
-
-lemma forall_eq_schematic:
-  "(\<forall>x. t = x \<longrightarrow> F x) \<longleftrightarrow> F t"
-  by (rule simp_thms(42))
-
-lemma forall_eq_schematic2:
-  "(\<forall>x. (t = x \<longrightarrow> F x) \<and> (t = x \<longrightarrow> F2 x)) \<longleftrightarrow> (F t \<and> F2 t)"
-  by blast
-
-
-
-declare [[show_types]]
-lemma mono_ite[partial_function_mono]:
-  assumes wfa: "\<And>f. bidef_well_formed (A f)"
-  assumes wfb: "\<And>f. \<forall> i r l. has_result (parse (A f)) i r l \<longrightarrow> bidef_well_formed (B r f)"
-  assumes wfc: "\<And>f. bidef_well_formed (C f)"
-  assumes wfcpra: "\<And>f. \<forall>i it. p_has_result (print (C f)) i it \<longrightarrow> \<not>(\<exists>r l. has_result (parse (A f)) it r l)"
-  assumes wftrans: "\<And>f. \<forall> i r l r' l'. (has_result (parse (A f)) i r l \<and> has_result (parse (B r f)) l r' l') \<longrightarrow> (\<exists>t. p_has_result (print (A f)) (trans_f r') t)"
-
-
-  assumes PASIA: "\<And>f. PASI (parse (A f))"
-  assumes PASIB: "\<And>f. \<forall> i r l. has_result (parse (A f)) i r l \<longrightarrow> PASI (parse (B r f))"
-  assumes PASIC: "\<And>f. PASI (parse (C f))"
-
-  assumes ma: "mono_bd A"
-  assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
-  assumes mc: "mono_bd C"
-  shows "mono_bd (\<lambda>f. ite (A f) (\<lambda>y. B y f) (C f) trans_f)"
-  using assms
-  apply -
-  unfolding ite_def ite_parser.simps ite_printer_cases
-            monotone_def le_fun_def flat_ord_def fun_ord_def
-            bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def
-              has_result_def p_has_result_def
-            PASI_def
-  apply (clarsimp simp add: bdc_eq_iff fun_eq_iff)
-  subgoal for x y \<comment> \<open>These are the two compared functions, x is smaller than y\<close>
-    apply (auto simp add: split: option.splits)
-    apply -
-      \<comment> \<open>Sledgehammer finds solutions for 6/18 subgoals before wfcpra\<close>
-      \<comment> \<open>And the same amount after.\<close>
-      \<comment> \<open>And the same after PASI\<close>
-      \<comment> \<open>And the same after wftrans\<close>
-    
-    subgoal  \<comment> \<open>found\<close> sorry
-    subgoal  \<comment> \<open>found\<close> sorry
-    subgoal for i opr de
-      apply (cases de)
-      subgoal for a
-        apply (cases \<open>print (A x) (trans_f a)\<close>; clarsimp)
-        subgoal for opr_r
-          apply (cases opr_r; clarsimp)
-          subgoal by (metis (mono_tags, lifting) option.distinct(1) pp_bdc'(2))
-          subgoal by (metis (full_types) option.distinct(1) pp_bdc'(2))
-          done
-        done
-      subgoal for b
-        \<comment> \<open>It's requiring the result to be None here, but it's not entirely clear to me why.\<close>
-        \<comment> \<open>Could it be that the flat_ord is making it hard here? Possibly we just need a fun_ord here?\<close>
-        apply auto
-        nitpick
-        sorry
-             \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close>  sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    subgoal  \<comment> \<open>not found\<close> sorry
-    done
-  oops
-    
-
-
-declare [[show_types]]
-\<comment> \<open>supply [[show_types=false]]\<close>
-lemma mono_ite[partial_function_mono]:
-  assumes wfa: "\<And>f. bidef_well_formed (A f)"
-  assumes wfb: "\<And>f. \<forall> i r l. has_result (parse (A f)) i r l \<longrightarrow> bidef_well_formed (B r f)"
-  assumes wfc: "\<And>f. bidef_well_formed (C f)"
-  assumes ma: "mono_bd A"
-  assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
-  assumes mc: "mono_bd C"
-  shows "mono_bd (\<lambda>f. ite (A f) (\<lambda>y. B y f) (C f) trans_f)"
-  using assms
-  apply -
-  unfolding ite_def ite_parser.simps ite_printer_cases
-            monotone_def le_fun_def flat_ord_def fun_ord_def
-            bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def
-              has_result_def p_has_result_def
-  apply (auto simp add: bdc_eq_iff Let_def)
-  subgoal for x y \<comment> \<open>The two functions that are compared in LE fashion, with x being smaller\<close>
-    apply (auto simp add: fun_eq_iff)
-    subgoal for xa xaa
-      apply (cases \<open>parse (A x) xaa\<close>; clarsimp)
-      subgoal for a
-        apply (cases a; clarsimp)
-        subgoal
-          apply (cases \<open>(parse (C x) xaa)\<close>; clarsimp)
-          subgoal for aa
-            apply (cases \<open>parse (A x) xa\<close>; cases \<open>(parse (C x) xa)\<close>; clarsimp)
-            subgoal by (metis (mono_tags, lifting) option.case_eq_if option.distinct(1) pp_bdc'(1))
-            subgoal by (metis (mono_tags, lifting) option.case_eq_if option.discI pp_bdc'(1))
-            subgoal for ab
-              apply (cases ab; clarsimp; cases \<open>parse (A y) xa\<close>; clarsimp)
-              subgoal by (metis (mono_tags, lifting) oopr_map.simps(1) option.discI option.discI option.sel option.simps(4) pp_bdc'(1) pp_bdc'(1))
-              subgoal by (metis option.discI pp_bdc'(1))
-              subgoal for r xr ac
-                apply (cases \<open>(parse (B r x) xr)\<close>; clarsimp; cases ac; clarsimp)
-                subgoal apply (cases \<open>parse (C y) xa\<close>; clarsimp)
-                  by (metis option.discI pp_bdc'(1))
-                subgoal for ad xrr
-                  apply (cases \<open>parse (B ad y) xrr\<close>; clarsimp)
-                  
-                  
-                  sorry
-                subgoal
-                  by (metis option.discI option.inject pp_bdc'(1))
-                subgoal
-                  
-                done
-              done
-            sorry
-          done
-        sorry
-      done
-    done
-  oops
-
+  by (simp add: bd_ord_def flat_ord_def fun_ord_def monotoneI)
 
 lemma mono_ite[partial_function_mono]:
   assumes ma: "mono_bd A"
   assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
   assumes mc: "mono_bd C"
   shows "mono_bd (\<lambda>f. ite (A f) (\<lambda>y. B y f) (C f) trans_f)"
-  using assms
-  apply -
   unfolding ite_def monotone_def
-  apply (simp add: bd_ord_piecewise)
-  apply auto
-  subgoal for x y
-    unfolding ite_parser.simps
-    apply (auto simp add: fun_eq_iff split!: option.splits)
-      apply (auto simp add: oopr_map_cases split: option.splits)
-                        apply (metis option.distinct(1) option.sel prod.sel(1) snd_conv)
-    sorry
-    subgoal for aa
-      apply (drule spec[of _ x, THEN spec[of _ y]]) 
-      apply (auto)
+  apply clarsimp
+  apply (subst bd_ord_def)
+  apply (subst fun_ord_def)
+  apply (auto split: option.splits simp add: flat_ord_def)
+  subgoal using ma
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by (smt (verit, del_insts) option.discI)
+  subgoal using mc
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by blast
+  subgoal using ma
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by (metis option.inject option.simps(3))
+  subgoal using ma
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by (smt (verit, del_insts) option.distinct(1))
+  subgoal using ma 
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def oopr_map_cases
+    apply (auto split: option.splits)
+    by (smt (verit, ccfv_threshold) option.distinct(1) option.inject)+
+  subgoal for x' y' xa' a b aa ba using ma mb
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    proof -
+      assume "\<forall>xa. (\<forall>xb. parse (x' xa) xb = None \<or> parse (x' xa) xb = parse (y' xa) xb) \<and> (\<forall>xb. print (x' xa) xb = None \<or> print (x' xa) xb = print (y' xa) xb)"
+      assume "parse (A x') xa' = Some (Some (a, b))"
+      assume "parse (A y') xa' = Some (Some (aa, ba))"
+      assume "parse (B a x') b \<noteq> parse (B aa y') ba"
+      assume "\<forall>x y. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (y xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (y xa) xb)) \<longrightarrow> (\<forall>xa. parse (A x) xa = None \<or> parse (A x) xa = parse (A y) xa) \<and> (\<forall>xa. print (A x) xa = None \<or> print (A x) xa = print (A y) xa)"
+      assume "\<And>y. \<forall>x ya. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (ya xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (ya xa) xb)) \<longrightarrow> (\<forall>xa. parse (B y x) xa = None \<or> parse (B y x) xa = parse (B y ya) xa) \<and> (\<forall>xa. print (B y x) xa = None \<or> print (B y x) xa = print (B y ya) xa)"
+      have "B a x' \<noteq> B aa x' \<or> b \<noteq> ba \<or> parse (B a x') b = parse (B aa x') ba"
+        by force
+      thus ?thesis
+        by (smt (verit, ccfv_threshold) \<open>\<And>y. \<forall>x ya. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (ya xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (ya xa) xb)) \<longrightarrow> (\<forall>xa. parse (B y x) xa = None \<or> parse (B y x) xa = parse (B y ya) xa) \<and> (\<forall>xa. print (B y x) xa = None \<or> print (B y x) xa = print (B y ya) xa)\<close> \<open>\<forall>x y. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (y xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (y xa) xb)) \<longrightarrow> (\<forall>xa. parse (A x) xa = None \<or> parse (A x) xa = parse (A y) xa) \<and> (\<forall>xa. print (A x) xa = None \<or> print (A x) xa = print (A y) xa)\<close> \<open>\<forall>xa. (\<forall>xb. parse (x' xa) xb = None \<or> parse (x' xa) xb = parse (y' xa) xb) \<and> (\<forall>xb. print (x' xa) xb = None \<or> print (x' xa) xb = print (y' xa) xb)\<close> \<open>parse (A x') xa' = Some (Some (a, b))\<close> \<open>parse (A y') xa' = Some (Some (aa, ba))\<close> \<open>parse (B a x') b \<noteq> parse (B aa y') ba\<close> option.discI option.sel prod.inject)
+    qed
+  subgoal
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def ite_printer_cases
+    apply (auto simp add: Let_def split: sum.splits)
+    subgoal using ma[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+      apply (auto split: option.splits)
+      apply -
+      subgoal by (smt (verit, del_insts) option.simps(3))
+      subgoal by (smt (verit, ccfv_threshold) option.distinct(1))
+      subgoal by (smt (verit, ccfv_threshold) option.distinct(1))
+      subgoal by (smt (verit, ccfv_threshold) option.discI option.inject)
+      subgoal by (smt (verit, del_insts) option.discI option.inject)
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, ccfv_threshold) option.distinct(1))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, del_insts) option.distinct(1))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, ccfv_threshold) option.distinct(1) option.sel)
+      subgoal by (smt (verit, del_insts) option.inject option.simps(3))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, del_insts) option.inject option.simps(3))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (metis option.inject option.simps(3))
+      done
+    subgoal using mc[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+      by blast
+    done
+  done
 
-      apply (drule spec[of _ x])
-      apply (drule spec[of _ y])
-      thm spec[of _ x, THEN spec[of _ y]]
-      apply (drule mp)+
 
 definition transform :: "('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a bd \<Rightarrow> 'b bd" where
   "transform a2b b2a bd = bdc
