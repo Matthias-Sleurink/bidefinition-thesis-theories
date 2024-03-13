@@ -574,6 +574,13 @@ lemma mono_transform[partial_function_mono]:
 definition bind :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'b bd" where
   "bind a a2bd b2a = transform projl Inl (ite a a2bd (fail :: unit bd) b2a)"
 
+declare [[show_types=false]]
+lemma mono_bind[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
+  shows "mono_bd (\<lambda>f. bind (A f) (\<lambda>y. B y f) transf)"
+  by (simp add: bind_def mono_transform mono_ite ma mb bd.const_mono)+
+
 definition or :: "'a bd \<Rightarrow> 'b bd \<Rightarrow> ('a + 'b) bd" where
   "or a b = ite a return b id"
 
