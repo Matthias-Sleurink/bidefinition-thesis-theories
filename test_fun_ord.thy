@@ -232,50 +232,37 @@ proof -
     subgoal
       using assms(2) lub_least by force
     done
-  qed
+qed
+
+lemma bd_partial_function_definitions:
+  "partial_function_definitions bd_ord bd_lub"
+  unfolding partial_function_definitions_def
+  apply auto
+  subgoal by (simp add: bd_ord_f fun_ord_def option.leq_refl)
+  subgoal
+    unfolding bd_ord_f
+    using flat_interpretation partial_function_definitions.leq_trans partial_function_lift by fastforce
+  subgoal
+    by (meson bd_ord_def bdc'_tuple option.partial_function_definitions_axioms partial_function_definitions.leq_antisym partial_function_lift)
+  subgoal
+    unfolding bd_ord_f
+    using bd_lub_aux_trans
+    by (smt (verit) CollectD Rep_bd Rep_bd_inverse bd_aux_lub_def bd_lub_componentwise bdc.rep_eq chain_imageI imageE image_eqI option.partial_function_definitions_axioms partial_function_definitions_def partial_function_lift)
+  subgoal
+    unfolding bd_ord_f
+    using bd_lub_aux_trans
+    by (smt (verit) CollectD Rep_bd Rep_bd_inverse bd_aux_lub_def bd_lub_componentwise bdc.rep_eq chain_imageI imageE option.partial_function_definitions_axioms partial_function_definitions.lub_least partial_function_lift)
+  done
+
 
 interpretation bd:
   partial_function_definitions "bd_ord" "bd_lub"
-  (*rewrites "bd_lub {} \<equiv> ()"*)
-  unfolding bd_ord_f \<comment> \<open>bd_aux_ord is a fun_ord\<close>
-
-  
-  
-  unfolding bd_lub_def
-  
-  using partial_fun_defs_cong bd_lub_aux_trans
-  
-  using partial_function_lift 
-  oops \<comment> \<open>Do the mono proofs before we try and do this, if it doesn't work don't do it anyways\<close>
-  
+  (* rewrites "bd_lub {} \<equiv> bdc (\<lambda>_. None) (\<lambda>_. None)" *)
+  by (rule bd_partial_function_definitions)
 
 abbreviation "mono_bd \<equiv> monotone (fun_ord bd_ord) bd_ord"
 
-\<comment> \<open>Old bd_ord definition\<close>
-(*
-lemma bd_ord_piecewise:
-  "bd_ord a b = (parse a = (\<lambda>x. None) \<and> print a = (\<lambda>x. None) \<or> parse a = parse b \<and> print a = print b)"
-  unfolding flat_ord_def
-  by (simp add: bd_eq_iff)
-*)
-
-
-(*
-lemma fixp_induct_bd:
-  fixes F :: "'c \<Rightarrow> 'c" and
-    U :: "'c \<Rightarrow> 'b \<Rightarrow> 'a bd" and
-    C :: "('b \<Rightarrow> 'a bd) \<Rightarrow> 'c" and
-    P :: "'b \<Rightarrow> 'a \<Rightarrow> bool"
-  assumes mono: "\<And>x. mono_bd (\<lambda>f. U (F (C f)) x)"
-  assumes eq: "f \<equiv> C (ccpo.fixp (fun_lub (flat_lub bd_bottom)) (fun_ord bd_ord) (\<lambda>f. U (F (C f))))"
-  assumes inverse2: "\<And>f. U (C f) = f"
-  assumes step: "\<And>f x y. (\<And>x y. U f x = Some y \<Longrightarrow> P x y) \<Longrightarrow> U (F f) x = Some y \<Longrightarrow> P x y"
-  assumes defined: "U f x = Some y"
-  shows "P x y"
-  using step defined bd.fixp_induct_uc[of U F C, OF mono eq inverse2 option_admissible]
-  unfolding fun_lub_def flat_lub_def by(auto 9 2)
-*)
-
+\<comment> \<open>TODO: We don't have a fixp_induct rule.\<close>
 declaration \<open>Partial_Function.init "bd" \<^term>\<open>bd.fixp_fun\<close>
   \<^term>\<open>bd.mono_body\<close> @{thm bd.fixp_rule_uc} @{thm bd.fixp_induct_uc}
   (NONE)\<close> (*SOME @{thm fixp_induct_option}*)
