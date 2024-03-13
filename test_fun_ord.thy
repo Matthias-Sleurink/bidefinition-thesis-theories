@@ -637,8 +637,12 @@ partial_function (bd) many :: "'a bd \<Rightarrow> 'a list bd" where [code]:
                 a \<comment> \<open>test\<close>
                 (\<lambda>r. bind (many a) (\<lambda> rr. return (r#rr)) tl) \<comment> \<open>then\<close>
                 (return []) \<comment> \<open>else\<close>
-                (hd) \<comment> \<open>'a list \<Rightarrow> 'a (transform result of b back into result for a)\<close>
+                (hd) \<comment> \<open>'a list \<Rightarrow> 'a (transform result of then back into result for test)\<close>
                )
 "
+
+value "parse (many one_char) ''apple''"
+value "parse (many (this_char CHR ''a'')) ''apple''"
+value "parse ((this_char CHR ''a'')) ''apple''"
 
 end
