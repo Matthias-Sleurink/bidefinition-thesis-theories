@@ -562,11 +562,11 @@ lemma mono_ite[partial_function_mono]:
     done
   done
 
-
 definition transform :: "('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'a bd \<Rightarrow> 'b bd" where
   "transform a2b b2a bd = bdc
-                            ((opr_map a2b) o (parse bd))
+                            ((oopr_map a2b) o (parse bd))
                             ((print bd) o b2a)"
+
 
 \<comment> \<open>or, dep_then\<close>
 definition bind :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> 'b bd" where
@@ -580,11 +580,11 @@ definition bthen :: "'a bd \<Rightarrow> 'b bd \<Rightarrow> ('a \<times> 'b) bd
 
 
 fun one_char_parser :: "char parser" where
-  "one_char_parser [] = None"
-| "one_char_parser (c#cs) = Some (c, cs)"
+  "one_char_parser [] = Some None"
+| "one_char_parser (c#cs) = Some (Some (c, cs))"
 
 fun one_char_printer :: "char printer" where
-  "one_char_printer c = Some [c]"
+  "one_char_printer c = Some (Some [c])"
 
 definition one_char :: "char bd" where
   "one_char = bdc one_char_parser one_char_printer"
@@ -599,6 +599,13 @@ definition in_set :: "char set \<Rightarrow> char bd" where
   "in_set s = char_if (\<lambda>i. i \<in> s)"
 
 value "parse one_char ''apple''"
+value "parse one_char ''''"
+value "parse (in_set {CHR ''a''}) ''apple''"
+value "parse (in_set {CHR ''p''}) ''pple''"
+value "parse (in_set {CHR ''p''}) ''ple''"
+value "parse (in_set {CHR ''l''}) ''le''"
+value "parse (in_set {CHR ''e''}) ''e''"
+value "parse (in_set {CHR '' ''}) ''''"
 
 
 definition eof :: "unit bd" where
