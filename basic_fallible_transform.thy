@@ -74,6 +74,25 @@ lemma f_transform_p_has_result[fp_NER]:
   done
 
 
+\<comment> \<open>Monotone\<close>
+declare [[show_types=false]]
+lemma mono_ftransform[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. ftransform f_trans f_trans' (A f))"
+  using assms
+  unfolding ftransform_def monotone_def bd_ord_def flat_ord_def fun_ord_def
+  apply (auto split: option.splits)
+  subgoal by (smt (verit, ccfv_threshold) option.distinct(1))
+  subgoal by (smt (verit, ccfv_threshold) option.sel option.simps(3))
+  subgoal by (smt (verit, ccfv_threshold) option.discI)
+  subgoal by (smt (verit, ccfv_threshold) option.distinct(1) option.inject prod.inject)
+  subgoal by (smt (verit, del_insts) option.distinct(1))
+  subgoal by (smt (verit, ccfv_threshold) option.discI option.inject)
+  subgoal by (smt (verit, ccfv_threshold) fst_conv option.distinct(1) option.sel)
+  subgoal by (smt (verit, ccfv_threshold) option.distinct(1) option.inject prod.inject)
+  subgoal by (smt (verit, del_insts) option.distinct(1) option.inject prod.inject)
+  done
+
 
 \<comment> \<open>PNGI, PASI\<close>
 lemma ftransform_PASI:

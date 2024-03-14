@@ -368,7 +368,11 @@ declaration \<open>Partial_Function.init "bd" \<^term>\<open>bd.fixp_fun\<close>
   (NONE)\<close> (*SOME @{thm fixp_induct_option}*)
 
 
-\<comment> \<open>OLD TYPES\<close>
+lemma mono_bdc_const[partial_function_mono]:
+  shows "mono_bd (\<lambda>f. (bdc parser printer))"
+  by (simp add: bd_ord_def flat_ord_def fun_ord_def monotoneI)
+
+\<comment> \<open>Old typename fix\<close>
 type_synonym '\<alpha> bidef = "'\<alpha> bd"
 
 
