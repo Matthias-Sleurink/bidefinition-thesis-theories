@@ -11,10 +11,10 @@ fun one_char_parser :: "char parser" where
 | "one_char_parser (c#cs) = terminate_with (Some (c, cs))"
 
 fun one_char_printer :: "char printer" where
-  "one_char_printer c = Some [c]"
+  "one_char_printer c = terminate_with (Some [c])"
 
 definition one_char :: "char bidef" where
-  "one_char = (one_char_parser, one_char_printer)"
+  "one_char = bdc one_char_parser one_char_printer"
 
 
 
@@ -49,6 +49,11 @@ lemma one_char_p_is_error[fp_NER]:
   "p_is_error (print one_char) i \<longleftrightarrow> False"
   "p_is_error one_char_printer i \<longleftrightarrow> False"
   by (simp add: one_char_def p_is_error_def)+
+
+lemma one_char_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print one_char) i \<longleftrightarrow> False"
+  "p_is_nonterm one_char_printer i \<longleftrightarrow> False"
+  by (simp add: one_char_def p_is_nonterm_def)+
 
 
 
