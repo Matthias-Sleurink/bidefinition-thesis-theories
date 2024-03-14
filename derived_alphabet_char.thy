@@ -41,6 +41,10 @@ lemma alphabet_char_has_result[NER_simps]:
 
 
 \<comment> \<open>fp NER\<close>
+lemma alphabet_char_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print alphabet_char) i \<longleftrightarrow> False"
+  by (simp add: alphabet_char_def any_from_set_p_is_nonterm)
+
 lemma alphabet_char_p_is_error[fp_NER]:
   "p_is_error (print alphabet_char) i \<longleftrightarrow> i \<notin> alphabet_chars"
   by (simp add: alphabet_char_def any_from_set_p_is_error)
