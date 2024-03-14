@@ -5,10 +5,10 @@ begin
 fun return_p :: "'\<alpha> \<Rightarrow> '\<alpha> parser" where
   "return_p d i = terminate_with (Some (d, i))"
 fun return_pr :: "'\<alpha> \<Rightarrow> '\<alpha> printer" where
-  "return_pr d i = (if d=i then Some [] else None)"
+  "return_pr d i = terminate_with (if d=i then Some [] else None)"
 
 definition return :: "'\<alpha> \<Rightarrow> '\<alpha> bidef" where
-  "return d = (return_p d, return_pr d)"
+  "return d = bdc (return_p d) (return_pr d)"
 
 
 
@@ -46,6 +46,11 @@ lemma return_fp_is_error[fp_NER]:
   "p_is_error (print (return v)) v' \<longleftrightarrow> v \<noteq> v'"
   "p_is_error (return_pr v) v' \<longleftrightarrow> v \<noteq> v'"
   by (simp add: p_is_error_def return_def)+
+
+lemma return_fp_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (return v)) v' \<longleftrightarrow> False"
+  "p_is_nonterm (return_pr v) v' \<longleftrightarrow> False"
+  by (simp add: p_is_nonterm_def return_def)+
 
 
 
