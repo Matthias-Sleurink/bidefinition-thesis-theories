@@ -22,23 +22,25 @@ print_theorems
 
 
 fun m_map_pr :: "('\<alpha> \<Rightarrow> '\<beta> printer) \<Rightarrow> '\<alpha> list \<Rightarrow> '\<beta> list printer" where
-  "m_map_pr _      []     []     = Some []"
-| "m_map_pr _      []     (b#bs) = None"
-| "m_map_pr _      (a#as) []     = None"
+  "m_map_pr _      []     []     = Some (Some [])"
+| "m_map_pr _      []     (b#bs) = Some None"
+| "m_map_pr _      (a#as) []     = Some None"
 | "m_map_pr a2_bfp (a#as) (b#bs) = (
     case a2_bfp a b of
       None \<Rightarrow> None
-    | Some r \<Rightarrow> (
+    | Some None \<Rightarrow> Some None
+    | Some (Some r) \<Rightarrow> (
       case m_map_pr a2_bfp as bs of
         None \<Rightarrow> None
-      | Some rs \<Rightarrow> Some (r@rs)
+      | Some None \<Rightarrow> Some None
+      | Some (Some rs) \<Rightarrow> Some (Some (r@rs))
 ))"
 
 definition m_map :: "('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> '\<alpha> list \<Rightarrow> '\<beta> list bidef" where
-  "m_map a2b_tri as = (
-    mmap (\<lambda>a. parse (a2b_tri a)) as,
-    m_map_pr (\<lambda>a. print (a2b_tri a)) as
-)"
+  "m_map a2b_tri as = bdc
+    (mmap (\<lambda>a. parse (a2b_tri a)) as)
+    (m_map_pr (\<lambda>a. print (a2b_tri a)) as)
+"
 
 
 
@@ -99,9 +101,6 @@ lemma m_map_is_error[NER_simps]:
   "is_error (parse (m_map tc []    )) i \<longleftrightarrow> False"
   "is_error (parse (m_map tc (a#as))) i \<longleftrightarrow> is_error (parse (tc a)) i \<or>
                           (\<exists> r l. has_result (parse (tc a)) i r l \<and> is_error (parse (m_map tc as)) l)"
-  "is_error (fst   (m_map tc []    )) i \<longleftrightarrow> False"
-  "is_error (fst   (m_map tc (a#as))) i \<longleftrightarrow> is_error (parse (tc a)) i \<or>
-                          (\<exists> r l. has_result (parse (tc a)) i r l \<and> is_error (parse (m_map tc as)) l)"
   by (simp add: m_map_def is_error_def has_result_def split: option.splits)+
 
 lemma m_map_has_result[NER_simps]:
@@ -109,20 +108,14 @@ lemma m_map_has_result[NER_simps]:
   "has_result (parse (m_map tc (a#as))) i r l \<longleftrightarrow> (\<exists> r' l' rs. has_result (parse (tc a)) i r' l' \<and>
                                                         has_result (parse (m_map tc as)) l' rs l \<and>
                                                         r = r'#rs)"
-  "has_result (fst   (m_map tc []   )) i r l \<longleftrightarrow> i = l \<and> r = []"
-  "has_result (fst   (m_map tc (a#as))) i r l \<longleftrightarrow> (\<exists> r' l' rs. has_result (parse (tc a)) i r' l' \<and>
-                                                        has_result (parse (m_map tc as)) l' rs l \<and>
-                                                        r = r'#rs)"
   by (auto simp add: m_map_def has_result_def split: option.splits )+
 
 lemma m_map_has_result_same_length:
   "has_result (parse (m_map tc as)) i r l \<Longrightarrow> length as = length r"
-  "has_result (fst   (m_map tc as)) i r l \<Longrightarrow> length as = length r"
   by (induction as arbitrary: i r l) (auto simp add: NER_simps)
 
 lemma m_map_has_result_not_same_length:
   "length as \<noteq> length r \<Longrightarrow> \<not>has_result (parse (m_map tc as)) i r l"
-  "length as \<noteq> length r \<Longrightarrow> \<not>has_result (fst   (m_map tc as)) i r l"
   by (induction as arbitrary: i r l) (auto simp add: NER_simps)
 
 
@@ -146,6 +139,14 @@ lemma m_map_p_has_result[fp_NER]:
   apply (auto simp add: p_has_result_def m_map_def split: option.splits)
   by fastforce+
 
+lemma m_map_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (m_map bc [])) i \<longleftrightarrow> False"
+  "p_is_nonterm (print (m_map bc (a#as))) i \<longleftrightarrow> (\<exists>i' is ir. i = i'#is \<and>
+                                                       (p_is_nonterm (print (bc a)) i' \<or>
+                                                        (p_has_result (print (bc a)) i' ir \<and>
+                                                         p_is_nonterm (print (m_map bc as)) is)))"
+  apply (induction i)
+  by (auto simp add: m_map_def p_has_result_def p_is_nonterm_def split: option.splits)
 
 lemma m_map_p_has_result_same_length:
   "p_has_result (print (m_map bc as)) is t \<Longrightarrow> length as = length is"
@@ -153,10 +154,10 @@ lemma m_map_p_has_result_same_length:
 
 lemma m_map_pr_has_result_not_same_length:
   "length as \<noteq> length is \<Longrightarrow> \<not>p_has_result (print (m_map bc as)) is t"
-  "length as \<noteq> length is \<Longrightarrow> p_is_error (print (m_map bc as)) is"
-   apply (induction as arbitrary: \<open>is\<close> t)
+  "length as \<noteq> length is \<Longrightarrow> p_is_error (print (m_map bc as)) is \<or> p_is_nonterm (print (m_map bc as)) is"
+  apply (induction as arbitrary: \<open>is\<close> t)
      apply (auto simp add: fp_NER)
-  by (metis p_has_result_def p_is_error_def length_Cons neq_Nil_conv not_Some_eq)
+  by (metis length_Cons list.exhaust p_has_result_eq_not_is_error)
 
 
 
