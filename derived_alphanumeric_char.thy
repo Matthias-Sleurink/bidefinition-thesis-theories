@@ -41,6 +41,10 @@ lemma alphanumeric_char_has_result[NER_simps]:
 
 
 \<comment> \<open>fp NER\<close>
+lemma alphanumeric_char_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print alphanumeric_char) i \<longleftrightarrow> False"
+  by (simp add: alphanumeric_char_def any_from_set_p_is_nonterm)
+
 lemma alphanumeric_char_p_is_error[fp_NER]:
   "p_is_error (print alphanumeric_char) i \<longleftrightarrow> i \<notin> alphanumeric_chars"
   by (simp add: alphanumeric_char_def any_from_set_p_is_error)
