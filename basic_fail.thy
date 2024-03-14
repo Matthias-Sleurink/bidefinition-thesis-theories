@@ -10,9 +10,9 @@ Hence, it also never succeeds printing.
 fun fail_p :: "'\<alpha> parser" where
   "fail_p _ = terminate_with None"
 fun fail_pr :: "'\<alpha> printer" where
-  "fail_pr _ = None"
+  "fail_pr _ = terminate_with None"
 definition fail :: "'\<alpha> bidef" where
-  "fail = (fail_p, fail_pr)"
+  "fail = bdc fail_p fail_pr "
 
 
 
@@ -35,6 +35,11 @@ lemma fail_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma fail_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print fail) i \<longleftrightarrow> False"
+  "p_is_nonterm fail_pr i \<longleftrightarrow> False"
+  by (simp add: fail_def p_is_nonterm_def)+
+
 lemma fail_p_is_error[fp_NER]:
   "p_is_error (print fail) i \<longleftrightarrow> True"
   "p_is_error fail_pr      i \<longleftrightarrow> True"
