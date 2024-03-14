@@ -1,6 +1,5 @@
 theory basic_fallible_transform
   imports types
-          basic_partial_fun_for_parser
 begin
 
 
@@ -23,36 +22,16 @@ fun ftransform_p :: "('\<alpha> \<Rightarrow> '\<beta> option) \<Rightarrow> '\<
       | Some r' \<Rightarrow> Some (Some (r', l))
 ))"
 
-lemma mono_ftransform[partial_function_mono]:
-  assumes ma: "mono_parser A"
-    shows "mono_parser (\<lambda>f. ftransform_p f' (A f))"
-  using assms
-  unfolding ftransform_p.simps
-  apply -
-  apply (rule monotoneI)
-  unfolding parser_ord_def fun_ord_def flat_ord_def terminate_with_def monotone_def
-  apply (auto split: option.splits)
-  subgoal by (metis option.distinct(1)                          )
-  subgoal by (metis option.distinct(1) option.inject            )
-  subgoal by (metis option.distinct(1)                          )
-  subgoal by (metis option.distinct(1) option.inject prod.inject)
-  subgoal by (metis option.distinct(1)                          )
-  subgoal by (metis option.distinct(1) option.inject            )
-  subgoal by (metis option.distinct(1) option.sel fst_conv)
-  subgoal by (metis option.inject      option.simps(3) prod.inject)
-  subgoal by (metis option.distinct(1) option.sel snd_conv)
-  done
 
 fun ftransform_pr :: "('\<beta> \<Rightarrow> '\<alpha> option) \<Rightarrow> '\<alpha> printer \<Rightarrow> '\<beta> printer" where
-  "ftransform_pr t p i = Option.bind (t i) p"
+  "ftransform_pr t p i = (
+    case t i of
+      None \<Rightarrow> Some None
+    | Some (ti) \<Rightarrow> p ti)"
 
 
 definition ftransform :: "('\<alpha> \<Rightarrow> '\<beta> option) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha> option) \<Rightarrow> '\<alpha> bidef \<Rightarrow> '\<beta> bidef" where
-  "ftransform t t' bi = (
-    ftransform_p t (parse bi),
-    ftransform_pr t' (print bi)
-)"
-
+  "ftransform t t' bd = bdc (ftransform_p t (parse bd)) (ftransform_pr t' (print bd))"
 
 
 \<comment> \<open>NER\<close>
