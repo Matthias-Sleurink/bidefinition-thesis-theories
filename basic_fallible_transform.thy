@@ -73,6 +73,17 @@ lemma f_transform_p_has_result[fp_NER]:
   subgoal by (cases \<open>t' i\<close>) simp_all
   done
 
+lemma ftransform_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (ftransform t t' bi)) i \<longleftrightarrow> (\<exists> i'. Some i' = t' i \<and> p_is_nonterm (print bi) i')"
+  "p_is_nonterm (ftransform_pr t' p) i \<longleftrightarrow> (\<exists> i'. Some i' = t' i \<and> p_is_nonterm p i')"
+  apply (auto simp add: ftransform_def p_is_nonterm_def)
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  subgoal by (cases \<open>t' i\<close>) simp_all
+  done
+
+
 
 \<comment> \<open>Monotone\<close>
 declare [[show_types=false]]
