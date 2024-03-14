@@ -1,6 +1,5 @@
 theory basic_transform
   imports types
-          basic_partial_fun_for_parser
           basic_fallible_transform
 begin
 
@@ -9,42 +8,6 @@ Transform is the first basic definition.
 It transforms the result of a parser.
 The transformer has no access to the parser state.
 \<close>
-
-
-fun transform_p :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> '\<alpha> parser \<Rightarrow> '\<beta> parser" where
-  "transform_p t p i = (
-    case p i of
-      None \<Rightarrow> None
-    | Some None \<Rightarrow> Some None
-    | Some (Some (r,l)) \<Rightarrow> Some (Some (t r, l))
-)"
-
-lemma mono_transform[partial_function_mono]:
-  assumes ma: "mono_parser A"
-    shows "mono_parser (\<lambda>f. transform_p f' (A f))"
-  using assms
-  unfolding transform_p.simps
-  apply -
-  apply (rule monotoneI)
-  unfolding parser_ord_def fun_ord_def flat_ord_def terminate_with_def monotone_def
-  apply (auto split: option.splits)
-  apply (metis option.distinct(1)                          )
-  apply (metis option.distinct(1) option.inject            )
-  apply (metis option.distinct(1)                          )
-  apply (metis option.distinct(1) option.inject            )
-  apply (metis option.distinct(1) option.inject prod.inject)
-  apply (metis option.distinct(1) option.inject prod.inject)
-  done
-
-fun transform_pr :: "('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> printer \<Rightarrow> '\<beta> printer" where
-  "transform_pr t p i = p (t i)"
-
-
-definition transform_old :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> '\<beta> bidef" where
-  "transform_old t t' bi = (
-    transform_p t (parse bi),
-    transform_pr t' (print bi)
-)"
 
 definition transform :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> '\<beta> bidef" where
   "transform t t' bi = ftransform (Some o t) (Some o t') bi"
@@ -74,6 +37,20 @@ lemma transform_p_has_result[fp_NER]:
 lemma transform_p_is_error[fp_NER]:
   "p_is_error (print (transform f f' b)) i \<longleftrightarrow> p_is_error (print b) (f' i)"
   by (simp add: transform_def fp_NER)
+
+lemma transform_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (transform f f' b)) i \<longleftrightarrow> p_is_nonterm (print b) (f' i)"
+  by (simp add: transform_def fp_NER)
+
+
+\<comment> \<open>Monotone\<close>
+declare [[show_types=false]]
+lemma mono_transform[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. transform f_trans f_trans' (A f))"
+  unfolding transform_def
+  apply (rule mono_ftransform)
+  by fact
 
 
 
