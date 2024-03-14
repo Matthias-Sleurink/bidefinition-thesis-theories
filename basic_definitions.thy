@@ -47,9 +47,10 @@ My hope is that this will improve startup times,
 
 \<close>
 
+\<comment> \<open>This should not be needed since const_mono should be able to do this. \<close>
 lemma return_mono[partial_function_mono]:
-  shows "\<forall>i. mono_parser (\<lambda>f. return_p i)"
-  by (simp add: monotoneI parser.leq_refl)
+  shows "\<forall>i. mono_bd (\<lambda>f. return i)"
+  by (simp add: bd.const_mono)
 
 
 
