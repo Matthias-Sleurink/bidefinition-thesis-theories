@@ -1,6 +1,5 @@
 theory basic_dependent_if_then_else
   imports types
-          basic_partial_fun_for_parser
           basic_transform
 begin
 
@@ -11,101 +10,135 @@ text \<open>This is the second base combinator.
       The result is a sum type with result of either the second or the third parser.
       An assumption is that the result of the first parser can be re-created from the result of the second.
 \<close>
-fun if_then_else_p :: "'\<alpha> parser \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> parser) \<Rightarrow> '\<gamma> parser \<Rightarrow> ('\<beta> + '\<gamma>) parser" where
-  "if_then_else_p ap a2bp cp i = (
-    case ap i of
-      None \<Rightarrow> None \<comment> \<open>a is nonterm\<close>
-    | Some None \<Rightarrow> (ftransform_p ((Some o Inr) :: '\<gamma> \<Rightarrow> ('\<beta> + '\<gamma>) option) cp i)\<comment> \<open>a fails, run c\<close>
-    | Some (Some (ar, al)) \<Rightarrow> ( \<comment> \<open>a succeeds, create b and run it.\<close>
-        ftransform_p ((Some o Inl) :: '\<beta> \<Rightarrow> ('\<beta> + '\<gamma>) option) (a2bp ar) al)
-)"
 
-\<comment> \<open>I've not used the monotone ftransform_p proof in here anywhere.
-    I assume that this proof would be easier if we had.\<close>
-lemma mono_if_then_else[partial_function_mono]:
-  assumes ma: "mono_parser A"
-  assumes mb: "mono_parser C"
-  assumes mg: "\<And>y. mono_parser (\<lambda>f. B y f)"
-    shows "mono_parser (\<lambda>f. if_then_else_p (A f) (\<lambda>y. B y f) (C f))"
-  using assms
-  unfolding if_then_else_p.simps
-  apply -
-  apply (rule monotoneI)
-  unfolding parser_ord_def fun_ord_def flat_ord_def terminate_with_def monotone_def
-  apply clarsimp
-  \<comment> \<open>We cannot do all the cases at once in this clarsimp,
-      as adding split: option.splits here makes 120+ subgoals\<close>
-  subgoal for x y xa
-    apply (cases \<open>A x xa\<close>)
-    subgoal by simp
-    subgoal for a
-      apply (cases a)
-      subgoal
-        by (smt (verit) ftransform_p.simps option.case_eq_if option.sel)
-      subgoal for aa
-        apply (cases aa)
-        apply (clarsimp split: option.splits)
-        subgoal by (metis option.distinct(1))
-        subgoal by (metis option.distinct(1))
-        subgoal by (metis option.distinct(1) option.inject)
-        subgoal by (metis option.distinct(1) option.sel)
-        subgoal by (metis option.distinct(1) option.sel)
-        subgoal by (metis option.distinct(1) option.inject)
-        subgoal by (metis option.distinct(1) option.sel)
-        subgoal by (metis fst_conv option.distinct(1) option.sel snd_conv)
-        subgoal by (metis (no_types, opaque_lifting) not_None_eq old.prod.inject option.inject)
-        subgoal by (metis fst_conv option.distinct(1) option.sel snd_conv)
-        subgoal by (metis (no_types, lifting) fst_conv option.distinct(1) option.sel snd_conv)
-        subgoal 
-          apply (auto split: prod.splits)
-          by (metis (no_types, opaque_lifting) not_None_eq old.prod.inject option.inject)+
-        done
-      done
+\<comment> \<open>Some util functions\<close>
+
+fun pr_map :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a parse_result \<Rightarrow>  'b parse_result" where
+  "pr_map f (pr, pl) = (f pr, pl)"
+
+fun opr_map :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a parse_result option \<Rightarrow>  'b parse_result option" where
+  "opr_map f None = None"
+| "opr_map f (Some p) = Some (pr_map f p)"
+
+lemma opr_map_cases:
+  "opr_map f i = (case i of None \<Rightarrow> None | (Some p) \<Rightarrow> Some (pr_map f p))"
+  by (cases i) simp_all
+
+fun oopr_map :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a parse_result option option \<Rightarrow> 'b parse_result option option" where
+  "oopr_map f None = None"
+| "oopr_map f (Some r) = Some (opr_map f r)"
+
+lemma oopr_map_cases:
+  "oopr_map f i = (
+    case i of
+      None \<Rightarrow> None
+    | (Some None) \<Rightarrow> Some None
+    | (Some (Some p)) \<Rightarrow> Some (Some (pr_map f p)))"
+  by (auto split: option.splits)
+
+lemma oopr_simps[simp]:
+  "oopr_map f pr = None \<longleftrightarrow> pr = None"
+  "oopr_map f pr = Some None \<longleftrightarrow> pr = Some None"
+  "None \<noteq> oopr_map f pr \<longleftrightarrow> pr \<noteq> None"
+  "Some None \<noteq> oopr_map f pr \<longleftrightarrow> pr \<noteq> Some None"
+  subgoal using oopr_map.elims by auto
+  subgoal using oopr_map.elims by force
+  subgoal using oopr_map.elims by fastforce
+  subgoal using \<open>(oopr_map f pr = Some None) = (pr = Some None)\<close> by fastforce
+  done
+
+lemma oopr_map_eq_iff[simp]:
+  "oopr_map f1 None = oopr_map f2 None"
+  "oopr_map f1 (Some None) = oopr_map f2 (Some None)"
+  "oopr_map f1 (Some (Some (r1, l1))) = oopr_map f2 (Some (Some (r2, l2))) \<longleftrightarrow> (f1 r1, l1) = (f2 r2, l2)"
+  by auto
+
+lemma oopr_map_Inl_Inr_eq_iff[simp]:
+  "oopr_map Inr pr1 = oopr_map Inr pr2 \<longleftrightarrow> pr1 = pr2"
+  "oopr_map Inl pr1 = oopr_map Inl pr2 \<longleftrightarrow> pr1 = pr2"
+  subgoal
+    apply (cases pr1; cases pr2; clarsimp)
+    subgoal for r1 r2
+      by (cases r1; cases r2; clarsimp)
+    done
+  subgoal
+    apply (cases pr1; cases pr2; clarsimp)
+    subgoal for r1 r2
+      by (cases r1; cases r2; clarsimp)
     done
   done
 
+lemma oopr_map_Inl_Inr_neq_iff[simp]:
+  "oopr_map Inr pr1 \<noteq> oopr_map Inr pr2 \<longleftrightarrow> pr1 \<noteq> pr2"
+  "oopr_map Inl pr1 \<noteq> oopr_map Inl pr2 \<longleftrightarrow> pr1 \<noteq> pr2"
+  by auto
 
-fun if_then_else_pr :: "'\<alpha> printer \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> printer) \<Rightarrow> '\<gamma> printer \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> ('\<beta> + '\<gamma>) printer" where
-  "if_then_else_pr ap a2bp cp b2a (Inl b) = (let a = b2a b in (
-      case ap a of
-        None \<Rightarrow> None
-      | Some at \<Rightarrow> (
-          case a2bp a b of
-            None \<Rightarrow> None
-          | Some bt \<Rightarrow> Some (at@bt))))"
-| "if_then_else_pr ap a2bp cp b2a (Inr c) = cp c"
+\<comment> \<open>The actual bidef\<close>
 
-definition if_then_else :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> '\<gamma> bidef \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> ('\<beta> + '\<gamma>) bidef" where
-  "if_then_else ab a2bb cb b2a = (
-    if_then_else_p (parse ab) (\<lambda> a . parse (a2bb a)) (parse cb),
-    if_then_else_pr (print ab) (\<lambda> a . print (a2bb a)) (print cb) b2a
+fun ite_parser :: "'a parser \<Rightarrow> ('a \<Rightarrow> 'b parser) \<Rightarrow> 'c parser \<Rightarrow> ('b + 'c) parser" where
+  "ite_parser a a2b c i = (
+    case a i of
+      None \<Rightarrow> None \<comment> \<open>Nonterm of a, nonterm the whole thing\<close>
+    | Some (None) \<Rightarrow> oopr_map Inr (c i) \<comment> \<open>Failure of a, run c\<close>
+    | Some (Some (r, l)) \<Rightarrow> oopr_map Inl (a2b r l) \<comment> \<open>Success of a, create and run b\<close>
+  )"
+
+fun ite_printer :: "'a printer \<Rightarrow> ('a \<Rightarrow> 'b printer) \<Rightarrow> 'c printer \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b + 'c) printer" where
+  "ite_printer pa a2pb pc b2a (Inl b) = (let a = b2a b in
+    case pa a of
+      None \<Rightarrow> None \<comment> \<open>Nonterm\<close>
+    | Some None \<Rightarrow> Some None \<comment> \<open>Failure\<close>
+    | Some (Some r) \<Rightarrow> ( case a2pb a b of
+        None \<Rightarrow> None \<comment> \<open>Nonterm\<close>
+      | Some None \<Rightarrow> Some None \<comment> \<open>Failure\<close>
+      | Some (Some r') \<Rightarrow> Some ( Some (r@r'))
+))"
+| "ite_printer pa a2pb pc b2a (Inr c) = (
+    pc c
 )"
+
+lemma ite_printer_cases:
+  "ite_printer pa a2pb pc b2a i = (case i of
+  Inr c \<Rightarrow> pc c
+| Inl b \<Rightarrow> (let a = b2a b in
+    case pa a of
+      None \<Rightarrow> None \<comment> \<open>Nonterm\<close>
+    | Some None \<Rightarrow> Some None \<comment> \<open>Failure\<close>
+    | Some (Some r) \<Rightarrow> ( case a2pb a b of
+        None \<Rightarrow> None \<comment> \<open>Nonterm\<close>
+      | Some None \<Rightarrow> Some None \<comment> \<open>Failure\<close>
+      | Some (Some r') \<Rightarrow> Some ( Some (r@r')))))"
+  by (auto split: sum.splits)
+
+definition if_then_else :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Rightarrow> 'c bd \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b + 'c) bd" where
+  "if_then_else a a2b c b2a = bdc (ite_parser (parse a) (parse o a2b) (parse c)) (ite_printer (print a) (print o a2b) (print c) b2a)"
+
 
 
 \<comment> \<open>NER\<close>
 lemma if_then_else_is_nonterm[NER_simps]:
   "is_nonterm (parse (if_then_else ab a2bb cb b2a)) i \<longleftrightarrow> is_nonterm (parse ab) i \<or> (\<exists> r l. has_result (parse ab) i r l \<and> is_nonterm (parse (a2bb r)) l) \<or> (is_error (parse ab) i \<and> is_nonterm (parse cb) i)"
-  "is_nonterm (if_then_else_p ap a2bp cp)           i \<longleftrightarrow> is_nonterm ap i         \<or> (\<exists> r l. has_result ap i r l         \<and> is_nonterm (a2bp r) l)         \<or> (is_error ap i         \<and> is_nonterm cp i)"
+  "is_nonterm (ite_parser ap a2bp cp)           i \<longleftrightarrow> is_nonterm ap i         \<or> (\<exists> r l. has_result ap i r l         \<and> is_nonterm (a2bp r) l)         \<or> (is_error ap i         \<and> is_nonterm cp i)"
   by (simp add: if_then_else_def is_nonterm_def has_result_def is_error_def split: option.splits)+
 
 lemma if_then_else_is_error[NER_simps]:
   "is_error (parse (if_then_else ab a2bb cb b2a)) i \<longleftrightarrow> (is_error (parse ab) i \<and> is_error (parse cb) i) \<or> (\<exists> r l. has_result (parse ab) i r l \<and> is_error (parse (a2bb r)) l)"
-  "is_error (if_then_else_p ap a2bp cp)           i \<longleftrightarrow> (is_error ap i         \<and> is_error cp i)         \<or> (\<exists> r l. has_result ap i r l         \<and> is_error (a2bp r) l)"
+  "is_error (ite_parser ap a2bp cp)           i \<longleftrightarrow> (is_error ap i         \<and> is_error cp i)         \<or> (\<exists> r l. has_result ap i r l         \<and> is_error (a2bp r) l)"
   by (simp add: if_then_else_def is_error_def has_result_def split: option.splits)+
 
 lemma if_then_else_has_result[NER_simps]:
   "has_result (parse (if_then_else ab a2bb cb b2a)) i (Inl lr) l \<longleftrightarrow> (\<exists> ar al. has_result (parse ab) i ar al \<and> has_result (parse (a2bb ar)) al lr l)"
   "has_result (parse (if_then_else ab a2bb cb b2a)) i (Inr rr) l \<longleftrightarrow> is_error (parse ab) i \<and> has_result (parse cb) i rr l"
-  "has_result (if_then_else_p ap a2bp cp) i (Inl lr) l \<longleftrightarrow> (\<exists> ar al. has_result ap i ar al \<and> has_result (a2bp ar) al lr l)"
-  "has_result (if_then_else_p ap a2bp cp) i (Inr rr) l \<longleftrightarrow> is_error ap i \<and> has_result cp i rr l"
-  by (simp add: if_then_else_def is_error_def has_result_def split: option.splits)+
+  "has_result (ite_parser ap a2bp cp) i (Inl lr) l \<longleftrightarrow> (\<exists> ar al. has_result ap i ar al \<and> has_result (a2bp ar) al lr l)"
+  "has_result (ite_parser ap a2bp cp) i (Inr rr) l \<longleftrightarrow> is_error ap i \<and> has_result cp i rr l"
+  by (simp add: if_then_else_def has_result_def is_error_def oopr_map_cases split: option.splits)+
 
 lemma if_then_else_has_result_no_split[NER_simps]:
   "has_result (parse (if_then_else ab a2bb cb b2a)) i r l \<longleftrightarrow> (
       case r of
         Inl lr \<Rightarrow> (\<exists> ar al. has_result (parse ab) i ar al \<and> has_result (parse (a2bb ar)) al lr l)
       | Inr rr \<Rightarrow> (is_error (parse ab) i \<and> has_result (parse cb) i rr l))"
-  "has_result (if_then_else_p ap a2bp cp) i r l \<longleftrightarrow> (
+  "has_result (ite_parser ap a2bp cp) i r l \<longleftrightarrow> (
       case r of
         Inl lr \<Rightarrow> (\<exists> ar al. has_result ap i ar al \<and> has_result (a2bp ar) al lr l)
       | Inr rr \<Rightarrow> (is_error ap i \<and> has_result cp i rr l))"
@@ -114,21 +147,28 @@ lemma if_then_else_has_result_no_split[NER_simps]:
 
 \<comment> \<open>FP NER\<close>
 lemma if_then_else_p_is_error[fp_NER]:
-  "p_is_error (print (if_then_else ab a2bb cb b2a)) (Inl lr) \<longleftrightarrow> (let a = b2a lr in (p_is_error (print ab) a \<or> p_is_error (print (a2bb a)) lr))"
+  "p_is_error (print (if_then_else ab a2bb cb b2a)) (Inl lr) \<longleftrightarrow> (let a = b2a lr in (p_is_error (print ab) a \<or> (\<not>p_is_nonterm (print ab) a \<and> p_is_error (print (a2bb a)) lr)))"
   "p_is_error (print (if_then_else ab a2bb cb b2a)) (Inr rr) \<longleftrightarrow> p_is_error (print cb) rr"
 
-  "p_is_error (if_then_else_pr ap a2bp cp b2a) (Inl lr) \<longleftrightarrow> (let a = b2a lr in (p_is_error ap a \<or> p_is_error (a2bp a) lr))"
-  "p_is_error (if_then_else_pr ap a2bp cp b2a) (Inr rr) \<longleftrightarrow> p_is_error cp rr"
-
-  by (simp add: if_then_else_def p_is_error_def Let_def split: option.splits)+
+  "p_is_error (ite_printer ap a2bp cp b2a) (Inl lr) \<longleftrightarrow> (let a = b2a lr in (p_is_error ap a \<or> (\<not>p_is_nonterm ap a \<and> p_is_error (a2bp a) lr)))"
+  "p_is_error (ite_printer ap a2bp cp b2a) (Inr rr) \<longleftrightarrow> p_is_error cp rr"
+  by (auto simp add: if_then_else_def ite_printer_cases p_is_error_def p_is_nonterm_def Let_def split: option.splits)
 
 lemma if_then_else_p_has_result[fp_NER]:
   "p_has_result (print (if_then_else ab a2bb cb b2a)) (Inl lr) str \<longleftrightarrow> (\<exists> astr bstr. str = astr@bstr \<and> (let a = b2a lr in (p_has_result (print ab) a astr \<and> p_has_result (print (a2bb a)) lr bstr)))"
   "p_has_result (print (if_then_else ab a2bb cb b2a)) (Inr rr) str \<longleftrightarrow> p_has_result (print cb) rr str"
 
-  "p_has_result (if_then_else_pr ap a2bp cp b2a) (Inl lr) str \<longleftrightarrow> (\<exists> astr bstr. str = astr@bstr \<and> (let a = b2a lr in (p_has_result ap a astr \<and> p_has_result (a2bp a) lr bstr)))"
-  "p_has_result (if_then_else_pr ap a2bp cp b2a) (Inr rr) str \<longleftrightarrow> p_has_result cp rr str"
-  by (auto simp add: if_then_else_def p_has_result_def Let_def split: option.splits)+
+  "p_has_result (ite_printer ap a2bp cp b2a) (Inl lr) str \<longleftrightarrow> (\<exists> astr bstr. str = astr@bstr \<and> (let a = b2a lr in (p_has_result ap a astr \<and> p_has_result (a2bp a) lr bstr)))"
+  "p_has_result (ite_printer ap a2bp cp b2a) (Inr rr) str \<longleftrightarrow> p_has_result cp rr str"
+  by (auto simp add: if_then_else_def p_has_result_def Let_def split: option.splits)
+
+lemma if_then_else_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (if_then_else ab a2bb cb b2a)) (Inl lr) \<longleftrightarrow> (let a = b2a lr in (p_is_nonterm (print ab) a \<or> (\<not>p_is_error (print ab) a \<and> p_is_nonterm (print (a2bb a)) lr)))"
+  "p_is_nonterm (print (if_then_else ab a2bb cb b2a)) (Inr rr) \<longleftrightarrow> p_is_nonterm (print cb) rr"
+
+  "p_is_nonterm (ite_printer ap a2bp cp b2a) (Inl lr) \<longleftrightarrow> (let a = b2a lr in (p_is_nonterm ap a \<or> (\<not>p_is_error ap a \<and> p_is_nonterm (a2bp a) lr)))"
+  "p_is_nonterm (ite_printer ap a2bp cp b2a) (Inr rr) \<longleftrightarrow> p_is_nonterm cp rr"
+  by (auto simp add: if_then_else_def ite_printer_cases p_is_error_def p_is_nonterm_def Let_def split: option.splits)
 
 
 
