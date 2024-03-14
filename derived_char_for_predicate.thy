@@ -28,6 +28,10 @@ lemma char_for_predicate_has_result[NER_simps]:
 
 
 \<comment> \<open>fp NER\<close>
+lemma char_for_predicate_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (char_for_predicate p)) i \<longleftrightarrow> False"
+  by (simp add: char_for_predicate_def fp_NER)
+
 lemma char_for_predicate_p_is_error[fp_NER]:
   "p_is_error (print (char_for_predicate p)) i \<longleftrightarrow> \<not>p i"
   by (simp add: char_for_predicate_def fp_NER)
