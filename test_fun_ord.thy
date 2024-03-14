@@ -267,12 +267,25 @@ declaration \<open>Partial_Function.init "bd" \<^term>\<open>bd.fixp_fun\<close>
   \<^term>\<open>bd.mono_body\<close> @{thm bd.fixp_rule_uc} @{thm bd.fixp_induct_uc}
   (NONE)\<close> (*SOME @{thm fixp_induct_option}*)
 
+definition is_nonterm :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> bool" where
+  "is_nonterm p i \<longleftrightarrow> p i = None"
+
+definition is_error :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> bool" where
+  "is_error p i \<longleftrightarrow> p i = Some None"
 
 definition has_result :: "'a parser \<Rightarrow> string \<Rightarrow> 'a \<Rightarrow> string \<Rightarrow> bool" where
   "has_result p i r l \<longleftrightarrow> p i = Some (Some (r, l))"
 
+
+definition p_is_nonterm :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow> bool" where
+  "p_is_nonterm fp v \<longleftrightarrow> fp v = None"
+
+definition p_is_error :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow> bool" where
+  "p_is_error fp v \<longleftrightarrow> fp v = Some None"
+
 definition p_has_result :: "'a printer \<Rightarrow> 'a \<Rightarrow> string \<Rightarrow> bool" where
   "p_has_result p i r \<longleftrightarrow> p i = Some (Some r)"
+
 
 definition parser_can_parse_print_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
   "parser_can_parse_print_result par pri \<longleftrightarrow>
@@ -312,13 +325,29 @@ For partial function needs a parameter, add a unit/dummy parameter
 \<comment> \<open>And then use the fail' and fail = fail' () fun and lemma\<close>
 \<comment> \<open>to create the code equations for codegen.\<close>
 definition fail :: "'x bd" where [code del]:
-  "fail = bdc (\<lambda>_. None) (\<lambda>_. None)"
+  "fail = bdc (\<lambda>_. Some None) (\<lambda>_. Some None)"
 
 fun fail' :: "unit \<Rightarrow> 'a bd" where
-  "fail' _ = bdc (\<lambda>_. None) (\<lambda>_. None)"
+  "fail' _ = bdc (\<lambda>_. Some None) (\<lambda>_. Some None)"
 
 lemma [code_unfold]: "fail = fail' ()"
   by (simp add: fail_def)
+
+lemma fail_has_result:
+  "has_result (parse fail) i r l \<longleftrightarrow> False"
+  unfolding fail_def has_result_def pp_bdc'(1)
+  by simp
+
+lemma fail_is_error:
+  "is_error (parse fail) i \<longleftrightarrow> True"
+  unfolding fail_def is_error_def pp_bdc'(1)
+  by simp
+
+lemma fail_is_nonterm:
+  "is_nonterm (parse fail) i \<longleftrightarrow> False"
+  unfolding fail_def is_nonterm_def pp_bdc'(1)
+  by simp
+
 
 
 definition return :: "'a \<Rightarrow> 'a bd" where
