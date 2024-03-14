@@ -17,14 +17,15 @@ fun peek_pr :: "'\<alpha> printer \<Rightarrow> '\<alpha> printer" where
   "peek_pr pr i = (
     case pr i of
       None \<Rightarrow> None
-    | Some r \<Rightarrow> Some [] \<comment> \<open>print nothing since peek does not consume anything.\<close>
+    | Some None \<Rightarrow> Some None
+    | Some (Some r) \<Rightarrow> Some (Some []) \<comment> \<open>print nothing since peek does not consume anything.\<close>
 )"
 
 definition peek :: "'\<alpha> bidef \<Rightarrow> '\<alpha> bidef" where
-  "peek b = (
-    peek_p (parse b),
-    peek_pr (print b)
-)"
+  "peek b = bdc
+    (peek_p (parse b))
+    (peek_pr (print b))
+"
 
 
 
@@ -61,6 +62,10 @@ lemma peek_p_has_result[fp_NER]:
   "p_has_result (peek_pr p)      v t \<longleftrightarrow> t=[] \<and> (\<exists> t'. p_has_result p         v t')"
   by (auto simp add: peek_def p_has_result_def split: option.splits)
 
+lemma peek_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (peek b)) v \<longleftrightarrow> p_is_nonterm (print b) v"
+  "p_is_nonterm (peek_pr p) v \<longleftrightarrow> p_is_nonterm p v"
+  by (auto simp add: peek_def p_is_nonterm_def split: option.splits)
 
 
 \<comment> \<open>PNGI, PASI\<close>
