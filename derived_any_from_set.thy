@@ -31,6 +31,11 @@ lemma any_from_set_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma any_from_set_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (any_from_set s)) i \<longleftrightarrow> False"
+  unfolding any_from_set_def
+  by (simp add: fp_NER)
+
 lemma any_from_set_p_is_error[fp_NER]:
   "p_is_error (print (any_from_set s)) i \<longleftrightarrow> i \<notin> s"
   unfolding any_from_set_def
