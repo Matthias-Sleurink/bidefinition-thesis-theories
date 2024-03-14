@@ -26,9 +26,14 @@ lemma dep_then_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma dep_then_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (dep_then ab a2bb b2a)) b \<longleftrightarrow> (
+        let a = b2a b in p_is_nonterm (print ab) a \<or> (\<not>p_is_error (print ab) a \<and> p_is_nonterm (print (a2bb a)) b))"
+  by (simp add: dep_then_def fp_NER)
+
 lemma dep_then_p_is_error[fp_NER]:
   "p_is_error (print (dep_then ab a2bb b2a)) b \<longleftrightarrow> (
-        let a = b2a b in p_is_error (print ab) a \<or> p_is_error (print (a2bb a)) b)"
+        let a = b2a b in p_is_error (print ab) a \<or> (\<not>p_is_nonterm (print ab) a \<and> p_is_error (print (a2bb a)) b))"
   by (simp add: dep_then_def fp_NER)
 
 lemma dep_then_p_has_result[fp_NER]:
