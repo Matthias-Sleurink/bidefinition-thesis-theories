@@ -1,9 +1,8 @@
 theory types
   imports Main
+          HOL.Partial_Function
           "HOL-Eisbach.Eisbach" \<comment> \<open>For the method bidef_init\<close>
 begin
-
-\<comment> \<open>MARK TO MAKE PRE-CHANGE COMMIT\<close>
 
 section \<open>Introduction\<close>
 text  \<open>
@@ -99,14 +98,17 @@ lemma bind_has_result[NER_simps]:
 
 
 section \<open>Types for the printer\<close>
-type_synonym '\<alpha> printer = "'\<alpha> \<Rightarrow> string option"
+type_synonym '\<alpha> printer = "'\<alpha> \<Rightarrow> string option option"
 
 section \<open>FP NER\<close>
 definition p_has_result :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow> string \<Rightarrow> bool" where
-  "p_has_result fp v s \<longleftrightarrow> fp v = Some s"
+  "p_has_result fp v s \<longleftrightarrow> fp v = Some (Some s)"
 
 definition p_is_error :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow> bool" where
-  "p_is_error fp v \<longleftrightarrow> fp v = None"
+  "p_is_error fp v \<longleftrightarrow> fp v = Some None"
+
+definition p_is_nonterm :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarrow> bool" where
+  "p_is_nonterm fp v \<longleftrightarrow> fp v = None"
 
 named_theorems fp_NER
 
@@ -121,18 +123,253 @@ lemma p_is_error_impl_not_result:
   by simp
 
 lemma p_has_result_eq_not_is_error:
-  "(\<exists> s. p_has_result fp v s) \<longleftrightarrow> \<not>p_is_error fp v"
-  unfolding p_is_error_def p_has_result_def
-  by simp
+  "(\<exists> s. p_has_result fp v s) \<longleftrightarrow> \<not>p_is_error fp v \<and> \<not>p_is_nonterm fp v"
+  unfolding p_is_error_def p_has_result_def p_is_nonterm_def
+  by auto
 
+
+
+section \<open>Underlying bidefinition type\<close>
+type_synonym 'a bd_aux = "(string + 'a) \<Rightarrow> ((('a \<times> string) option) + (string option)) option"
+
+definition wf_bd_aux :: "'a bd_aux \<Rightarrow> bool" where
+  "wf_bd_aux bd \<longleftrightarrow> ( \<forall> s r. bd (Inl s) = Some r \<longrightarrow> isl r) \<and> (\<forall> t r. (bd (Inr t) = Some r \<longrightarrow> \<not>isl r))"
+
+definition first :: "'a bd_aux \<Rightarrow> 'a parser" where
+  "first bd s = map_option projl (bd (Inl s))"
+
+definition second :: "'a bd_aux \<Rightarrow> 'a printer" where
+  "second bd s = map_option projr (bd (Inr s))"
+
+fun bdc_aux :: "'a parser \<Rightarrow> 'a printer \<Rightarrow> 'a bd_aux" where
+  "bdc_aux parser printer (Inl s) = map_option Inl (parser s)"
+| "bdc_aux parser printer (Inr t) = map_option Inr (printer t)"
+
+lemma bdc_aux_def:
+  "bdc_aux parser printer = (\<lambda> Inl s \<Rightarrow> map_option Inl (parser s) | Inr t \<Rightarrow> map_option Inr (printer t))"
+  by (auto simp add: fun_eq_iff split: sum.splits)
+
+lemma bdc_first_second:
+  "first (bdc_aux p pr) = p"
+  "second (bdc_aux p pr) = pr"
+  unfolding first_def second_def bdc_aux_def
+  by (auto simp add: fun_eq_iff map_option.compositionality comp_def map_option.identity)
+
+lemma bdc_aux_tuple:
+  "wf_bd_aux bd \<Longrightarrow> wf_bd_aux bd' \<Longrightarrow> first bd = first bd' \<Longrightarrow> second bd = second bd' \<Longrightarrow> bd = bd'"
+  unfolding bdc_aux_def first_def second_def wf_bd_aux_def
+  apply (clarsimp simp add: fun_eq_iff)
+  subgoal for x
+    apply (cases x)
+    subgoal for a
+      apply( cases \<open>bd x\<close>; simp; cases \<open>bd' x\<close>; simp)
+        apply (auto  dest: spec[of _ a])
+      by (metis option.inject option.simps(9) sum.expand)
+    subgoal for b
+      apply( cases \<open>bd x\<close>; simp; cases \<open>bd' x\<close>; simp)
+        apply (auto  dest: spec[of _ b])
+      by (metis option.inject option.simps(9) sum.expand)
+    done
+  done
+
+lemma bdc_aux_first_second:
+  assumes "wf_bd_aux bd"
+  shows "bdc_aux (first bd) (second bd) = bd"
+  using assms
+  apply (auto simp add: bdc_aux_def wf_bd_aux_def fun_eq_iff first_def second_def map_option.compositionality split: sum.splits)
+  by (simp add: map_option_cong option.map_ident)+
+
+lemma bd_aux_wf_bdc:
+  "wf_bd_aux (bdc_aux pa pr)"
+  unfolding bdc_aux.simps wf_bd_aux_def
+  by auto
+
+abbreviation bd_aux_ord :: "'a bd_aux \<Rightarrow> 'a bd_aux \<Rightarrow> bool" where "bd_aux_ord \<equiv> fun_ord (flat_ord None)"
+
+lemma bd_aux_ord_f_f:
+  assumes "wf_bd_aux bd"
+  assumes "wf_bd_aux bd'"
+  shows "bd_aux_ord bd bd' \<longleftrightarrow> fun_ord (flat_ord None) (first bd) (first bd') \<and> fun_ord (flat_ord None) (second bd) (second bd')"
+  using assms
+  unfolding wf_bd_aux_def
+            fun_ord_def flat_ord_def first_def second_def
+  apply auto
+  by (smt (z3) assms(1) assms(2) bdc_aux.simps(1) bdc_aux.simps(2) bdc_aux_first_second first_def second_def set_sum_sel(1) setl.cases sum.collapse(2))
+
+definition bd_aux_lub :: "'a bd_aux set \<Rightarrow> 'a bd_aux" where "bd_aux_lub = fun_lub (flat_lub None)"
+
+
+\<comment> \<open> 1. \<And>x1. \<forall>bd\<in>s. (\<forall>s r. bd (Inl s) = Some r \<longrightarrow> isl r) \<and> (\<forall>t r. bd (Inr t) = Some r \<longrightarrow> \<not> isl r) \<Longrightarrow>
+          option_lub {y. \<exists>f\<in>s. y = f (Inl x1)} =
+          map_option Inl (option_lub {y. \<exists>f\<in>s. y = map_option projl (f (Inl x1))})\<close>
+
+
+lemma map_option_trans:
+  assumes "\<forall>bd \<in> s. wf_bd_aux bd"
+  shows "{y. \<exists>f\<in>s. y = f (Inl x1)} = map_option Inl ` {y. \<exists>f\<in>s. y = map_option projl (f (Inl x1))}"
+  using assms
+  apply (auto simp add: wf_bd_aux_def)
+  by (smt (verit, best) assms bdc_aux.simps(1) bdc_aux_first_second first_def image_eqI mem_Collect_eq)+
+
+
+lemma map_option_trans2:
+  assumes "\<forall>bd \<in> s. wf_bd_aux bd"
+  shows "{y. \<exists>f\<in>s. y = f (Inr x1)} = map_option Inr ` {y. \<exists>f\<in>s. y = map_option projr (f (Inr x1))}"
+  using assms
+  apply (auto simp add: wf_bd_aux_def)
+  by (smt (verit, best) assms bdc_aux.simps(2) bdc_aux_first_second second_def image_eqI mem_Collect_eq)+
+
+lemma flat_lub_map_option:
+  assumes "Complete_Partial_Order.chain option_ord s"
+  shows "flat_lub None (map_option f ` s) = map_option f (flat_lub None s)"
+  using assms
+  by (smt (verit) chain_imageI flat_lub_in_chain flat_ord_def image_iff option.lub_upper option.simps(8))
+
+
+lemma bd_lub_componentwise:
+  assumes "Complete_Partial_Order.chain (fun_ord option_ord) s"
+  assumes "\<forall>bd \<in> s. wf_bd_aux bd"
+  shows "bd_aux_lub s = bdc_aux (fun_lub (flat_lub None) (first ` s)) (fun_lub (flat_lub None) (second ` s))"
+  unfolding wf_bd_aux_def bdc_aux_def bd_aux_lub_def
+            fun_lub_def first_def second_def
+  apply (auto simp add: fun_eq_iff map_option_trans assms(2) map_option_trans2 split: sum.splits)
+  subgoal
+    apply (subst flat_lub_map_option)
+    subgoal
+      using assms(1)
+      by (smt (verit) CollectD chain_def flat_ord_def fun_ord_def option.map_disc_iff)
+    by simp
+  subgoal 
+    apply (subst flat_lub_map_option)
+    subgoal
+      using assms(1)
+      by (smt (verit) CollectD chain_def flat_ord_def fun_ord_def option.map_disc_iff)
+    by simp
+  done
 
 
 section \<open>Bidefinition types\<close>
 
-type_synonym '\<alpha> bidef = "('\<alpha> parser \<times> '\<alpha> printer)"
 
-abbreviation parse :: "'\<alpha> bidef \<Rightarrow> '\<alpha> parser" where "parse \<equiv> fst"
-abbreviation print :: "'\<alpha> bidef \<Rightarrow> '\<alpha> printer" where "print \<equiv> snd"
+typedef 'a bd = "Collect wf_bd_aux :: 'a bd_aux set"
+  apply (rule exI[of _ \<open>\<lambda>x. None\<close>])
+  by (simp add: wf_bd_aux_def)
+
+setup_lifting type_definition_bd
+
+lift_definition parse :: "'a bd \<Rightarrow> 'a parser" is first .
+lift_definition print :: "'a bd \<Rightarrow> 'a printer" is second .
+lift_definition bdc :: "'a parser \<Rightarrow> 'a printer \<Rightarrow> 'a bd" is bdc_aux by (simp add: bd_aux_wf_bdc)
+
+definition bd_ord :: "'a bd \<Rightarrow> 'a bd \<Rightarrow> bool" where
+  "bd_ord bd bd' \<longleftrightarrow> fun_ord (flat_ord None) (parse bd) (parse bd') \<and> fun_ord (flat_ord None) (print bd) (print bd')"
+
+definition bd_lub :: "'a bd set \<Rightarrow> 'a bd" where
+  "bd_lub s = bdc (fun_lub (flat_lub None) (parse ` s)) (fun_lub (flat_lub None) (print ` s))"
+
+
+lemma bdc'_tuple:
+  "parse bd = parse bd' \<Longrightarrow> print bd = print bd' \<Longrightarrow> bd = bd'"
+  apply transfer
+  by (simp add: bdc_aux_tuple)
+
+lemma bdc_parse_print_all[simp]:
+  shows "bdc (parse bd) (print bd) = bd"
+  apply transfer
+  by (simp add: bdc_aux_first_second)
+
+lemma pp_bdc'[simp]:
+  "parse (bdc p pr) = p"
+  "print (bdc p pr) = pr"
+   by (transfer; (simp_all add: bdc_first_second))+
+
+lemma bd_lub_aux_trans:
+  assumes "Complete_Partial_Order.chain (fun_ord option_ord) (Rep_bd ` s)"
+  shows "bd_lub s = Abs_bd (fun_lub (flat_lub None) (Rep_bd ` s))"
+  unfolding bd_lub_def
+  apply (subst bd_lub_componentwise[unfolded bd_aux_lub_def])
+  subgoal by (simp add: assms)
+  subgoal apply simp
+    using Rep_bd by blast
+  apply (simp add: bdc.abs_eq)
+  apply transfer
+  by fastforce
+
+
+
+lifting_update bd.lifting
+lifting_forget bd.lifting
+
+lemma bdc_eq_iff:
+  "bdc a b = bdc a' b' \<longleftrightarrow> a=a' \<and> b=b'"
+  by (metis pp_bdc'(1) pp_bdc'(2))
+
+lemma bd_eq_iff:
+  "a = b \<longleftrightarrow> (parse a = parse b) \<and> (print a = print b)"
+  using bdc'_tuple by auto
+
+
+lemma bd_ord_f:
+  "bd_ord a b = fun_ord (flat_ord None) (Rep_bd a) (Rep_bd b)"
+  by (metis Rep_bd bd_aux_ord_f_f bd_ord_def mem_Collect_eq parse.rep_eq print.rep_eq)
+
+lemma partial_fun_defs_cong:
+  assumes "partial_function_definitions ord lub"
+  assumes "\<forall>c. Complete_Partial_Order.chain (ord) c \<longrightarrow> lub c = lub' c"
+  shows "partial_function_definitions ord lub'"
+proof -
+  interpret partial_function_definitions ord lub by fact
+  show ?thesis
+    apply unfold_locales
+    subgoal
+      using leq_refl by blast
+    subgoal
+      using leq_trans by blast
+    subgoal
+      using leq_antisym by blast
+    subgoal 
+      using assms(2) lub_upper by force
+    subgoal
+      using assms(2) lub_least by force
+    done
+qed
+
+lemma bd_partial_function_definitions:
+  "partial_function_definitions bd_ord bd_lub"
+  unfolding partial_function_definitions_def
+  apply auto
+  subgoal by (simp add: bd_ord_f fun_ord_def option.leq_refl)
+  subgoal
+    unfolding bd_ord_f
+    using flat_interpretation partial_function_definitions.leq_trans partial_function_lift by fastforce
+  subgoal
+    by (meson bd_ord_def bdc'_tuple option.partial_function_definitions_axioms partial_function_definitions.leq_antisym partial_function_lift)
+  subgoal
+    unfolding bd_ord_f
+    using bd_lub_aux_trans
+    by (smt (verit) CollectD Rep_bd Rep_bd_inverse bd_aux_lub_def bd_lub_componentwise bdc.rep_eq chain_imageI imageE image_eqI option.partial_function_definitions_axioms partial_function_definitions_def partial_function_lift)
+  subgoal
+    unfolding bd_ord_f
+    using bd_lub_aux_trans
+    by (smt (verit) CollectD Rep_bd Rep_bd_inverse bd_aux_lub_def bd_lub_componentwise bdc.rep_eq chain_imageI imageE option.partial_function_definitions_axioms partial_function_definitions.lub_least partial_function_lift)
+  done
+
+
+interpretation bd:
+  partial_function_definitions "bd_ord" "bd_lub"
+  (* rewrites "bd_lub {} \<equiv> bdc (\<lambda>_. None) (\<lambda>_. None)" *)
+  by (rule bd_partial_function_definitions)
+
+abbreviation "mono_bd \<equiv> monotone (fun_ord bd_ord) bd_ord"
+
+\<comment> \<open>TODO: We don't have a fixp_induct rule.\<close>
+declaration \<open>Partial_Function.init "bd" \<^term>\<open>bd.fixp_fun\<close>
+  \<^term>\<open>bd.mono_body\<close> @{thm bd.fixp_rule_uc} @{thm bd.fixp_induct_uc}
+  (NONE)\<close> (*SOME @{thm fixp_induct_option}*)
+
+
+\<comment> \<open>OLD TYPES\<close>
+type_synonym '\<alpha> bidef = "'\<alpha> bd"
 
 
 
@@ -168,16 +405,16 @@ lemma print_results_always_same:
 
 
 lemma print_result_is_canon_result:
-  assumes "bidef_well_formed (parser, printer)"
-  assumes "p_has_result printer obj canon"
-  shows "has_result parser canon obj []"
+  assumes "bidef_well_formed bd"
+  assumes "p_has_result (print bd) obj canon"
+  shows "has_result (parse bd) canon obj []"
   using assms
   by (simp add: bidef_well_formed_def parser_can_parse_print_result_def)
 
 lemma print_result_is_canon_result2:
-  assumes "bidef_well_formed (parser, printer)"
-  assumes "p_has_result printer obj canon"
-  assumes "has_result parser canon obj2 []"
+  assumes "bidef_well_formed bd"
+  assumes "p_has_result (print bd) obj canon"
+  assumes "has_result (parse bd) canon obj2 []"
   shows "obj = obj2"
   using assms
   unfolding bidef_well_formed_def parser_can_parse_print_result_def
