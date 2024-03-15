@@ -28,6 +28,11 @@ lemma this_char_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma this_char_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (this_char c)) i \<longleftrightarrow> False"
+  unfolding this_char_def
+  by (auto simp add: fp_NER)
+
 lemma this_char_p_is_error[fp_NER]:
   "p_is_error (print (this_char c)) i \<longleftrightarrow> c \<noteq> i"
   unfolding this_char_def
