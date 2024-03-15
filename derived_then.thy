@@ -32,11 +32,17 @@ lemma b_then_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma b_then_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (b_then ab bb)) (va, vb) \<longleftrightarrow> p_is_nonterm (print ab) va \<or> (\<not>p_is_error (print ab) va \<and> p_is_nonterm (print bb) vb)"
+  "p_is_nonterm (print (b_then ab bb)) v \<longleftrightarrow> p_is_nonterm (print ab) (fst v) \<or> (\<not>p_is_error (print ab) (fst v) \<and> p_is_nonterm (print bb) (snd v))"
+  "p_is_nonterm (print (b_then ab bb)) v \<longleftrightarrow> (case v of (va, vb) \<Rightarrow> p_is_nonterm (print ab) va \<or> (\<not>p_is_error (print ab) va \<and> p_is_nonterm (print bb) vb))"
+  by (simp add: b_then_def fp_NER Let_def split: prod.splits)+
+
 lemma b_then_p_is_error[fp_NER]:
-  "p_is_error (print (b_then ab bb)) (va, vb) \<longleftrightarrow> p_is_error (print ab) va \<or> p_is_error (print bb) vb"
-  "p_is_error (print (b_then ab bb)) v \<longleftrightarrow> p_is_error (print ab) (fst v) \<or> p_is_error (print bb) (snd v)"
-  "p_is_error (print (b_then ab bb)) v \<longleftrightarrow> (case v of (va, vb) \<Rightarrow> p_is_error (print ab) va \<or> p_is_error (print bb) vb)"
-  by (simp add: b_then_def fp_NER split: prod.splits)+
+  "p_is_error (print (b_then ab bb)) (va, vb) \<longleftrightarrow> p_is_error (print ab) va \<or> (\<not>p_is_nonterm (print ab) va \<and> p_is_error (print bb) vb)"
+  "p_is_error (print (b_then ab bb)) v \<longleftrightarrow> p_is_error (print ab) (fst v) \<or> (\<not>p_is_nonterm (print ab) (fst v) \<and> p_is_error (print bb) (snd v))"
+  "p_is_error (print (b_then ab bb)) v \<longleftrightarrow> (case v of (va, vb) \<Rightarrow> p_is_error (print ab) va \<or> (\<not>p_is_nonterm (print ab) va \<and> p_is_error (print bb) vb))"
+  by (simp add: b_then_def fp_NER Let_def split: prod.splits)+
 
 lemma b_then_p_has_result[fp_NER]:
   "p_has_result (print (b_then ab bb)) (va, vb) t \<longleftrightarrow> (\<exists>ta tb. ta@tb = t \<and> p_has_result (print ab) va ta \<and> p_has_result (print bb) vb tb)"
