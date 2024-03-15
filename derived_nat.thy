@@ -78,10 +78,20 @@ lemma nat_p_is_error[fp_NER]:
     by (meson digit_char_p_is_error digit_char_p_no_error list.set_sel(2) print_nat_never_empty)
   done
 
+lemma nat_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (nat_b)) i \<longleftrightarrow> False"
+  apply (auto simp add: nat_b_def fp_NER)
+  apply (induction \<open>print_nat i\<close> arbitrary: i rule: rev_induct)
+  subgoal by (metis print_nat_never_empty)
+  subgoal for hd_str_i str_i i'
+    oops
+
 
 lemma nat_p_has_result[fp_NER]:
   "p_has_result (print (nat_b)) i r \<longleftrightarrow> r = print_nat i"
   apply (auto simp add: nat_b_def fp_NER)
+  subgoal for rs  sorry
+  subgoal  sorry
   oops
 
 
