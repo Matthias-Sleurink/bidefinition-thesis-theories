@@ -30,6 +30,12 @@ lemma this_string_has_result[NER_simps]:
 
 
 \<comment> \<open>FP ner\<close>
+lemma this_string_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (this_string s)) i \<longleftrightarrow> False"
+  unfolding this_string_def
+  apply (induction s arbitrary: i)
+  by (auto simp add: fp_NER)
+
 lemma this_string_p_is_error[fp_NER]:
   "p_is_error (print (this_string s)) i \<longleftrightarrow> s \<noteq> i"
   unfolding this_string_def
