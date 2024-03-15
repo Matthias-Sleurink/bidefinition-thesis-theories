@@ -30,6 +30,12 @@ lemma optional_has_result[NER_simps]:
 
 
 \<comment> \<open>fp_NER\<close>
+lemma optional_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (optional p)) None \<longleftrightarrow> False"
+  "p_is_nonterm (print (optional p)) (Some rr) \<longleftrightarrow> p_is_nonterm (print p) rr"
+  "p_is_nonterm (print (optional p)) r \<longleftrightarrow> (case r of None \<Rightarrow> False | Some rr \<Rightarrow> p_is_nonterm (print p) rr)"
+  by (simp add: optional_def fp_NER split: option.splits)+
+
 lemma optional_p_is_error[fp_NER]:
   "p_is_error (print (optional p)) None \<longleftrightarrow> False"
   "p_is_error (print (optional p)) (Some rr) \<longleftrightarrow> p_is_error (print p) rr"
