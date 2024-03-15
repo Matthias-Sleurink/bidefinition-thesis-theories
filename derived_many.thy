@@ -11,20 +11,38 @@ fun sum_take :: "('\<alpha> + '\<alpha>) \<Rightarrow> '\<alpha>" where
   "sum_take (Inl a) = a"
 | "sum_take (Inr a) = a"
 
-
-partial_function (bd) many :: "'a bd \<Rightarrow> 'a list bd" where [code]:
-  "many a = transform
+\<comment> \<open>This is the "canonical" many implementation, and it makes a lot of sense.\<close>
+\<comment> \<open>But, for this impl it's hard to prove that many never fails. (eg: is_error many bd i <--> False)\<close>
+\<comment> \<open>So, we adjust the impl slightly to the one below.\<close>
+\<comment> \<open>It has the same lemmas in NER and fp_NER, but it's trivial to prove that it never fails.\<close>
+\<comment> \<open>Which is a very nice property to have for other proofs.\<close>
+partial_function (bd) many' :: "'a bd \<Rightarrow> 'a list bd" where [code]:
+  "many' a = transform
               sum_take
               (\<lambda>l. if l = [] then Inr [] else Inl l) \<comment> \<open>was: Inl\<close>
               (if_then_else
                 a \<comment> \<open>test\<close>
-                (\<lambda>r. dep_then (many a) (\<lambda> rr. return (r#rr)) tl) \<comment> \<open>then\<close>
+                (\<lambda>r. dep_then (many' a) (\<lambda> rr. return (r#rr)) tl) \<comment> \<open>then\<close>
                 (return []) \<comment> \<open>else\<close>
                 (hd) \<comment> \<open>'a list \<Rightarrow> 'a (transform result of then back into result for test)\<close>
                )
 "
 print_theorems
 
+
+
+partial_function (bd) many :: "'a bd \<Rightarrow> 'a list bd" where [code]:
+  "many a = transform
+              sum_take
+              (\<lambda>l. if l = [] then Inr [] else Inl l) \<comment> \<open>was: Inl\<close>
+              (if_then_else
+                (dep_then a (\<lambda>r. dep_then (many a) (\<lambda> rr. return (r#rr)) tl) hd) \<comment> \<open>test\<close>
+                return \<comment> \<open>then\<close>
+                (return []) \<comment> \<open>else\<close>
+                (id)
+               )
+"
+print_theorems
 
 
 subsection \<open>NER\<close>
@@ -37,8 +55,7 @@ lemma many_is_nonterm: \<comment> \<open>not added to nersimp since it will unfo
 lemma many_is_error[NER_simps]:
   "is_error (parse (many b)) i \<longleftrightarrow> False"
   apply (subst many.simps)
-  apply (clarsimp simp add: NER_simps)
-  oops
+  by (clarsimp simp add: NER_simps)
 
 \<comment> \<open>Since these explicitly match on the constructors of list they are safe to be in NER.\<close>
 lemma many_has_result_safe[NER_simps]:
@@ -48,7 +65,7 @@ lemma many_has_result_safe[NER_simps]:
     apply (subst many.simps)
     apply (auto simp add: NER_simps split: sum.splits)
     subgoal by (metis list.simps(3) sum_take.cases)
-    subgoal by (metis neq_Nil_conv sumE)
+    subgoal for r' by (cases r'; auto split: sum.split)
     done
   subgoal
     apply (subst many.simps)
