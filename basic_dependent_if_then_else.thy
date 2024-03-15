@@ -115,6 +115,78 @@ definition if_then_else :: "'a bd \<Rightarrow> ('a \<Rightarrow> 'b bd) \<Right
 
 
 
+\<comment> \<open>Monotone\<close>
+
+lemma mono_if_then_else[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
+  assumes mc: "mono_bd C"
+  shows "mono_bd (\<lambda>f. if_then_else (A f) (\<lambda>y. B y f) (C f) trans_f)"
+  unfolding if_then_else_def monotone_def
+  apply clarsimp
+  apply (subst bd_ord_def)
+  apply (subst fun_ord_def)
+  apply (auto split: option.splits simp add: flat_ord_def)
+  subgoal using ma
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by (smt (verit, del_insts) option.discI)
+  subgoal using mc
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by blast
+  subgoal using ma
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by (metis option.inject option.simps(3))
+  subgoal using ma
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    by (smt (verit, del_insts) option.distinct(1))
+  subgoal using ma 
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def oopr_map_cases
+    apply (auto split: option.splits)
+    by (smt (verit, ccfv_threshold) option.distinct(1) option.inject)+
+  subgoal for x' y' xa' a b aa ba using ma mb
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def
+    proof -
+      assume "\<forall>xa. (\<forall>xb. parse (x' xa) xb = None \<or> parse (x' xa) xb = parse (y' xa) xb) \<and> (\<forall>xb. print (x' xa) xb = None \<or> print (x' xa) xb = print (y' xa) xb)"
+      assume "parse (A x') xa' = Some (Some (a, b))"
+      assume "parse (A y') xa' = Some (Some (aa, ba))"
+      assume "parse (B a x') b \<noteq> parse (B aa y') ba"
+      assume "\<forall>x y. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (y xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (y xa) xb)) \<longrightarrow> (\<forall>xa. parse (A x) xa = None \<or> parse (A x) xa = parse (A y) xa) \<and> (\<forall>xa. print (A x) xa = None \<or> print (A x) xa = print (A y) xa)"
+      assume "\<And>y. \<forall>x ya. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (ya xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (ya xa) xb)) \<longrightarrow> (\<forall>xa. parse (B y x) xa = None \<or> parse (B y x) xa = parse (B y ya) xa) \<and> (\<forall>xa. print (B y x) xa = None \<or> print (B y x) xa = print (B y ya) xa)"
+      have "B a x' \<noteq> B aa x' \<or> b \<noteq> ba \<or> parse (B a x') b = parse (B aa x') ba"
+        by force
+      thus ?thesis
+        by (smt (verit, ccfv_threshold) \<open>\<And>y. \<forall>x ya. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (ya xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (ya xa) xb)) \<longrightarrow> (\<forall>xa. parse (B y x) xa = None \<or> parse (B y x) xa = parse (B y ya) xa) \<and> (\<forall>xa. print (B y x) xa = None \<or> print (B y x) xa = print (B y ya) xa)\<close> \<open>\<forall>x y. (\<forall>xa. (\<forall>xb. parse (x xa) xb = None \<or> parse (x xa) xb = parse (y xa) xb) \<and> (\<forall>xb. print (x xa) xb = None \<or> print (x xa) xb = print (y xa) xb)) \<longrightarrow> (\<forall>xa. parse (A x) xa = None \<or> parse (A x) xa = parse (A y) xa) \<and> (\<forall>xa. print (A x) xa = None \<or> print (A x) xa = print (A y) xa)\<close> \<open>\<forall>xa. (\<forall>xb. parse (x' xa) xb = None \<or> parse (x' xa) xb = parse (y' xa) xb) \<and> (\<forall>xb. print (x' xa) xb = None \<or> print (x' xa) xb = print (y' xa) xb)\<close> \<open>parse (A x') xa' = Some (Some (a, b))\<close> \<open>parse (A y') xa' = Some (Some (aa, ba))\<close> \<open>parse (B a x') b \<noteq> parse (B aa y') ba\<close> option.discI option.sel prod.inject)
+    qed
+  subgoal
+    unfolding monotone_def bd_ord_def flat_ord_def fun_ord_def ite_printer_cases
+    apply (auto simp add: Let_def split: sum.splits)
+    subgoal using ma[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+      apply (auto split: option.splits)
+      apply -
+      subgoal by (smt (verit, del_insts) option.simps(3))
+      subgoal by (smt (verit, ccfv_threshold) option.distinct(1))
+      subgoal by (smt (verit, ccfv_threshold) option.distinct(1))
+      subgoal by (smt (verit, ccfv_threshold) option.discI option.inject)
+      subgoal by (smt (verit, del_insts) option.discI option.inject)
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, ccfv_threshold) option.distinct(1))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, del_insts) option.distinct(1))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, ccfv_threshold) option.distinct(1) option.sel)
+      subgoal by (smt (verit, del_insts) option.inject option.simps(3))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (smt (verit, del_insts) option.inject option.simps(3))
+      subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+        by (metis option.inject option.simps(3))
+      done
+    subgoal using mc[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
+      by blast
+    done
+  done
+
+
+
 \<comment> \<open>NER\<close>
 lemma if_then_else_is_nonterm[NER_simps]:
   "is_nonterm (parse (if_then_else ab a2bb cb b2a)) i \<longleftrightarrow> is_nonterm (parse ab) i \<or> (\<exists> r l. has_result (parse ab) i r l \<and> is_nonterm (parse (a2bb r)) l) \<or> (is_error (parse ab) i \<and> is_nonterm (parse cb) i)"

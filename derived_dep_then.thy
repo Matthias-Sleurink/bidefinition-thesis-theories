@@ -7,6 +7,16 @@ definition dep_then :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '
 
 
 
+\<comment> \<open>Monotone\<close>
+declare [[show_types=false]]
+lemma mono_dep_then[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
+  shows "mono_bd (\<lambda>f. dep_then (A f) (\<lambda>y. B y f) transf)"
+  by (simp add: dep_then_def mono_transform mono_if_then_else ma mb bd.const_mono)+
+
+
+
 \<comment> \<open>NER\<close>
 lemma dep_then_is_nonterm[NER_simps]:
   "is_nonterm (parse (dep_then ab a2bb b2a)) i \<longleftrightarrow> is_nonterm (parse ab) i \<or> (\<exists> r l. has_result (parse ab) i r l \<and> is_nonterm (parse (a2bb r)) l)"
