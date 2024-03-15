@@ -28,8 +28,12 @@ lemma then_drop_second_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma then_drop_second_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (then_drop_second ab bb b)) va \<longleftrightarrow> p_is_nonterm (print ab) va \<or> (\<not>p_is_error (print ab) va \<and> p_is_nonterm (print bb) b)"
+  by (simp add: then_drop_second_def fp_NER split: prod.splits)+
+
 lemma then_drop_second_p_is_error[fp_NER]:
-  "p_is_error (print (then_drop_second ab bb b)) va \<longleftrightarrow> p_is_error (print ab) va \<or> p_is_error (print bb) b"
+  "p_is_error (print (then_drop_second ab bb b)) va \<longleftrightarrow> p_is_error (print ab) va \<or> (\<not>p_is_nonterm (print ab) va \<and> p_is_error (print bb) b)"
   by (simp add: then_drop_second_def fp_NER split: prod.splits)+
 
 lemma then_drop_second_p_has_result[fp_NER]:
