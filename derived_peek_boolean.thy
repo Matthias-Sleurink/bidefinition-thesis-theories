@@ -22,6 +22,7 @@ definition wf_peek_oracle :: "'\<alpha> bidef \<Rightarrow> '\<alpha> \<Rightarr
   "wf_peek_oracle b v \<longleftrightarrow> (\<exists>pr. p_has_result (print b) v pr)"
 
 
+
 \<comment> \<open>NER\<close>
 lemma peek_bool_is_nonterm[NER_simps]:
   "is_nonterm (parse (peek_bool a v)) i \<longleftrightarrow> is_nonterm (parse a) i"
@@ -40,6 +41,12 @@ lemma peek_bool_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma peek_bool_p_is_nonterm[fp_NER]:
+  assumes "wf_peek_oracle a v"
+  shows "p_is_nonterm (print (peek_bool a v)) b \<longleftrightarrow> (if b then p_is_nonterm (print a) v else False)"
+  unfolding peek_bool_def
+  by (auto simp add: fp_NER)
+
 lemma peek_bool_p_is_error[fp_NER]:
   assumes "wf_peek_oracle a v"
   shows "p_is_error (print (peek_bool a v)) b \<longleftrightarrow> False"
