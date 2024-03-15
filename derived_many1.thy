@@ -42,8 +42,12 @@ lemma many1_no_result_if_empty:
 
 
 \<comment> \<open>FP ner\<close>
+lemma many1_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (many1 a)) i \<longleftrightarrow> i\<noteq>[] \<and> (p_is_nonterm (print a) (hd i) \<or> (\<not> p_is_error (print a) (hd i) \<and> p_is_nonterm (print (many a)) (tl i)))"
+  by (simp add: many1_def fp_NER)
+
 lemma many1_p_is_error[fp_NER]:
-  "p_is_error (print (many1 a)) i \<longleftrightarrow> i = [] \<or> p_is_error (print a) (hd i) \<or> p_is_error (print (many a)) (tl i)"
+  "p_is_error (print (many1 a)) i \<longleftrightarrow> i = [] \<or> p_is_error (print a) (hd i) \<or> (\<not>p_is_nonterm (print a) (hd i) \<and> p_is_error (print (many a)) (tl i))"
   by (simp add: many1_def fp_NER)
 
 lemma many1_p_has_result[fp_NER]:
@@ -56,14 +60,14 @@ lemma many1_p_has_result_only_if_nonempty:
   using assms
   by (auto simp add: fp_NER)
 
-lemma many1_p_no_result_empty:
+lemma many1_p_no_result_empty[fp_NER]:
   shows "\<not>p_has_result (print (many1 bi)) [] r"
   using many1_p_has_result_only_if_nonempty by blast
 
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma many1_PNGI:
+lemma many1_PNGI_from_PNGI:
   assumes "PNGI (parse p)"
   shows "PNGI (parse (many1 p))"
   unfolding many1_def
@@ -72,6 +76,16 @@ lemma many1_PNGI:
   subgoal by (rule assms)
   apply (rule many_PNGI)
   oops
+
+lemma many1_PNGI:
+  assumes "PASI (parse p)"
+  shows "PNGI (parse (many1 p))"
+  unfolding many1_def
+  apply (rule ftransform_PNGI)
+  apply (rule then_PNGI)
+  subgoal by (clarsimp simp add: assms PASI_implies_PNGI)
+  apply (rule many_PNGI)
+  by (rule assms)
 
 lemma many1_PASI:
   assumes "PASI (parse p)"
