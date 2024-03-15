@@ -31,6 +31,11 @@ lemma char_not_in_set_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma char_not_in_set_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (char_not_in_set s)) i \<longleftrightarrow> False"
+  unfolding char_not_in_set_def
+  by (simp add: fp_NER)
+
 lemma char_not_in_set_p_is_error[fp_NER]:
   "p_is_error (print (char_not_in_set s)) i \<longleftrightarrow> i \<in> s"
   unfolding char_not_in_set_def
