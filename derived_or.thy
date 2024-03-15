@@ -51,6 +51,11 @@ lemma or_p_is_error[fp_NER]:
   "p_is_error (print (or p1 p2)) (Inr rr) \<longleftrightarrow> p_is_error (print p2) rr"
   by (simp add: or_def fp_NER)+
 
+lemma or_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (or p1 p2)) (Inl lr) \<longleftrightarrow> p_is_nonterm (print p1) lr"
+  "p_is_nonterm (print (or p1 p2)) (Inr rr) \<longleftrightarrow> p_is_nonterm (print p2) rr"
+  by (simp add: or_def fp_NER)+
+
 
 
 \<comment> \<open>PNGI, PASI\<close>
@@ -91,7 +96,7 @@ lemma or_well_formed:
     apply clarsimp
     unfolding or_has_result_non_split
     apply (clarsimp split: sum.splits)
-    by (metis or_p_has_result(1) or_p_has_result(2) or_has_result(1) or_has_result(2))
+    by (metis or_p_has_result(1) or_p_has_result(2))
   subgoal
     using assms
     unfolding printer_can_print_parse_result_def
