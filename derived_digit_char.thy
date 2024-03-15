@@ -42,6 +42,10 @@ lemma digit_char_has_result[NER_simps]:
 
 
 \<comment> \<open>fp NER\<close>
+lemma digit_char_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print digit_char) i \<longleftrightarrow> False"
+  by (simp add: digit_char_def any_from_set_p_is_nonterm)
+
 lemma digit_char_p_is_error[fp_NER]:
   "p_is_error (print digit_char) i \<longleftrightarrow> i \<notin> digit_chars"
   by (simp add: digit_char_def any_from_set_p_is_error)
