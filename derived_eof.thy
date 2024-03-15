@@ -34,6 +34,10 @@ lemma eof_has_result[NER_simps]:
 
 
 \<comment> \<open>FP NER\<close>
+lemma eof_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print eof) i \<longleftrightarrow> False"
+  by (simp add: eof_def fp_NER)
+
 lemma eof_p_is_error[fp_NER]:
   "p_is_error (print eof) i \<longleftrightarrow> False"
   by (simp add: eof_def fp_NER)
