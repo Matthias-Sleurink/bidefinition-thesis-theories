@@ -140,19 +140,19 @@ Basically, If Q holds for the cases where the parser fails (and thus the list en
            Then we know that it holds for any time that it succeeds.
 *)
 lemma many0_induct:
-  assumes pasi: "PASI p"
+  assumes pasi: "PASI (parse bd)"
 
-  assumes step: "\<And> i r l. has_result p i r l \<longrightarrow> (\<forall>rr l'. (length l < length i \<and> Q l rr l') \<longrightarrow> Q i (r # rr) l')"
-  assumes last_step: "\<And> i. is_error p i \<longrightarrow> Q i [] i"
+  assumes step: "\<And> i r l. has_result (parse bd) i r l \<longrightarrow> (\<forall>rr l'. (length l < length i \<and> Q l rr l') \<longrightarrow> Q i (r # rr) l')"
+  assumes last_step: "\<And> i. is_error (parse bd) i \<longrightarrow> Q i [] i"
 
-  shows "has_result (many_p p) i r l \<longrightarrow> Q i r l"
+  shows "has_result (parse (many bd)) i r l \<longrightarrow> Q i r l"
   apply (induction i arbitrary: r l rule: length_induct)
-  apply (subst many_p.simps)
+  apply (subst many.simps)
   apply (auto simp add: NER_simps split: sum.splits)
   subgoal for xs r l r'
     apply (cases r')
     subgoal using step pasi PASI_implies_res_length_shorter by fastforce
-    subgoal using last_step many_is_error(2) by force
+    subgoal using last_step by auto
     done
   done
 
@@ -160,8 +160,8 @@ lemma many0_induct:
 
 \<comment> \<open>PNGI, PASI\<close>
 lemma many_PNGI_from_PNGI:
-  assumes "PNGI (parse p)"
-  shows "PNGI (parse (many p))"
+  assumes "PNGI (parse bd)"
+  shows "PNGI (parse (many bd))"
   using assms
   unfolding PNGI_def
   apply (subst many_has_result)
@@ -172,11 +172,17 @@ lemma many_PNGI:
   assumes "PASI (parse p)"
   shows "PNGI (parse (many p))"
   (*Should really figure out some way of exposing the input so that we can say is PASI when at least one success*)
-  unfolding PASI_def PNGI_def many_def
-  apply clarsimp
-  apply (subst many0_induct[of \<open>parse p\<close> \<open>\<lambda> i r l. (\<exists>c. i = c @ l)\<close>])
-  apply (auto simp add: assms)
-  by (metis append_assoc assms[unfolded PASI_def])
+  unfolding PASI_def PNGI_def
+  apply (auto simp add: allI[of \<open>\<lambda>(i, r, l). has_result (parse (many p)) i r l \<longrightarrow> (\<exists>c. i = c @ l)\<close>])
+  subgoal for i r l
+  apply (subst many0_induct[of p \<open>\<lambda> i r l. (\<exists>c. i = c @ l)\<close> i r l])
+  subgoal by (simp add: assms)
+  subgoal
+    apply (auto simp add: assms)
+    using PASI_def assms by fastforce
+    by simp_all
+  done
+
 
 
 \<comment> \<open>TODO: split out to other file?\<close>
@@ -196,24 +202,24 @@ lemma dropWhile_hd_no_match:
 \<comment> \<open>Has result for many for_predicate has some nice properties\<close>
 lemma many_char_for_predicate_has_result_forwards:
   shows "has_result (parse (many (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i"
-  apply (clarsimp simp add: many_def)
-  using many0_induct[of \<open>parse (char_for_predicate p)\<close> \<open>\<lambda>i r l. (r = takeWhile p i \<and> l = dropWhile p i)\<close> i r l]
-  apply (subst many0_induct[of \<open>parse (char_for_predicate p)\<close> \<open>\<lambda>i r l. (r = takeWhile p i \<and> l = dropWhile p i)\<close> i r l])
-      apply (auto simp add: NER_simps char_for_predicate_PASI takeWhile_hd_no_match dropWhile_hd_no_match)
-  by fastforce
+  apply (rule many0_induct[of \<open>(char_for_predicate p)\<close> \<open>\<lambda>i r l. (r = takeWhile p i \<and> l = dropWhile p i)\<close> i r l])
+  subgoal by (rule char_for_predicate_PASI)
+  subgoal using char_for_predicate_has_result by force
+  subgoal by (simp add: char_for_predicate_is_error dropWhile_hd_no_match takeWhile_hd_no_match)
+  done
 
 lemma many_char_for_predicate_has_result_reverse:
   shows "r = takeWhile p i \<and> l = dropWhile p i \<longrightarrow> has_result (parse (many (char_for_predicate p))) i r l"
-  apply (auto simp add: many_def)
   apply (induction i arbitrary: r l)
-  apply (auto simp add: NER_simps many_p_has_result_when_first_parse_fails)
-  by (metis char_for_predicate_has_result fst_conv list.distinct(1) list.sel(1) many_def many_has_result_safe(2))
+  by (auto simp add: NER_simps many_has_result_when_first_parse_fails)
+  
 
 lemma many_char_for_predicate_has_result[NER_simps]:
   shows "has_result (parse (many (char_for_predicate p))) i r l \<longleftrightarrow> r = takeWhile p i \<and> l = dropWhile p i"
   using many_char_for_predicate_has_result_forwards[of p i r l]
         many_char_for_predicate_has_result_reverse[of r p i l]
   by fast
+
 
 
 subsection \<open>Well formed\<close>
