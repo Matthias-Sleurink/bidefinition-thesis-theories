@@ -12,98 +12,46 @@ fun sum_take :: "('\<alpha> + '\<alpha>) \<Rightarrow> '\<alpha>" where
 | "sum_take (Inr a) = a"
 
 
-(* This has some fragility, in that it depends on bind_parser_mono which defines the monotonicity for the inlined bind operator *)
-(* We claim that this is a derived parser, yet we are operating on the input string directly here. Make basic? *)
-partial_function (parser) many_p :: "'a parser \<Rightarrow> 'a list parser"
-  where [code]:
-  "many_p a = ftransform_p
-                  (Some o sum_take)
-                  (if_then_else_p
-                    ((\<lambda> i:: string. 
-                      case a i of
-                        None \<Rightarrow> None
-                      | Some None \<Rightarrow> Some None
-                      | Some (Some (r, l)) \<Rightarrow> (
-                        case many_p a l of
-                          None \<Rightarrow> None
-                        | Some None \<Rightarrow> Some None
-                        | Some (Some (rs, l')) \<Rightarrow> Some (Some (r#rs, l')))
-                      ) :: 'a list parser)
-                    (return_p :: 'a list \<Rightarrow> 'a list parser)
-                    (return_p [] :: 'a list parser)
-                  )"
-print_theorems
-
-
-partial_function (parser) many_p1 :: "'a parser \<Rightarrow> 'a list parser"
-  where [code]:
-  "many_p1 a = ftransform_p 
-                    (Some o sum_take)
-                    (if_then_else_p
-                        a
-                        (\<lambda>r. ftransform_p (Some o (#) r) (many_p1 a))
-                        (return_p []))
+partial_function (bd) many :: "'a bd \<Rightarrow> 'a list bd" where [code]:
+  "many a = transform
+              sum_take
+              (\<lambda>l. if l = [] then Inr [] else Inl l) \<comment> \<open>was: Inl\<close>
+              (if_then_else
+                a \<comment> \<open>test\<close>
+                (\<lambda>r. dep_then (many a) (\<lambda> rr. return (r#rr)) tl) \<comment> \<open>then\<close>
+                (return []) \<comment> \<open>else\<close>
+                (hd) \<comment> \<open>'a list \<Rightarrow> 'a (transform result of then back into result for test)\<close>
+               )
 "
 print_theorems
 
-lemma error_test:
-  "is_error (many_p1 p) i \<longleftrightarrow> False"
-  apply (auto simp add: is_error_def)
-  apply (induction rule: many_p1.fixp_induct)
-  subgoal
-    oops
-  
-    
-  
-  
 
-fun many_pr :: "'\<alpha> printer \<Rightarrow> '\<alpha> list printer" where
-  "many_pr p []     = Some []"
-| "many_pr p (x#xs) =(
-    case p x of
-      None \<Rightarrow> None
-    | Some (xr) \<Rightarrow>(
-      case many_pr p xs of
-        None \<Rightarrow> None
-      | Some (xsr) \<Rightarrow> Some (xr@xsr)
-))"
-
-definition many :: "'\<alpha> bidef \<Rightarrow> '\<alpha> list bidef" where
-  "many b = (
-    many_p (parse b),
-    many_pr (print b)
-)"
 
 subsection \<open>NER\<close>
 lemma many_is_nonterm: \<comment> \<open>not added to nersimp since it will unfold forever\<close>
   "is_nonterm (parse (many b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
-  "is_nonterm (many_p (parse b)) i \<longleftrightarrow> is_nonterm (parse b) i \<or> (\<exists> r l. has_result (parse b) i r l \<and> is_nonterm (parse (many b)) l)"
-  by ((clarsimp simp add: many_def);
-  (subst many_p.simps);
-  (clarsimp simp add: NER_simps))+
+  apply (subst many.simps)
+  by (clarsimp simp add: NER_simps)
 
+\<comment> \<open>TODO\<close>
 lemma many_is_error[NER_simps]:
   "is_error (parse (many b)) i \<longleftrightarrow> False"
-  "is_error (many_p (parse b)) i \<longleftrightarrow> False"
-  by ((clarsimp simp add: many_def);
-  (subst (asm) many_p.simps);
-  (clarsimp simp add: NER_simps))+
-    
+  apply (subst many.simps)
+  apply (clarsimp simp add: NER_simps)
+  oops
 
 \<comment> \<open>Since these explicitly match on the constructors of list they are safe to be in NER.\<close>
 lemma many_has_result_safe[NER_simps]:
   "has_result (parse (many b)) i []     l \<longleftrightarrow> i = l \<and> is_error (parse b) i"
   "has_result (parse (many b)) i (e#es) l \<longleftrightarrow> (\<exists>l' . has_result (parse b) i e l' \<and> has_result (parse (many b)) l' es l)"
   subgoal
-    apply (clarsimp simp add: many_def)
-    apply (subst many_p.simps)
+    apply (subst many.simps)
     apply (auto simp add: NER_simps split: sum.splits)
     subgoal by (metis list.simps(3) sum_take.cases)
     subgoal by (metis neq_Nil_conv sumE)
     done
   subgoal
-    apply (clarsimp simp add: many_def)
-    apply (subst many_p.simps)
+    apply (subst many.simps)
     apply (auto simp add: NER_simps split: sum.splits)
     subgoal by (metis (no_types, lifting) list.distinct(1) list.inject sum_take.cases)
     subgoal by fast
@@ -122,14 +70,32 @@ lemma many_has_result:
 subsection \<open>fp_NER\<close>
 lemma many_p_is_error_safe[fp_NER]:
   "p_is_error (print (many b)) [] \<longleftrightarrow> False"
-  "p_is_error (print (many b)) (e#es) \<longleftrightarrow> p_is_error (print b) e \<or> p_is_error (print (many b)) es"
-  by (auto simp add: many_def p_is_error_def split: option.splits)
+  "p_is_error (print (many b)) (e#es) \<longleftrightarrow> p_is_error (print b) e \<or> (\<exists>pr. p_has_result (print b) e pr \<and> p_is_error (print (many b)) es)"
+  apply (auto simp add: fp_NER split: option.splits)
+  subgoal
+    apply (subst (asm) many.simps)
+    by (clarsimp simp add: fp_NER Let_def)
+  subgoal
+    apply (subst (asm) many.simps)
+    by (clarsimp simp add: fp_NER p_has_result_eq_not_is_error)
+  subgoal
+    apply (subst (asm) many.simps)
+    by (clarsimp simp add: fp_NER)
+  subgoal
+    apply (subst many.simps)
+    by (clarsimp simp add: fp_NER)
+  subgoal
+    apply (subst many.simps)
+    apply (clarsimp simp add: fp_NER)
+    using dep_then_p_is_error p_has_result_eq_not_is_error
+    by fastforce
+  done
 
 lemma many_p_is_error:
   "p_is_error (print (many b)) rs \<longleftrightarrow>(
     case rs of
       [] \<Rightarrow> False
-    | (e#es) \<Rightarrow> p_is_error (print b) e \<or> p_is_error (print (many b)) es
+    | (e#es) \<Rightarrow> p_is_error (print b) e \<or> (\<exists>pr. p_has_result (print b) e pr \<and> p_is_error (print (many b)) es)
 )"
   by (cases rs) (clarsimp simp add: many_p_is_error_safe)+
 
@@ -145,7 +111,11 @@ lemma many_p_no_error:
 lemma many_p_has_result_safe[fp_NER]:
   "p_has_result (print (many b)) [] r \<longleftrightarrow> r = []"
   "p_has_result (print (many b)) (e#es) r \<longleftrightarrow> (\<exists> ir ir'. ir@ir' = r \<and> p_has_result (print b) e ir \<and> p_has_result (print (many b)) es ir')"
-  by (auto simp add: p_has_result_def many_def split: option.splits)
+  subgoal
+    apply (subst many.simps)
+    by (clarsimp simp add: fp_NER)
+  apply (subst many.simps)
+  by (auto simp add: fp_NER)
 
 lemma many_p_has_result:
   "p_has_result (print (many b)) l r \<longleftrightarrow>(
@@ -155,11 +125,11 @@ lemma many_p_has_result:
 )"
   by (cases l) (clarsimp simp add: many_p_has_result_safe)+
 
-lemma many_p_has_result_when_first_parse_fails:
-  assumes "is_error p l"
-  shows "has_result (many_p p) l [] l"
-  apply (subst many_p.simps)
-  by (auto simp add: assms NER_simps split: sum.splits)
+lemma many_has_result_when_first_parse_fails:
+  assumes "is_error (parse bd) l"
+  shows "has_result (parse (many bd)) l [] l"
+  by (auto simp add: assms NER_simps)
+
 
 
 \<comment> \<open>Induction\<close>
