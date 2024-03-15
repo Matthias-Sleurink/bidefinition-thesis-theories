@@ -7,13 +7,24 @@ The fail bi-definition never succeeds.
 Hence, it also never succeeds printing.
 \<close>
 
+\<comment> \<open>Since this is a value, and not a function, ML does not allow us to have this be polymorphic.\<close>
+\<comment> \<open>As such, we remove this equation from the code set.\<close>
+\<comment> \<open>And then use the fail' and fail = fail' () fun and lemma\<close>
+\<comment> \<open>to create the code equations for codegen.\<close>
+
 fun fail_p :: "'\<alpha> parser" where
   "fail_p _ = terminate_with None"
 fun fail_pr :: "'\<alpha> printer" where
   "fail_pr _ = terminate_with None"
-definition fail :: "'\<alpha> bidef" where
+definition fail :: "'\<alpha> bidef" where [code del]:
   "fail = bdc fail_p fail_pr "
 
+fun fail' :: "unit \<Rightarrow> 'a bd" where
+  "fail' _ = bdc (\<lambda>_. Some None) (\<lambda>_. Some None)"
+
+lemma [code_unfold]: "fail = fail' ()"
+  by (auto simp add: fail_def bdc_eq_iff)
+  
 
 
 \<comment> \<open>NER\<close>
