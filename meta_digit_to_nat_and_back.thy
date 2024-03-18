@@ -86,7 +86,8 @@ value "print_nat 123"
 \<comment> \<open>Some lemmas:\<close>
 lemma print_nat_never_empty[simp]:
   "print_nat n \<noteq> []"
-  by (simp add: print_nat_def)
+  "[] \<noteq> print_nat n"
+  by (simp add: print_nat_def)+
 
 lemma print_nat_hd[simp]:
   "hd (print_nat a) \<in> digit_chars"
