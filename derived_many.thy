@@ -142,6 +142,39 @@ lemma many_p_has_result:
 )"
   by (cases l) (clarsimp simp add: many_p_has_result_safe)+
 
+lemma many_p_is_nonterm_safe[fp_NER]:
+  "p_is_nonterm (print (many b)) []     \<longleftrightarrow> False"
+  "p_is_nonterm (print (many b)) (x#xs) \<longleftrightarrow> p_is_nonterm (print b) x \<or> (\<not>p_is_error (print b) x \<and> p_is_nonterm (print (many b)) xs)"
+  by (subst many.simps; clarsimp simp add: fp_NER)+
+
+lemma many_p_is_not_nonterm[fp_NER]:
+  assumes "\<And>i. p_is_nonterm (print b) i \<longleftrightarrow> False"
+  shows "p_is_nonterm (print (many b)) is \<longleftrightarrow> False"
+  apply (induction \<open>is\<close>)
+  by (clarsimp simp add: fp_NER assms)+
+
+lemma many_p_is_not_nonterm_in_list[fp_NER]:
+  assumes "\<forall>i \<in> set is. p_is_nonterm (print b) i \<longleftrightarrow> False"
+  shows "p_is_nonterm (print (many b)) is \<longleftrightarrow> False"
+  using assms apply (induction \<open>is\<close>)
+  by (clarsimp simp add: fp_NER assms)+
+
+lemma many_p_is_not_error[fp_NER]:
+  assumes "\<And>i. p_is_error (print b) i \<longleftrightarrow> False"
+  shows "p_is_error (print (many b)) is \<longleftrightarrow> False"
+  apply (induction \<open>is\<close>)
+  by (clarsimp simp add: fp_NER assms)+
+
+lemma many_p_is_not_error_in_list[fp_NER]:
+  assumes "\<forall>i \<in> set is. p_is_error (print b) i \<longleftrightarrow> False"
+  shows "p_is_error (print (many b)) is \<longleftrightarrow> False"
+  using assms apply (induction \<open>is\<close>)
+  by (clarsimp simp add: fp_NER assms)+
+
+
+
+
+
 lemma many_has_result_when_first_parse_fails:
   assumes "is_error (parse bd) l"
   shows "has_result (parse (many bd)) l [] l"
