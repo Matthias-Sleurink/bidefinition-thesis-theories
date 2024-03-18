@@ -19,6 +19,7 @@ theory all_definitions
           derived_char_not_in_set
           derived_uppercase_char
           derived_lowercase_char
+          derived_nat
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
