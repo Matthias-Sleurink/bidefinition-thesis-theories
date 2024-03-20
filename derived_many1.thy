@@ -54,6 +54,13 @@ lemma many1_p_has_result[fp_NER]:
   "p_has_result (print (many1 a)) i r \<longleftrightarrow> (\<exists> r1 r2. r = r1@r2 \<and> i \<noteq> [] \<and> p_has_result (print a) (hd i) r1 \<and> p_has_result (print (many a)) (tl i) r2)"
   by (auto simp add: many1_def fp_NER)
 
+lemma many1_p_has_result_eq_many_p_has_result:
+  assumes "i \<noteq> []"
+  shows "p_has_result (print (many1 b)) i r \<longleftrightarrow> p_has_result (print (many b)) i r"
+  using assms
+  by auto (metis list.collapse many1_p_has_result many_p_has_result_safe(2))+
+  
+
 lemma many1_p_has_result_only_if_nonempty:
   assumes "p_has_result (print (many1 a)) i r"
   shows "i \<noteq> []"
