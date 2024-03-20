@@ -270,6 +270,30 @@ lemma many_char_for_predicate_has_result[NER_simps]:
         many_char_for_predicate_has_result_reverse[of r p i l]
   by fast
 
+lemma many_char_for_predicate_p_has_result_forwards:
+  assumes "\<forall>c \<in> set i. p c"
+  shows "p_has_result (print (many (char_for_predicate p))) i r \<longrightarrow> r = i"
+  using assms
+  apply (induction i arbitrary: r)
+  subgoal by (clarsimp simp add: fp_NER)
+  by (auto simp add: fp_NER)
+
+lemma many_char_for_predicate_p_has_result_backwards:
+  assumes "\<forall>c \<in> set i. p c"
+  shows "r = i \<longrightarrow> p_has_result (print (many (char_for_predicate p))) i r"
+  using assms
+  apply (induction i arbitrary: r)
+  subgoal by (clarsimp simp add: fp_NER)
+  by (clarsimp simp add: fp_NER)
+
+lemma many_char_for_predicate_p_has_result[fp_NER]:
+  assumes "\<forall>c \<in> set i. p c"
+  shows "p_has_result (print (many (char_for_predicate p))) i r \<longleftrightarrow> r = i"
+  using many_char_for_predicate_p_has_result_forwards[OF assms]
+        many_char_for_predicate_p_has_result_backwards[OF assms]
+  by blast
+  
+
 
 
 subsection \<open>Well formed\<close>
