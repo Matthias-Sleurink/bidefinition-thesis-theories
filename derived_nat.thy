@@ -59,6 +59,7 @@ lemma nat_has_result[NER_simps]:
   done
 
 
+
 \<comment> \<open>FP ner\<close>
 lemma digit_char_p_no_error[fp_NER]:
   shows "\<forall>x\<in>set (print_nat i). \<not> p_is_error (print digit_char) x"
