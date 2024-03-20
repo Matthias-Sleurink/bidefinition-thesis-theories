@@ -306,21 +306,19 @@ lemma many_well_formed:
   apply wf_init
   subgoal
     supply [[show_types=false]]
-    using assms
-    unfolding parser_can_parse_print_result_def bidef_well_formed_def pa_does_not_eat_into_pb_nondep_def PASI_def
-    apply auto
+    unfolding parser_can_parse_print_result_def
+    apply clarsimp
     subgoal for t pr
       apply (induction t arbitrary: pr)
-      subgoal
-        apply (clarsimp simp add: fp_NER)
-        unfolding many_has_result_safe(1)[of b \<open>[]\<close>]
-        by blast
-      subgoal for r rs
-        apply (clarsimp simp add: fp_NER)
-        subgoal for ir ir'
-          unfolding many_has_result_safe(2)[of b \<open>ir@ir'\<close>]
-          unfolding many_p_has_result[of b rs ir']
-          \<comment> \<open>We need many0 induct for this?\<close>
+      subgoal for pr
+        by (simp add: assms(1) many_has_result_safe(1) many_p_has_result_safe(1))
+      subgoal for r rs pr
+        apply (subst (asm) many_p_has_result_safe(2)[of b r rs pr])
+        apply clarsimp
+        subgoal for i_pr is_pr
+          apply (subst many_has_result_safe(2)[of b \<open>i_pr @ is_pr\<close> r rs \<open>[]\<close>])
+          using assms(2)[unfolded bidef_well_formed_def parser_can_parse_print_result_def]
+          
           sorry
         done
       done
