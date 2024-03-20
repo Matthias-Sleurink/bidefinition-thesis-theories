@@ -81,16 +81,11 @@ lemma nat_p_is_nonterm[fp_NER]:
 
 lemma nat_p_has_result[fp_NER]:
   "p_has_result (print (nat_b)) i r \<longleftrightarrow> r = print_nat i"
-  apply (induction r arbitrary: i)
-  subgoal by (auto simp add: fp_NER nat_b_def)
-  apply (auto simp add: nat_b_def fp_NER)
-  subgoal sorry
-  subgoal by (metis list.sel(1))
-  subgoal using digit_chars_eq_digit_chars print_nat_hd by presburger
-  subgoal sorry
-  oops
-
-
-
+  unfolding nat_b_def transform_p_has_result
+  apply (clarsimp simp add: many1_p_has_result_eq_many_p_has_result[of \<open>print_nat i\<close> digit_char r])
+  unfolding digit_char_def any_from_set_def
+  apply (rule many_char_for_predicate_p_has_result)
+  using print_nat_domain
+  by auto
 
 end
