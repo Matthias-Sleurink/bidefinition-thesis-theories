@@ -292,9 +292,30 @@ lemma many_char_for_predicate_p_has_result[fp_NER]:
   using many_char_for_predicate_p_has_result_forwards[OF assms]
         many_char_for_predicate_p_has_result_backwards[OF assms]
   by blast
+
+
+lemma does_not_eat_into_conseq_parser:
+  assumes "pa_does_not_eat_into_pb_nondep b b'"
+  assumes "p_has_result (print b) i i_t"
+  assumes "p_has_result (print b') i' i_t'"
+  shows "has_result (parse b) (i_t @ i_t') i i_t'"
+  using assms pa_does_not_eat_into_pb_nondep_def by fast
   
-
-
+lemma does_not_eat_into_many:
+  assumes "bidef_well_formed b"
+  assumes "pa_does_not_eat_into_pb_nondep b b"
+  shows "pa_does_not_eat_into_pb_nondep b (many b)"
+  using assms
+  unfolding pa_does_not_eat_into_pb_nondep_def
+            bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def
+  apply clarsimp
+  subgoal for t1 pr1 t2 pr2
+    apply (induction t2 arbitrary: pr2)
+    subgoal by (clarsimp simp add: fp_NER)
+    subgoal apply (auto simp add: fp_NER NER_simps) 
+      
+      sorry
+  
 
 subsection \<open>Well formed\<close>
 lemma many_well_formed:
@@ -317,9 +338,18 @@ lemma many_well_formed:
         apply clarsimp
         subgoal for i_pr is_pr
           apply (subst many_has_result_safe(2)[of b \<open>i_pr @ is_pr\<close> r rs \<open>[]\<close>])
-          using assms(2)[unfolded bidef_well_formed_def parser_can_parse_print_result_def]
-          
-          sorry
+          apply (cases rs)
+          subgoal \<comment> \<open>rs = []\<close> by (clarsimp simp add: NER_simps fp_NER assms(2)[unfolded bidef_well_formed_def parser_can_parse_print_result_def])
+          subgoal for r' rss \<comment> \<open>rs = r' # rss\<close>
+            using does_not_eat_into_conseq_parser[of b r i_pr r']
+            
+
+            using assms(3)[unfolded pa_does_not_eat_into_pb_nondep_def]
+            apply (auto simp add: NER_simps fp_NER)
+            \<comment> \<open>if we have does not eat into pb for b b then WF and p_has_result -> should give us the induction step.\<close>
+            
+            sorry
+          done
         done
       done
     done
