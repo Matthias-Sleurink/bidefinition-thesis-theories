@@ -302,7 +302,7 @@ lemma does_not_eat_into_conseq_parser:
   using assms pa_does_not_eat_into_pb_nondep_def by fast
 
 \<comment> \<open>Still needs to be generalised\<close>
-lemma does_not_eat_into_many_has_result:
+lemma does_not_eat_into_many_has_result_for_two:
   assumes "PASI (parse b)"
   assumes "\<not>is_nonterm (parse b) []"
   assumes "bidef_well_formed b"
@@ -317,6 +317,39 @@ lemma does_not_eat_into_many_has_result:
   by (clarsimp simp add: PASI_implies_error_from_empty[OF assms(1, 2)])
 
 
+lemma does_not_eat_into_many_has_result:
+  assumes "PASI (parse b)"
+  assumes "\<not>is_nonterm (parse b) []"
+  assumes "bidef_well_formed b"
+  assumes "pa_does_not_eat_into_pb_nondep b b"
+  assumes "p_has_result (print b) i it"
+  assumes "p_has_result (print (many b)) is it'"
+  shows "has_result (parse (many b)) (it@it') (i#is) []"
+  using assms[unfolded pa_does_not_eat_into_pb_nondep_def
+                       bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def]
+  apply (clarsimp simp add: fp_NER NER_simps)
+  apply (rule exI[of _ it'])
+  apply auto
+  subgoal 
+    apply (induction \<open>is\<close> arbitrary: it')
+    subgoal by (auto simp add: fp_NER)
+    apply (auto simp add: fp_NER)
+    
+    sorry
+  subgoal 
+    apply (induction \<open>is\<close> arbitrary: it')
+    subgoal
+      apply (auto simp add: fp_NER NER_simps)
+      using PASI_implies_error_from_empty
+      by blast
+    subgoal
+      apply (auto simp add: fp_NER NER_simps)
+      sorry
+    done
+  oops
+
+
+
 lemma does_not_eat_into_many:
   assumes "bidef_well_formed b"
   assumes "pa_does_not_eat_into_pb_nondep b b"
@@ -325,12 +358,17 @@ lemma does_not_eat_into_many:
   unfolding pa_does_not_eat_into_pb_nondep_def
             bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def
   apply clarsimp
-  subgoal for t1 pr1 t2 pr2
-    apply (induction t2 arbitrary: pr2)
+  subgoal for t1 pr1 t2s pr2
+    apply (induction t2s arbitrary: pr2)
     subgoal by (clarsimp simp add: fp_NER)
-    subgoal apply (auto simp add: fp_NER NER_simps) 
+    subgoal for t2 t2ss pr2'
+      apply clarsimp
+      apply (subst (asm) many_p_has_result_safe(2))
+      apply clarsimp
       
       sorry
+    done
+  oops
   
 
 subsection \<open>Well formed\<close>
