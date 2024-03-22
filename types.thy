@@ -63,6 +63,15 @@ lemma is_nonterm_implies_not_has_result:
   "is_nonterm p i \<Longrightarrow> (\<nexists> r l . has_result p i r l)"
   by (simp add: has_result_def is_nonterm_def)
 
+lemma has_result_exhaust:
+  "\<not>is_error   p i \<and> \<not>is_nonterm p i            \<Longrightarrow> \<exists>r l. has_result p i r l"
+  "\<not>is_error   p i \<and> (\<nexists>r l. has_result p i r l) \<Longrightarrow> is_nonterm p i"
+  "\<not>is_nonterm p i \<and> (\<nexists>r l. has_result p i r l) \<Longrightarrow> is_error p i"
+  subgoal unfolding is_error_def has_result_def is_nonterm_def by force
+  using \<open>\<not> is_error p i \<and> \<not> is_nonterm p i \<Longrightarrow> \<exists>r l. has_result p i r l\<close>
+  by blast+
+
+
 
 text \<open>Some basic NER simps that are so quick to prove
       they are not worth splitting into their own file.\<close>
