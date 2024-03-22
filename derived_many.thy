@@ -300,7 +300,23 @@ lemma does_not_eat_into_conseq_parser:
   assumes "p_has_result (print b') i' i_t'"
   shows "has_result (parse b) (i_t @ i_t') i i_t'"
   using assms pa_does_not_eat_into_pb_nondep_def by fast
-  
+
+\<comment> \<open>Still needs to be generalised\<close>
+lemma does_not_eat_into_many_has_result:
+  assumes "PASI (parse b)"
+  assumes "\<not>is_nonterm (parse b) []"
+  assumes "bidef_well_formed b"
+  assumes "pa_does_not_eat_into_pb_nondep b b"
+  assumes "p_has_result (print b) i it"
+  assumes "p_has_result (print b) i' it'"
+  shows "has_result (parse (many b)) (it@it') [i,i'] []"
+  using assms[unfolded pa_does_not_eat_into_pb_nondep_def
+                       bidef_well_formed_def parser_can_parse_print_result_def]
+  apply (clarsimp simp add: fp_NER NER_simps)
+  apply (rule exI[of _ it'])
+  by (clarsimp simp add: PASI_implies_error_from_empty[OF assms(1, 2)])
+
+
 lemma does_not_eat_into_many:
   assumes "bidef_well_formed b"
   assumes "pa_does_not_eat_into_pb_nondep b b"
