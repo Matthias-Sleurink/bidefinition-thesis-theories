@@ -474,6 +474,15 @@ lemma PASI_implies_no_result_from_empty:
   using PASI_def assms
   by fast
 
+lemma PASI_implies_error_from_empty:
+  assumes "PASI p"
+  assumes "\<not>is_nonterm p []"
+  shows "is_error p []"
+  using assms(2)
+        PASI_implies_no_result_from_empty[OF assms(1)]
+        has_result_exhaust(3)
+  by blast
+
 lemma if_PNGI:
   assumes "PNGI (parse T)"
   assumes "PNGI (parse F)"
