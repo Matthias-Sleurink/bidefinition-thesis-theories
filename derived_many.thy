@@ -444,7 +444,7 @@ lemma many_well_formed:
           apply (cases rs)
           subgoal \<comment> \<open>rs = []\<close> by (clarsimp simp add: NER_simps fp_NER assms(2)[unfolded bidef_well_formed_def parser_can_parse_print_result_def])
           subgoal for r' rss \<comment> \<open>rs = r' # rss\<close>
-            using does_not_eat_into_conseq_parser[of b r i_pr r']
+            (* using does_not_eat_into_conseq_parser[of b r i_pr r'] *)
             
 
             using assms(3)[unfolded pa_does_not_eat_into_pb_nondep_def]
@@ -492,6 +492,53 @@ lemma many_char_for_pred_well_formed:
     done
   done
 
+\<comment> \<open>Now for parsers that cannot be grown by any text.\<close>
+definition parse_result_cannot_be_grown :: "'a parser \<Rightarrow> bool" where
+  "parse_result_cannot_be_grown p \<longleftrightarrow> (\<forall>i r l i'. has_result p i r l \<longrightarrow> has_result p (i@i') r (l@i'))"
+
+\<comment> \<open>This should be able to be done more easily?\<close>
+lemma parse_result_cannot_be_grown_apply:
+  assumes "parse_result_cannot_be_grown p"
+  shows "has_result p i r l \<longrightarrow> has_result p (i@i') r (l@i')"
+  using assms parse_result_cannot_be_grown_def
+  by fast
+
+lemma wf_parser_can_parse_print_result_apply:
+  assumes "bidef_well_formed b"
+  shows "p_has_result (print b) t pr \<Longrightarrow> has_result (parse b) pr t []"
+  using assms[unfolded bidef_well_formed_def parser_can_parse_print_result_def]
+  by blast
+
+lemma well_formed_does_not_grow:
+  assumes "parse_result_cannot_be_grown (parse b)"
+  assumes "bidef_well_formed b"
+  assumes "is_error (parse b) []"
+  shows "bidef_well_formed (many b)"
+  apply wf_init
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply clarsimp
+    subgoal for ts pr
+      apply (induction ts arbitrary: pr)
+      subgoal by (clarsimp simp add: NER_simps fp_NER assms(3))
+      subgoal for t ts' pr'
+        unfolding many_p_has_result_safe many_has_result_safe
+        apply clarsimp
+        subgoal for tpr ts'pr
+          apply (rule exI[where x=ts'pr])
+          apply clarsimp
+          \<comment> \<open>Cannot use literal fact here, why?\<close>
+          (* using wf_parser_can_parse_print_result_apply[OF assms(2) \<open>p_has_result (print b) t tpr\<close>] *)
+          using wf_parser_can_parse_print_result_apply[OF assms(2), of t tpr]
+          using parse_result_cannot_be_grown_apply[OF assms(1), of tpr t \<open>[]\<close> ts'pr]
+          by simp
+        done
+      done
+    done
+  subgoal
+    apply (rule printer_can_print_parse_result_many)
+    using assms(2) by blast
+  done
 
 
 end
