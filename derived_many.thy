@@ -317,6 +317,26 @@ lemma does_not_eat_into_many_has_result_for_two:
   by (clarsimp simp add: PASI_implies_error_from_empty[OF assms(1, 2)])
 
 
+\<comment> \<open>Convert this thing so that we can fill it in using of.\<close>
+lemma parser_can_parse_print_result_simp:
+  assumes "parser_can_parse_print_result parser printer"
+  shows "p_has_result printer i pr \<Longrightarrow> has_result parser pr i []"
+  using assms parser_can_parse_print_result_def by force
+
+lemma can_parse_print_result:
+  assumes "bidef_well_formed b"
+  shows "p_has_result (print b) i pr \<Longrightarrow> has_result (parse b) pr i []"
+  using assms[unfolded bidef_well_formed_def] parser_can_parse_print_result_simp
+  by fast
+
+lemma does_not_eat_into:
+  assumes "pa_does_not_eat_into_pb_nondep ba bb"
+  assumes "p_has_result (print ba) t1 pr1"
+  assumes "p_has_result (print bb) t2 pr2"
+  shows "has_result (parse ba) (pr1@pr2) t1 pr2"
+  using assms[unfolded pa_does_not_eat_into_pb_nondep_def]
+  by blast
+
 lemma does_not_eat_into_many_has_result:
   assumes "PASI (parse b)"
   assumes "\<not>is_nonterm (parse b) []"
