@@ -350,11 +350,22 @@ lemma does_not_eat_into_many_has_result:
   apply (clarsimp simp add: fp_NER NER_simps)
   apply (rule exI[of _ it'])
   apply auto
-  subgoal 
-    apply (induction \<open>is\<close> arbitrary: it')
-    subgoal by (auto simp add: fp_NER)
-    apply (auto simp add: fp_NER)
-    
+  subgoal
+    apply (induction \<open>is\<close> arbitrary: it') \<comment> \<open>The idea being, from is = [] this is trivial, and from i#iss we can get the first iteration\<close>
+    subgoal by (clarsimp simp add: fp_NER)
+    subgoal for i' iss it'
+      apply clarsimp \<comment> \<open>replace is with i'#iss\<close>
+      apply (subst (asm) many_p_has_result_safe(2)[of b i' iss it'])
+      using can_parse_print_result[OF assms(3) \<open>p_has_result (print b) i it\<close>]
+
+      using does_not_eat_into[OF assms(4) \<open>p_has_result (print b) i it\<close>, of i']
+      using PASI_def[of \<open>parse b\<close>]
+      apply clarsimp
+      
+
+      using assms(4)[unfolded pa_does_not_eat_into_pb_nondep_def]
+      using assms(3)[unfolded bidef_well_formed_def parser_can_parse_print_result_def]
+      sorry
     sorry
   subgoal 
     apply (induction \<open>is\<close> arbitrary: it')
