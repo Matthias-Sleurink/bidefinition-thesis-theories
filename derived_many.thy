@@ -293,6 +293,24 @@ lemma many_char_for_predicate_p_has_result[fp_NER]:
         many_char_for_predicate_p_has_result_backwards[OF assms]
   by blast
 
+\<comment> \<open>The second half of many holds for all applications of many.\<close>
+\<comment> \<open>Not really sure if this 'assumes A or B' is a good idea in general,
+    but it makes it easier to apply if you do know the rhs\<close>
+lemma printer_can_print_parse_result_many:
+  assumes "printer_can_print_parse_result (parse b) (print b) \<or> bidef_well_formed b"
+  shows "printer_can_print_parse_result (parse (many b)) (print (many b))"
+  using assms unfolding bidef_well_formed_def printer_can_print_parse_result_def
+  apply clarsimp
+  subgoal for ts i l
+    apply (induction ts arbitrary: i l)
+    subgoal by (auto simp add: fp_NER)
+    apply (auto simp add: fp_NER NER_simps)
+    subgoal by (metis many_p_has_result_safe(2))
+    subgoal by (meson many_p_has_result_safe(2))
+    done
+  done
+
+
 
 lemma does_not_eat_into_conseq_parser:
   assumes "pa_does_not_eat_into_pb_nondep b b'"
