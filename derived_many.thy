@@ -496,6 +496,15 @@ lemma many_char_for_pred_well_formed:
 definition parse_result_cannot_be_grown :: "'a parser \<Rightarrow> bool" where
   "parse_result_cannot_be_grown p \<longleftrightarrow> (\<forall>i r l i'. has_result p i r l \<longrightarrow> has_result p (i@i') r (l@i'))"
 
+lemma parse_result_cannot_be_grown_char_for_predicate:
+  "parse_result_cannot_be_grown (parse (char_for_predicate p))"
+  unfolding parse_result_cannot_be_grown_def
+  by (clarsimp simp add: NER_simps)
+lemma parse_result_cannot_be_grown_one_char:
+  "parse_result_cannot_be_grown (parse one_char)"
+  unfolding parse_result_cannot_be_grown_def
+  by (clarsimp simp add: NER_simps)
+
 \<comment> \<open>This should be able to be done more easily?\<close>
 lemma parse_result_cannot_be_grown_apply:
   assumes "parse_result_cannot_be_grown p"
@@ -539,6 +548,8 @@ lemma well_formed_does_not_grow:
     apply (rule printer_can_print_parse_result_many)
     using assms(2) by blast
   done
+
+\<comment> \<open>Next step: cannot be grown by outputs from self?\<close>
 
 
 end
