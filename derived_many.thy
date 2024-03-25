@@ -451,5 +451,29 @@ lemma many_well_formed:
   oops
 
 
+lemma many_char_for_pred_well_formed:
+  shows "bidef_well_formed (many (char_for_predicate p))"
+  apply wf_init
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply clarsimp
+    subgoal for ts pr
+      apply (induction ts arbitrary: pr)
+      by (clarsimp simp add: fp_NER NER_simps)+
+    done
+  subgoal
+    unfolding printer_can_print_parse_result_def
+    apply clarsimp
+    subgoal for ts i l
+      apply (induction ts arbitrary: i l)
+      subgoal by (auto simp add: fp_NER NER_simps)
+      subgoal for t ts' i' l'
+      apply (clarsimp simp add: fp_NER NER_simps)
+        by (metis char_for_predicate_p_has_result many_p_has_result_safe(2))
+      done
+    done
+  done
+
+
 
 end
