@@ -550,6 +550,52 @@ lemma well_formed_does_not_grow:
   done
 
 \<comment> \<open>Next step: cannot be grown by outputs from self?\<close>
+\<comment> \<open>Now for parsers that cannot be grown by any text.\<close>
+definition parse_result_cannot_be_grown_by_printer :: "'a parser \<Rightarrow> 'b printer \<Rightarrow> bool" where
+  "parse_result_cannot_be_grown_by_printer pa pr \<longleftrightarrow> (\<forall>i r l pri prt. has_result pa i r l \<and> p_has_result pr pri prt \<longrightarrow> has_result pa (i@prt) r (l@prt))"
 
+\<comment> \<open>This should be able to be done more easily?\<close>
+lemma parse_result_cannot_be_grown_by_printer_apply:
+  assumes "parse_result_cannot_be_grown_by_printer pa pr"
+  assumes "has_result pa i r l"
+  assumes "p_has_result pr pri prt"
+  shows "has_result pa (i@prt) r (l@prt)"
+  using assms parse_result_cannot_be_grown_by_printer_def
+  by fast
+
+lemma well_formed_does_not_grow_by_printer:
+  assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
+  assumes "bidef_well_formed b"
+  assumes "is_error (parse b) []"
+  shows "bidef_well_formed (many b)"
+  apply wf_init
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply clarsimp
+    subgoal for ts pr
+      apply (induction ts arbitrary: pr)
+      subgoal by (clarsimp simp add: NER_simps fp_NER assms(3))
+      subgoal for t ts' pr'
+        unfolding many_p_has_result_safe many_has_result_safe
+        apply clarsimp
+        subgoal for tpr ts'pr
+          apply (rule exI[where x=ts'pr])
+          apply clarsimp
+          \<comment> \<open>Cannot grab literal fact\<close>
+          using wf_parser_can_parse_print_result_apply[OF assms(2), of t tpr]
+          apply clarsimp \<comment> \<open>Succeeds in getting \<open>has_result (parse b) tpr t []\<close> into the assms\<close>
+          \<comment> \<open>Cannot grab literal fact again here.\<close>
+          using parse_result_cannot_be_grown_by_printer_apply[OF assms(1), of tpr t \<open>[]\<close> _ ts'pr]
+          by auto
+        done
+      done
+    done
+  subgoal
+    apply (rule printer_can_print_parse_result_many)
+    using assms(2) by blast
+  done
+
+\<comment> \<open>Would be nice: cannot be grown by self implies cannot be grown by many self\<close>
+\<comment> \<open> But not sure if that is realistic.\<close>
 
 end
