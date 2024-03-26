@@ -537,6 +537,7 @@ lemma well_formed_does_not_grow:
           apply (rule exI[where x=ts'pr])
           apply clarsimp
           \<comment> \<open>Cannot use literal fact here, why?\<close>
+          apply (frule wf_parser_can_parse_print_result_apply[OF assms(2), of t tpr])
           (* using wf_parser_can_parse_print_result_apply[OF assms(2) \<open>p_has_result (print b) t tpr\<close>] *)
           using wf_parser_can_parse_print_result_apply[OF assms(2), of t tpr]
           using parse_result_cannot_be_grown_apply[OF assms(1), of tpr t \<open>[]\<close> ts'pr]
@@ -604,18 +605,27 @@ lemma cannot_be_grown_to_many:
   oops
 
 lemma cannot_be_grown_to_many:
+  assumes "PNGI (parse b)"
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print b)"
   shows "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
-  using assms unfolding parse_result_cannot_be_grown_by_printer_def
+  using assms unfolding parse_result_cannot_be_grown_by_printer_def PNGI_def
   apply clarsimp
   subgoal for i r l pri prt
-    apply (induction pri)
+    apply (induction pri arbitrary: prt)
     subgoal by (clarsimp simp add: many_p_has_result_safe(1))
-    subgoal for pri1 pri'
+    subgoal for pri1 pri' prt'
       apply (auto simp add: fp_NER NER_simps)
+      
       sorry
     done
   oops
+
+
+
+value "one_char"
+value "parse one_char ''abcd''"
+value "parse (b_then one_char one_char) ''abcd''"
+value "parse (many (b_then one_char one_char)) ''abcde''"
 
 
 end

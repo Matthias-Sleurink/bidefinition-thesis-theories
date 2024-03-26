@@ -171,4 +171,8 @@ lemma b_then_well_formed:
     by fast
   done
 
+value "one_char"
+value "parse one_char ''abcd''"
+value "parse (b_then one_char one_char) ''abcd''"
+
 end
