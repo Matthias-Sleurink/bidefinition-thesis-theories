@@ -598,4 +598,24 @@ lemma well_formed_does_not_grow_by_printer:
 \<comment> \<open>Would be nice: cannot be grown by self implies cannot be grown by many self\<close>
 \<comment> \<open> But not sure if that is realistic.\<close>
 
+lemma cannot_be_grown_to_many:
+  assumes "has_result (parse b) i r l \<and> p_has_result (print b) pri prt \<longrightarrow> has_result pa (i@prt) r (l@prt)"
+  shows "has_result (parse b) i r l \<and> p_has_result (print (many b)) pris prts \<longrightarrow> has_result pa (i@prts) r (l@prts)"
+  oops
+
+lemma cannot_be_grown_to_many:
+  assumes "parse_result_cannot_be_grown_by_printer (parse b) (print b)"
+  shows "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
+  using assms unfolding parse_result_cannot_be_grown_by_printer_def
+  apply clarsimp
+  subgoal for i r l pri prt
+    apply (induction pri)
+    subgoal by (clarsimp simp add: many_p_has_result_safe(1))
+    subgoal for pri1 pri'
+      apply (auto simp add: fp_NER NER_simps)
+      sorry
+    done
+  oops
+
+
 end
