@@ -88,4 +88,39 @@ lemma nat_p_has_result[fp_NER]:
   using print_nat_domain
   by auto
 
+lemma takeWhileAllTrue:
+  assumes "\<forall>a \<in> set as. P a"
+  shows "as = takeWhile P as"
+  using assms
+  by (metis takeWhile_eq_all_conv)
+
+lemma dropWhileAllTrue:
+  assumes "\<forall>a \<in> set as. P a"
+  shows "[] = dropWhile P as"
+  using assms
+  by (metis dropWhile_eq_Nil_conv)
+
+
+lemma nat_b_well_formed:
+  "bidef_well_formed nat_b"
+  apply wf_init
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply (auto simp add: NER_simps fp_NER)
+    subgoal for t
+      using print_nat_domain[of t]
+      using takeWhileAllTrue[of \<open>print_nat t\<close> \<open>(\<lambda>x. x \<in> derived_digit_char.digit_chars)\<close>]
+      by auto
+    subgoal for t
+      using print_nat_domain[of t]
+      using dropWhileAllTrue[of \<open>print_nat t\<close> \<open>(\<lambda>x. x \<in> derived_digit_char.digit_chars)\<close>]
+      by auto
+    done
+  subgoal
+    unfolding printer_can_print_parse_result_def
+    by (auto simp add: NER_simps fp_NER)
+  done
+
+
+
 end
