@@ -137,5 +137,29 @@ lemma nat_b_wf_from_many1:
   \<comment> \<open>Counterexample here, v = '01', which gives: nat_from '01' = 1::nat, which gives print_nat 1 = '1' ~= '01'\<close>
   oops
 
+lemma nat_b_wf_from_transform_many1:
+  "bidef_well_formed nat_b"
+  unfolding nat_b_def
+  apply (rule transform_well_formed2)
+  subgoal
+    apply (rule many1_well_formed)
+    subgoal by (clarsimp simp add: fp_NER NER_simps parse_result_cannot_be_grown_by_printer_def)
+    subgoal by (rule digit_char_well_formed)
+    subgoal by (simp add: digit_char_is_error)
+    done
+  unfolding well_formed_transform_funcs2_def
+  apply (auto simp add: NER_simps fp_NER)
+  subgoal
+    \<comment> \<open>Counterexample here, v = '01', which gives: nat_from '01' = 1::nat, which gives print_nat 1 = '1' ~= '01'\<close>
+    sorry
+  subgoal for t l
+    by (metis any_from_set_def
+              digit_char_def
+              many_char_for_pred_well_formed
+              nat_from_print_nat
+              print_nat_never_empty(2)
+              wf_parser_can_parse_print_result_apply)
+  oops
+
 
 end
