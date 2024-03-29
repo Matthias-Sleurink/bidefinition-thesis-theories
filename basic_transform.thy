@@ -124,6 +124,27 @@ lemma id_is_well_formed_transform_func2[simp]:
   using assms[unfolded bidef_well_formed_def parser_can_parse_print_result_def]
   by auto
 
+definition well_formed_transform_funcs3 :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
+  "well_formed_transform_funcs3 f f' b \<longleftrightarrow> ( \<comment> \<open>f' (f v) = v\<close>
+        (\<forall> i v l. has_result (parse b) i v l \<longrightarrow> (\<exists> t. p_has_result (print b) (f' (f v)) t))
+      \<and> (\<forall> pr t. p_has_result (print b) (f' t) pr \<longrightarrow> (\<exists>l r'. has_result (parse b) pr r' l \<and> t = f r')))"
+
+lemma transform_well_formed3:
+  assumes "bidef_well_formed b"
+  assumes "well_formed_transform_funcs3 f f' b"
+  shows "bidef_well_formed (transform f f' b)"
+  apply wf_init
+  subgoal
+    using assms[unfolded bidef_well_formed_def
+                         well_formed_transform_funcs3_def]
+    apply (simp add: parser_can_parse_print_result_def fp_NER NER_simps)
+    by (simp add: has_result_def)
+  subgoal
+    using assms[unfolded bidef_well_formed_def
+                         well_formed_transform_funcs3_def]
+    apply (simp add: printer_can_print_parse_result_def fp_NER NER_simps)
+    by blast
+  done
 
 
 end
