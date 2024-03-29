@@ -105,5 +105,63 @@ lemma many1_PASI:
   by (rule assms(1))
 
 
+lemma printer_can_print_parse_result_many1:
+  assumes "printer_can_print_parse_result (parse b) (print b) \<or> bidef_well_formed b"
+  shows "printer_can_print_parse_result (parse (many1 b)) (print (many1 b))"
+  using assms unfolding bidef_well_formed_def printer_can_print_parse_result_def
+  apply clarsimp
+  subgoal for ts i l
+    apply (induction ts arbitrary: i l)
+    subgoal using many1_no_result_if_empty by blast
+    apply (auto simp add: fp_NER NER_simps)
+    subgoal for t ts' i' l'' l'
+      by (metis (no_types) list.collapse list.sel(3) many1_p_has_result many1_p_has_result_eq_many_p_has_result many_has_result_safe(2) many_p_has_result_safe(1) neq_Nil_conv)
+    subgoal
+      by (metis list.distinct(1) many1_p_has_result_eq_many_p_has_result many_has_result_safe(2) printer_can_print_parse_result_def printer_can_print_parse_result_many)
+    done
+  done
+
+
+\<comment> \<open>Well Formed\<close>
+lemma many1_well_formed:
+  assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
+  assumes "bidef_well_formed b"
+  assumes "is_error (parse b) []"
+  shows "bidef_well_formed (many1 b)"
+  apply wf_init
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply clarsimp \<comment> \<open>To move \<forall> to \<And>\<close>
+    subgoal for ts pr
+      apply (induction ts arbitrary: pr)
+      subgoal using many1_p_no_result_empty by blast
+      subgoal for t ts' pr'
+        using assms[unfolded parse_result_cannot_be_grown_by_printer_def bidef_well_formed_def parser_can_parse_print_result_def]
+        apply (auto simp add: fp_NER NER_simps)
+        by (smt (verit) append.right_neutral append_eq_append_conv2 assms(1) assms(2) can_parse_print_result same_append_eq well_formed_does_not_grow_by_printer)
+      done
+    done
+  subgoal
+    apply (rule printer_can_print_parse_result_many1)
+    using assms(2) by blast
+  done
+
+
+lemma many1_well_formed_from_many:
+  assumes "bidef_well_formed (many b)"
+  shows "bidef_well_formed (many1 b)"
+  apply wf_init
+  subgoal
+    using assms[unfolded bidef_well_formed_def]
+    unfolding parser_can_parse_print_result_def
+    by (metis many1_has_result many1_p_has_result many_has_result_safe(2) many_p_has_result_safe(2))
+  subgoal
+    using assms[unfolded bidef_well_formed_def]
+    unfolding printer_can_print_parse_result_def
+    by (metis many1_has_result many1_p_has_result many_has_result_safe(2) many_p_has_result_safe(2))
+  done
+
+
+
 
 end
