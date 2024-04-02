@@ -51,6 +51,18 @@ lemma many_is_nonterm: \<comment> \<open>not added to nersimp since it will unfo
   apply (subst many.simps)
   by (clarsimp simp add: NER_simps)
 
+lemma many_not_nonterm_when_base_not_nonterm[NER_simps]:
+  assumes "\<nexists>i'. is_nonterm (parse b) i'"
+  assumes "PASI (parse b)"
+  shows "is_nonterm (parse (many b)) i \<longleftrightarrow> False"
+  using assms[unfolded PASI_def]
+  apply (induction i rule: length_induct)
+  apply (auto simp add: NER_simps)
+  apply (subst (asm) (2) many_is_nonterm)
+  by force
+
+
+
 \<comment> \<open>TODO\<close>
 lemma many_is_error[NER_simps]:
   "is_error (parse (many b)) i \<longleftrightarrow> False"
