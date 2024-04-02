@@ -20,6 +20,7 @@ theory all_definitions
           derived_uppercase_char
           derived_lowercase_char
           derived_nat
+          derived_whitespace_char
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
