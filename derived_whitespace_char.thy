@@ -3,9 +3,10 @@ theory derived_whitespace_char
           derived_any_from_set
 begin
 
-\<comment> \<open>How does one add chars like newline, tab, and return?\<close>
+\<comment> \<open>Note, there may be more whitespace characters\<close>
 definition whitespace_chars :: "char set" where
-  "whitespace_chars = {CHR '' ''}"
+  "whitespace_chars = {CHR '' '', CHR ''\<newline>'', CHR 0x09, CHR 0x0D}"
+\<comment> \<open>                   space      newline    tab        \r\<close>
 
 
 definition whitespace_char :: "char bidef" where
