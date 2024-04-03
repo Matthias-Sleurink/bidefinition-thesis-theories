@@ -104,7 +104,15 @@ lemma seperatedBy_p_is_error[fp_NER]:
   unfolding seperatedBy_def seperatedByBase_def
   by (clarsimp simp add: fp_NER)+
 
-\<comment> \<open>Unsatisfying, should create also sep ~= error, elem ~= error, and both ~= error cases\<close>
+lemma seperatedBy_p_is_error2[fp_NER]:
+  assumes "\<not>(p_is_error (print sep ) sep_oracle)"
+  assumes "\<not>(\<exists>i \<in>set as. p_is_error (print elem) i)"
+  shows "p_is_error (print (seperatedBy sep elem sep_oracle)) as \<longleftrightarrow> False"
+  unfolding seperatedBy_def seperatedByBase_def
+  using assms
+  by (clarsimp simp add: fp_NER split: list.splits)
+
+
 lemma seperatedBy_p_has_result[fp_NER]:
   "p_has_result (print (seperatedBy sep elem sep_oracle)) [] pr \<longleftrightarrow> pr = []"
   "p_has_result (print (seperatedBy sep elem sep_oracle)) [i] pr \<longleftrightarrow> p_has_result (print elem) i pr"
