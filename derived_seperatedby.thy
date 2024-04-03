@@ -87,6 +87,15 @@ lemma seperatedBy_p_is_nonterm[fp_NER]:
   unfolding seperatedBy_def seperatedByBase_def
   by (clarsimp simp add: fp_NER)+
 
+lemma seperatedBy_p_is_nonterm2[fp_NER]:
+  assumes "\<not>(p_is_nonterm (print sep ) sep_oracle)"
+  assumes "\<not>(\<exists>i \<in> set as. p_is_nonterm (print elem) i)"
+  shows "p_is_nonterm (print (seperatedBy sep elem sep_oracle)) as \<longleftrightarrow> False"
+  unfolding seperatedBy_def seperatedByBase_def
+  using assms
+  by (clarsimp simp add: fp_NER split: list.splits)
+
+
 \<comment> \<open>Unsatisfying, should create also sep ~= error, elem ~= error, and both ~= error cases\<close>
 lemma seperatedBy_p_is_error[fp_NER]:
   "p_is_error (print (seperatedBy sep elem sep_oracle)) [] \<longleftrightarrow> False"
