@@ -129,6 +129,7 @@ definition well_formed_transform_funcs3 :: "('\<alpha> \<Rightarrow> '\<beta>) \
         (\<forall> i v l. has_result (parse b) i v l \<longrightarrow> (\<exists> t. p_has_result (print b) (f' (f v)) t))
       \<and> (\<forall> pr t. p_has_result (print b) (f' t) pr \<longrightarrow> (\<exists>l r'. has_result (parse b) pr r' l \<and> t = f r')))"
 
+\<comment> \<open>TODO, the order of the assumptions here is very unfortunate. Invert some time\<close>
 lemma transform_well_formed3:
   assumes "bidef_well_formed b"
   assumes "well_formed_transform_funcs3 f f' b"

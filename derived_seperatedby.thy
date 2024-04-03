@@ -77,7 +77,6 @@ lemma seperatedBy_has_result_safe_Cons[NER_simps]:
 
 
 \<comment> \<open>fp_NER\<close>
-\<comment> \<open>Unsatisfying, should create also sep ~= nonterm, elem ~= nonterm, and both ~= nonterm cases\<close>
 lemma seperatedBy_p_is_nonterm[fp_NER]:
   "p_is_nonterm (print (seperatedBy sep elem sep_oracle)) [] \<longleftrightarrow> False"
   "p_is_nonterm (print (seperatedBy sep elem sep_oracle)) (a#as) \<longleftrightarrow> 
@@ -96,7 +95,6 @@ lemma seperatedBy_p_is_nonterm2[fp_NER]:
   by (clarsimp simp add: fp_NER split: list.splits)
 
 
-\<comment> \<open>Unsatisfying, should create also sep ~= error, elem ~= error, and both ~= error cases\<close>
 lemma seperatedBy_p_is_error[fp_NER]:
   "p_is_error (print (seperatedBy sep elem sep_oracle)) [] \<longleftrightarrow> False"
   "p_is_error (print (seperatedBy sep elem sep_oracle)) (a#as) \<longleftrightarrow> p_is_error (print elem) a \<or>
