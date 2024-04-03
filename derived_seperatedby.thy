@@ -122,7 +122,9 @@ lemma seperatedBy_p_has_result[fp_NER]:
   apply (clarsimp simp add: fp_NER)+
   by blast
 
-
+lemma snd_comp_pair_id[simp]:
+  "(snd \<circ> Pair a) = id"
+  by fastforce
 
 \<comment> \<open>Well formed\<close>
 
