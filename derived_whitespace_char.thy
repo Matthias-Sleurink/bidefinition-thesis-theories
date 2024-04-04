@@ -8,6 +8,14 @@ definition whitespace_chars :: "char set" where
   "whitespace_chars = {CHR '' '', CHR ''\<newline>'', CHR 0x09, CHR 0x0D}"
 \<comment> \<open>                   space      newline    tab        \r\<close>
 
+lemma whitespace_chars_elements[simp]:
+  "CHR '' '' \<in> whitespace_chars"
+  "CHR ''\<newline>'' \<in> whitespace_chars"
+  "CHR 0x09  \<in> whitespace_chars"
+  "CHR 0x0D  \<in> whitespace_chars"
+  unfolding whitespace_chars_def
+  by simp_all
+
 
 definition whitespace_char :: "char bidef" where
   "whitespace_char = any_from_set whitespace_chars"
