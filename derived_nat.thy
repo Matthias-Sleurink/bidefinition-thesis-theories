@@ -190,4 +190,12 @@ lemma nat_b_wf_from_transform_many1:
     by (metis any_from_set_def digit_char_def many_char_for_pred_well_formed nat_from_print_nat print_nat_never_empty(1) print_result_is_canon_result)
   done
 
+lemma print_nat_takeWhile[simp]:
+  "takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars)         (print_nat n) = print_nat n"
+  "takeWhile (\<lambda>x. x \<in> meta_digit_to_nat_and_back.digit_chars) (print_nat n) = print_nat n"
+  unfolding derived_digit_char.digit_chars_def
+  using digit_char_p_is_error digit_char_p_no_error
+  by (clarsimp; blast)+
+
+
 end
