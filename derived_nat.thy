@@ -197,5 +197,12 @@ lemma print_nat_takeWhile[simp]:
   using digit_char_p_is_error digit_char_p_no_error
   by (clarsimp; blast)+
 
+lemma print_nat_dropWhile[simp]:
+  "dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars)         ((print_nat n) @ t) = dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars)         t"
+  "dropWhile (\<lambda>x. x \<in> meta_digit_to_nat_and_back.digit_chars) ((print_nat n) @ t) = dropWhile (\<lambda>x. x \<in> meta_digit_to_nat_and_back.digit_chars) t"
+  unfolding derived_digit_char.digit_chars_def
+  using digit_char_p_is_error digit_char_p_no_error
+  by (clarsimp; blast)+
+
 
 end
