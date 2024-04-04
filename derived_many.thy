@@ -154,6 +154,10 @@ lemma many_p_has_result:
 )"
   by (cases l) (clarsimp simp add: many_p_has_result_safe)+
 
+lemma ex_many_p_has_result[fp_NER]:
+  "Ex (p_has_result (print (many b)) [])"
+  using many_p_has_result_safe(1) by blast
+
 lemma many_p_is_nonterm_safe[fp_NER]:
   "p_is_nonterm (print (many b)) []     \<longleftrightarrow> False"
   "p_is_nonterm (print (many b)) (x#xs) \<longleftrightarrow> p_is_nonterm (print b) x \<or> (\<not>p_is_error (print b) x \<and> p_is_nonterm (print (many b)) xs)"
