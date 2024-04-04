@@ -1,47 +1,47 @@
-theory derived_seperatedby
+theory derived_separated_by
   imports basic_definitions
           derived_many
           derived_optional
 begin
 
-definition seperatedByBase :: "'b bd \<Rightarrow> 'a bd \<Rightarrow> ('a \<times> ('b \<times> 'a) list) bd" where
-  "seperatedByBase sep elem = b_then elem (many (b_then sep elem))"
+definition separated_byBase :: "'b bd \<Rightarrow> 'a bd \<Rightarrow> ('a \<times> ('b \<times> 'a) list) bd" where
+  "separated_byBase sep elem = b_then elem (many (b_then sep elem))"
 
-definition seperatedBy :: "'b bd \<Rightarrow> 'a bd \<Rightarrow> 'b \<Rightarrow> 'a list bd" where
-  "seperatedBy sep elem sep_oracle =
+definition separated_by :: "'b bd \<Rightarrow> 'a bd \<Rightarrow> 'b \<Rightarrow> 'a list bd" where
+  "separated_by sep elem sep_oracle =
       transform
          \<comment> \<open>('a \<times> ('b \<times> 'a) list) option \<Rightarrow> 'a list\<close>
         (\<lambda>m_al. case m_al of None \<Rightarrow> [] | Some (a, l) \<Rightarrow> a#(map snd l))
         \<comment> \<open>'a list \<Rightarrow> ('a \<times> ('b \<times> 'a) list) option\<close>
         (\<lambda>l. case l of [] \<Rightarrow> None | (a#as) \<Rightarrow> Some (a, map (Pair sep_oracle) as))
         \<comment> \<open>('a \<times> ('b \<times> 'a) list) option bd\<close>
-        (optional (seperatedByBase sep elem))
+        (optional (separated_byBase sep elem))
 "
 
 
 
-definition good_seperatedBy_oracle :: "'a bidef \<Rightarrow> 'a \<Rightarrow> bool" where
-  "good_seperatedBy_oracle sep oracle \<longleftrightarrow> (\<exists>r. p_has_result (print sep) oracle r)"
+definition good_separated_by_oracle :: "'a bidef \<Rightarrow> 'a \<Rightarrow> bool" where
+  "good_separated_by_oracle sep oracle \<longleftrightarrow> (\<exists>r. p_has_result (print sep) oracle r)"
 
 
 
 \<comment> \<open>NER\<close>
 \<comment> \<open>Unsatisfying, should create also sep ~= nonterm, elem ~= nonterm, and both ~= nonterm cases\<close>
-lemma seperatedBy_is_nonterm[NER_simps]:
-  "is_nonterm (parse (seperatedBy sep elem sep_oracle)) i \<longleftrightarrow> 
+lemma separated_by_is_nonterm[NER_simps]:
+  "is_nonterm (parse (separated_by sep elem sep_oracle)) i \<longleftrightarrow> 
       (is_nonterm (parse elem) i \<or>
         (\<exists>r l. has_result (parse elem) i r l \<and>
               is_nonterm (parse (many (b_then sep elem))) l))"
-  by (simp add: seperatedBy_def seperatedByBase_def NER_simps)
+  by (simp add: separated_by_def separated_byBase_def NER_simps)
 
-lemma seperatedBy_is_nonterm_wf[NER_simps]:
+lemma separated_by_is_nonterm_wf[NER_simps]:
   assumes "\<nexists>i'. is_nonterm (parse sep) i'"
   assumes "\<nexists>i'. is_nonterm (parse elem) i'"
   assumes "PASI (parse sep)"
   assumes "PASI (parse elem)"
-  shows "is_nonterm (parse (seperatedBy sep elem sep_oracle)) i \<longleftrightarrow> False"
+  shows "is_nonterm (parse (separated_by sep elem sep_oracle)) i \<longleftrightarrow> False"
   using assms
-  unfolding seperatedBy_def seperatedByBase_def
+  unfolding separated_by_def separated_byBase_def
   apply (simp add: NER_simps)
   apply (subst many_not_nonterm_when_base_not_nonterm)
   subgoal by (simp add: NER_simps)
@@ -50,75 +50,75 @@ lemma seperatedBy_is_nonterm_wf[NER_simps]:
   done
 
 
-lemma seperatedBy_is_error[NER_simps]:
-  "is_error (parse (seperatedBy sep elem sep_oracle)) i \<longleftrightarrow> False"
-  by (simp add: seperatedBy_def seperatedByBase_def NER_simps)
+lemma separated_by_is_error[NER_simps]:
+  "is_error (parse (separated_by sep elem sep_oracle)) i \<longleftrightarrow> False"
+  by (simp add: separated_by_def separated_byBase_def NER_simps)
 
-lemma seperatedBy_has_result[NER_simps]:
-  "has_result (parse (seperatedBy sep elem sep_oracle)) i r l \<longleftrightarrow> test"
-  unfolding seperatedBy_def seperatedByBase_def
+lemma separated_by_has_result[NER_simps]:
+  "has_result (parse (separated_by sep elem sep_oracle)) i r l \<longleftrightarrow> test"
+  unfolding separated_by_def separated_byBase_def
   apply (simp add: NER_simps)
   oops
 
-lemma seperatedBy_has_result_safe_Nil[NER_simps]:
-  "has_result (parse (seperatedBy sep elem sep_oracle)) i [] l \<longleftrightarrow> is_error (parse elem) i \<and> l = i"
-  unfolding seperatedBy_def seperatedByBase_def
+lemma separated_by_has_result_safe_Nil[NER_simps]:
+  "has_result (parse (separated_by sep elem sep_oracle)) i [] l \<longleftrightarrow> is_error (parse elem) i \<and> l = i"
+  unfolding separated_by_def separated_byBase_def
   by (auto simp add: NER_simps split: option.splits)
   
-lemma seperatedBy_has_result_safe_Cons[NER_simps]:
-  "has_result (parse (seperatedBy sep elem sep_oracle)) i (a#as) l \<longleftrightarrow> (
+lemma separated_by_has_result_safe_Cons[NER_simps]:
+  "has_result (parse (separated_by sep elem sep_oracle)) i (a#as) l \<longleftrightarrow> (
       \<exists>l'. has_result (parse elem) i a l' \<and>
             ((is_error (parse sep) l' \<and> as = []) \<or>
-             (\<exists>l''. has_result (parse sep) l' s l'' \<and> has_result (parse (seperatedBy sep elem sep_oracle)) l'' as l)
+             (\<exists>l''. has_result (parse sep) l' s l'' \<and> has_result (parse (separated_by sep elem sep_oracle)) l'' as l)
 ))"
-  apply (subst seperatedBy_def)
-  apply (subst seperatedByBase_def)
+  apply (subst separated_by_def)
+  apply (subst separated_byBase_def)
   oops
 
 
 \<comment> \<open>fp_NER\<close>
-lemma seperatedBy_p_is_nonterm[fp_NER]:
-  "p_is_nonterm (print (seperatedBy sep elem sep_oracle)) [] \<longleftrightarrow> False"
-  "p_is_nonterm (print (seperatedBy sep elem sep_oracle)) (a#as) \<longleftrightarrow> 
+lemma separated_by_p_is_nonterm[fp_NER]:
+  "p_is_nonterm (print (separated_by sep elem sep_oracle)) [] \<longleftrightarrow> False"
+  "p_is_nonterm (print (separated_by sep elem sep_oracle)) (a#as) \<longleftrightarrow> 
     (p_is_nonterm (print elem) a \<or>
       \<not> p_is_error (print elem) a \<and>
       p_is_nonterm (print (many (b_then sep elem))) (map (Pair sep_oracle) as))"
-  unfolding seperatedBy_def seperatedByBase_def
+  unfolding separated_by_def separated_byBase_def
   by (clarsimp simp add: fp_NER)+
 
-lemma seperatedBy_p_is_nonterm2[fp_NER]:
+lemma separated_by_p_is_nonterm2[fp_NER]:
   assumes "\<not>(p_is_nonterm (print sep ) sep_oracle)"
   assumes "\<not>(\<exists>i \<in> set as. p_is_nonterm (print elem) i)"
-  shows "p_is_nonterm (print (seperatedBy sep elem sep_oracle)) as \<longleftrightarrow> False"
-  unfolding seperatedBy_def seperatedByBase_def
+  shows "p_is_nonterm (print (separated_by sep elem sep_oracle)) as \<longleftrightarrow> False"
+  unfolding separated_by_def separated_byBase_def
   using assms
   by (clarsimp simp add: fp_NER split: list.splits)
 
 
-lemma seperatedBy_p_is_error[fp_NER]:
-  "p_is_error (print (seperatedBy sep elem sep_oracle)) [] \<longleftrightarrow> False"
-  "p_is_error (print (seperatedBy sep elem sep_oracle)) (a#as) \<longleftrightarrow> p_is_error (print elem) a \<or>
+lemma separated_by_p_is_error[fp_NER]:
+  "p_is_error (print (separated_by sep elem sep_oracle)) [] \<longleftrightarrow> False"
+  "p_is_error (print (separated_by sep elem sep_oracle)) (a#as) \<longleftrightarrow> p_is_error (print elem) a \<or>
      \<not> p_is_nonterm (print elem) a \<and> p_is_error (print (many (b_then sep elem))) (map (Pair sep_oracle) as)"
-  unfolding seperatedBy_def seperatedByBase_def
+  unfolding separated_by_def separated_byBase_def
   by (clarsimp simp add: fp_NER)+
 
-lemma seperatedBy_p_is_error2[fp_NER]:
+lemma separated_by_p_is_error2[fp_NER]:
   assumes "\<not>(p_is_error (print sep ) sep_oracle)"
   assumes "\<not>(\<exists>i \<in>set as. p_is_error (print elem) i)"
-  shows "p_is_error (print (seperatedBy sep elem sep_oracle)) as \<longleftrightarrow> False"
-  unfolding seperatedBy_def seperatedByBase_def
+  shows "p_is_error (print (separated_by sep elem sep_oracle)) as \<longleftrightarrow> False"
+  unfolding separated_by_def separated_byBase_def
   using assms
   by (clarsimp simp add: fp_NER split: list.splits)
 
 
-lemma seperatedBy_p_has_result[fp_NER]:
-  "p_has_result (print (seperatedBy sep elem sep_oracle)) [] pr \<longleftrightarrow> pr = []"
-  "p_has_result (print (seperatedBy sep elem sep_oracle)) [i] pr \<longleftrightarrow> p_has_result (print elem) i pr"
-  "p_has_result (print (seperatedBy sep elem sep_oracle)) (i#is) pr \<longleftrightarrow> (\<exists>ta tb.
+lemma separated_by_p_has_result[fp_NER]:
+  "p_has_result (print (separated_by sep elem sep_oracle)) [] pr \<longleftrightarrow> pr = []"
+  "p_has_result (print (separated_by sep elem sep_oracle)) [i] pr \<longleftrightarrow> p_has_result (print elem) i pr"
+  "p_has_result (print (separated_by sep elem sep_oracle)) (i#is) pr \<longleftrightarrow> (\<exists>ta tb.
         pr = ta @ tb \<and>
         p_has_result (print elem) i ta \<and>
         p_has_result (print (many (b_then sep elem))) (map (Pair sep_oracle) is) tb)"
-  unfolding seperatedBy_def seperatedByBase_def
+  unfolding separated_by_def separated_byBase_def
   apply (clarsimp simp add: fp_NER)+
   by blast
 
@@ -127,8 +127,8 @@ lemma snd_comp_pair_id[simp]:
   by fastforce
 
 \<comment> \<open>Well formed\<close>
-lemma seperatedBy_well_formed:
-  assumes "good_seperatedBy_oracle sep sep_oracle"
+lemma separated_by_well_formed:
+  assumes "good_separated_by_oracle sep sep_oracle"
   assumes "pa_does_not_eat_into_pb_nondep elem sep"
   assumes "pa_does_not_eat_into_pb_nondep sep elem"
   assumes "bidef_well_formed elem"
@@ -137,15 +137,15 @@ lemma seperatedBy_well_formed:
   assumes "pa_does_not_eat_into_pb_nondep elem (many (b_then sep elem))"
   assumes "parser_can_parse_print_result (parse (many (b_then sep elem))) (print (many (b_then sep elem)))" \<comment> \<open>Would be ideal to get this from WF elem, sep, and more.\<close>
   assumes "parse_result_cannot_be_grown_by_printer (parse (b_then sep elem)) (print (many (b_then sep elem)))"
-  shows "bidef_well_formed (seperatedBy sep elem sep_oracle)"
-  unfolding seperatedBy_def
+  shows "bidef_well_formed (separated_by sep elem sep_oracle)"
+  unfolding separated_by_def
   apply (rule transform_well_formed3)
   defer
   subgoal
     using assms(1,4,6)
-    unfolding well_formed_transform_funcs3_def good_seperatedBy_oracle_def
+    unfolding well_formed_transform_funcs3_def good_separated_by_oracle_def
               bidef_well_formed_def printer_can_print_parse_result_def
-              seperatedByBase_def
+              separated_byBase_def
     apply (auto simp add: fp_NER NER_simps split: option.splits)
     subgoal for x i a b xa l'
       unfolding optional_p_has_result(2) b_then_p_has_result
@@ -174,8 +174,8 @@ lemma seperatedBy_well_formed:
       done
     done
   apply (rule optional_well_formed)
-  subgoal by (clarsimp simp add: seperatedByBase_def NER_simps assms(6))
-  unfolding seperatedByBase_def
+  subgoal by (clarsimp simp add: separated_byBase_def NER_simps assms(6))
+  unfolding separated_byBase_def
   apply (rule b_then_well_formed)
   subgoal by (rule assms(4))
     defer

@@ -21,6 +21,7 @@ theory all_definitions
           derived_lowercase_char
           derived_nat
           derived_whitespace_char
+          derived_separated_by
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
