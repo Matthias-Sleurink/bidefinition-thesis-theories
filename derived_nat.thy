@@ -100,6 +100,11 @@ lemma dropWhileAllTrue:
   using assms
   by (metis dropWhile_eq_Nil_conv)
 
+lemma dropWhileNoneTrue:
+  assumes "\<forall>a \<in> set as. \<not>P a"
+  shows "dropWhile P as = as"
+  using assms dropWhile_eq_self_iff hd_in_set
+  by auto
 
 lemma nat_b_well_formed:
   "bidef_well_formed nat_b"

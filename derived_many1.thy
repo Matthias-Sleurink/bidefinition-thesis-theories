@@ -162,6 +162,30 @@ lemma many1_well_formed_from_many:
   done
 
 
+lemma many1_char_for_predicate_p_has_result2:
+  assumes "p_has_result (print (many1 (char_for_predicate p))) i r"
+  shows "r = i"
+  using assms
+  apply (induction i arbitrary: r; clarsimp simp add: fp_NER)
+  subgoal for i iss isspr tli_pr
+    by (rule many_char_for_predicate_p_has_result2[of p iss isspr])
+  done
+
+lemma many1_char_for_predicate_p_has_result3:
+  assumes "p_has_result (print (many1 (char_for_predicate p))) i r"
+  shows "\<forall> i' \<in> set i. p i'"
+  using assms
+  apply -
+  apply (clarsimp simp add: fp_NER)
+  subgoal for i' tl_r
+    using many_char_for_predicate_p_has_result3[of p \<open>tl i\<close> tl_r]
+    apply clarsimp
+    by (metis list.collapse set_ConsD)
+  done
+
+lemma many1_char_for_predicate_well_formed:
+  shows "bidef_well_formed (many1 (char_for_predicate P))"
+  by (simp add: many1_well_formed_from_many many_char_for_predicate_well_formed)
 
 
 end

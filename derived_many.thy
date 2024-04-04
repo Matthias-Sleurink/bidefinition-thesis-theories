@@ -309,12 +309,17 @@ lemma many_char_for_predicate_p_has_result[fp_NER]:
         many_char_for_predicate_p_has_result_backwards[OF assms]
   by blast
 
-lemma many_char_for_predicate_p_has_result2[fp_NER]:
+lemma many_char_for_predicate_p_has_result2:
   assumes "p_has_result (print (many (char_for_predicate p))) i r"
   shows "r = i"
   using assms
   by (induction i arbitrary: r; clarsimp simp add: fp_NER)
 
+lemma many_char_for_predicate_p_has_result3:
+  assumes "p_has_result (print (many (char_for_predicate p))) i r"
+  shows "\<forall> i' \<in> set i. p i'"
+  using assms
+  by (induction i arbitrary: r; clarsimp simp add: fp_NER)
 
 \<comment> \<open>The second half of many holds for all applications of many.\<close>
 \<comment> \<open>Not really sure if this 'assumes A or B' is a good idea in general,
@@ -334,6 +339,24 @@ lemma printer_can_print_parse_result_many:
   done
 
 
+
+lemma many_char_for_predicate_well_formed:
+  shows "bidef_well_formed (many (char_for_predicate P))"
+  apply wf_init
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply (clarsimp simp add: NER_simps)
+    subgoal for i ipr
+      using many_char_for_predicate_p_has_result2[of P i ipr]
+            many_char_for_predicate_p_has_result3[of P i ipr]
+      apply simp
+      by (metis dropWhile_eq_Nil_conv takeWhile_eq_all_conv)
+    done
+  subgoal
+    apply (rule printer_can_print_parse_result_many)
+    using char_for_predicate_well_formed
+    by simp
+  done
 
 lemma does_not_eat_into_conseq_parser:
   assumes "pa_does_not_eat_into_pb_nondep b b'"
