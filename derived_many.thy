@@ -309,6 +309,13 @@ lemma many_char_for_predicate_p_has_result[fp_NER]:
         many_char_for_predicate_p_has_result_backwards[OF assms]
   by blast
 
+lemma many_char_for_predicate_p_has_result2[fp_NER]:
+  assumes "p_has_result (print (many (char_for_predicate p))) i r"
+  shows "r = i"
+  using assms
+  by (induction i arbitrary: r; clarsimp simp add: fp_NER)
+
+
 \<comment> \<open>The second half of many holds for all applications of many.\<close>
 \<comment> \<open>Not really sure if this 'assumes A or B' is a good idea in general,
     but it makes it easier to apply if you do know the rhs\<close>
