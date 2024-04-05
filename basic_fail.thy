@@ -74,6 +74,19 @@ lemma fail_PASI:
 
 
 
+\<comment> \<open>Charset\<close>
+lemma charset_fail:
+  "charset (parse fail) = {}"
+  unfolding charset_def
+  by (clarsimp simp add: NER_simps)
+
+lemma first_chars_fail:
+  "first_chars (print fail) = {}"
+  unfolding first_chars_def
+  by (clarsimp simp add: fp_NER)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma fail_well_formed:
   "bidef_well_formed fail"

@@ -67,6 +67,29 @@ lemma transform_PNGI:
 
 
 
+\<comment> \<open>Charset\<close>
+lemma charset_transform:
+  "charset (parse (transform f f' b)) = charset (parse b)"
+  unfolding transform_def
+  apply (subst charset_ftransform)
+  unfolding charset_def
+  by force
+
+lemma first_chars_ftransform_subset:
+  "first_chars (print (transform f f' b)) \<subseteq> first_chars (print b)"
+  unfolding transform_def
+  apply (subst first_chars_ftransform)
+  unfolding first_chars_def
+  by blast
+
+\<comment> \<open>Sadly not equal to b's first_chars since the image of f' is a subset of the domain of the type.\<close>
+lemma first_chars_ftransform:
+  "first_chars (print (transform f f' b)) = {hd pr | i' pr. p_has_result (print b) (f' i') pr \<and> pr \<noteq> []}"
+  unfolding transform_def
+  apply (subst first_chars_ftransform)
+  by force
+
+
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>
 definition well_formed_transform_funcs :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
   "well_formed_transform_funcs f f' b \<longleftrightarrow> ((\<forall> i v l. has_result (parse b) i v l \<longrightarrow> f' (f v) = v)

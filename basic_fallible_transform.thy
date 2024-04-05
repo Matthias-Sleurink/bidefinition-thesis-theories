@@ -120,6 +120,33 @@ lemma ftransform_PNGI:
 
 
 
+\<comment> \<open>Charset\<close>
+lemma charset_ftransform:
+  "charset (parse (ftransform f f' b)) = \<Union> {set c | i r l c. has_result (parse b) i r l \<and> i = c@l \<and> f r \<noteq> None}"
+  unfolding charset_def ftransform_def ftransform_p.simps has_result_def
+  apply (auto split: option.splits)
+  subgoal by (metis option.exhaust)
+  by fastforce
+
+lemma charset_ftransform_subset:
+  "charset (parse (ftransform f f' b)) \<subseteq> charset (parse b)"
+  unfolding charset_def ftransform_def ftransform_p.simps has_result_def
+  apply (auto split: option.splits)
+  by (metis not_Some_eq)
+
+lemma first_chars_ftransform:
+  "first_chars (print (ftransform f f' b)) = {hd pr | i' pr. (f' i') \<noteq> None \<and> p_has_result (print b) (the (f' i')) pr \<and> pr \<noteq> []}"
+  unfolding first_chars_def ftransform_def ftransform_p.simps p_has_result_def
+  apply (auto split: option.splits)
+  by force
+
+lemma first_chars_ftransform_subset:
+  "first_chars (print (ftransform f f' b)) \<subseteq> first_chars (print b)"
+  unfolding first_chars_def ftransform_def ftransform_p.simps p_has_result_def
+  by (auto split: option.splits)
+
+
+
 \<comment> \<open>Well Formed\<close>
 
 

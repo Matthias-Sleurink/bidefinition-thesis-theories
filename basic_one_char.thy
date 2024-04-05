@@ -68,6 +68,19 @@ lemma one_char_PASI:
 
 
 
+\<comment> \<open>Charset\<close>
+lemma charset_one_char:
+  "charset (parse one_char) = UNIV"
+  unfolding charset_def
+  by (auto simp add: NER_simps)
+
+lemma first_chars_one_char:
+  "first_chars (print one_char) = UNIV"
+  unfolding first_chars_def
+  by (clarsimp simp add: fp_NER)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma one_char_well_formed[bi_well_formed_simps]:
   "bidef_well_formed one_char"

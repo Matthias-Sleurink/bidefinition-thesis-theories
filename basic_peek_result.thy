@@ -80,6 +80,21 @@ lemma peek_PASI:
 
 
 
+\<comment> \<open>Charset\<close>
+\<comment> \<open>This is somewhat iffy since peek never consumes.\<close>
+lemma charset_peek:
+  "charset (parse (peek b)) = {}"
+  unfolding charset_def
+  by (clarsimp simp add: NER_simps)
+
+lemma first_chars_peek:
+  "first_chars (print (peek b)) = {}"
+  unfolding first_chars_def
+  by (clarsimp simp add: fp_NER)
+
+
+
+
 \<comment> \<open>Well Formed\<close>
 text \<open>
 It's not really clear to me how this can be well formed on its own.

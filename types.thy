@@ -509,5 +509,21 @@ lemma if_PASI_p:
   using assms
   by (rule if_PASI)
 
+\<comment> \<open>Charset\<close>
+text \<open>
+The idea here is that a parser has a set of characters it can parse.
+And a printer has a set of characters that can be the first in a print result.
+So, we can set up non-interference, if there is no overlap.
+\<close>
+
+\<comment> \<open>This is an underestimation if your parser is not PNGI.\<close>
+definition charset :: "'a parser \<Rightarrow> char set" where
+  "charset p = \<Union> {set c | i r l c. has_result p i r l \<and> i = c@l}"
+
+definition first_chars :: "'a printer \<Rightarrow> char set" where
+  "first_chars p = {hd pr | i pr. p_has_result p i pr \<and> pr \<noteq> []}"
+
+
+
 
 end

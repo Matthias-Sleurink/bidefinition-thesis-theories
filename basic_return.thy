@@ -65,6 +65,19 @@ lemma return_PASI:
 
 
 
+\<comment> \<open>Charset\<close>
+lemma charset_return:
+  "charset (parse (return v)) = {}"
+  unfolding charset_def
+  by (clarsimp simp add: NER_simps)
+
+lemma first_chars_return:
+  "first_chars (print (return v)) = {}"
+  unfolding first_chars_def
+  by (clarsimp simp add: fp_NER)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma b_return_well_formed:
   "bidef_well_formed (return v)"
