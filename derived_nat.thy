@@ -209,5 +209,9 @@ lemma print_nat_dropWhile[simp]:
   using digit_char_p_is_error digit_char_p_no_error
   by (clarsimp; blast)+
 
+lemma print_nat_hd_derived[simp]:
+  "hd (print_nat a) \<in> derived_digit_char.digit_chars"
+  using digit_chars_eq_digit_chars print_nat_hd by presburger
+
 
 end

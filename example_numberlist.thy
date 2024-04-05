@@ -54,6 +54,10 @@ lemma no_space_in_nat:
   using digit_char_p_is_error digit_char_p_no_error ws_not_digit(1)
   by blast
 
+lemma no_space_hd_nat:
+  "hd (print_nat n) \<notin> whitespace_chars"
+  using ws_not_digit(2) by fastforce
+
 
 lemma many1_whitespace_does_not_eat_into_nat:
   "pa_does_not_eat_into_pb_nondep (many1 whitespace_char) nat_b"
