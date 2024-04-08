@@ -34,4 +34,32 @@ The dependency graph should contain as much parallelism as attainable using the
  "multiple diamond" structure as explained in the basic definitions file.
 \<close>
 
+
+
+lemma charset_example:
+  "charset (parse (if_then_else (this_char CHR ''a'') return (this_char CHR ''b'') id)) = {CHR ''a'', CHR ''b''}"
+  unfolding charset_def
+  apply (subst if_then_else_has_result_no_split)
+  apply (subst this_char_has_result)
+  apply (subst this_char_has_result)
+  apply (subst this_char_is_error)
+  apply (subst return_has_result)
+  apply (simp split: sum.splits)
+  apply auto
+  subgoal for x X r l c
+    apply (cases r)
+    subgoal for rl by clarsimp
+    subgoal for rb by force
+    done
+  subgoal
+    by fastforce
+  subgoal
+    apply (rule exI[of _ \<open>{CHR ''b''}\<close>])
+    apply clarsimp
+    apply (rule exI[of _ \<open>Inr CHR ''b''\<close>])
+    by clarsimp
+  done
+
+
+
 end
