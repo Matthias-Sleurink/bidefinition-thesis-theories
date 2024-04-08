@@ -526,4 +526,6 @@ definition first_chars :: "'a printer \<Rightarrow> char set" where
 
 
 
+
+
 end

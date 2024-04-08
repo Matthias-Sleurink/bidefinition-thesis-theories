@@ -282,6 +282,27 @@ lemma dep_if_then_else_PASI_PNGI_PASI_PASI:
   by fastforce
 
 
+
+\<comment> \<open>Charset\<close>
+
+
+lemma first_chars_dep_if_then_else_subset:
+  "first_chars (print (if_then_else ab a2bb cb b2a)) \<subseteq> (first_chars (print ab) \<union> (\<Union> {first_chars (print (a2bb ar)) | ar. True}) \<union> first_chars (print cb))"
+  unfolding first_chars_def
+  apply (auto simp add: fp_NER)
+  subgoal for i pr
+    apply (cases i)
+    subgoal
+      apply (auto simp add: if_then_else_p_has_result(1) Let_def)
+      subgoal by (meson hd_append2)
+      subgoal by (smt (verit, best) CollectI hd_append2 self_append_conv2)
+      done
+    subgoal
+      by (simp add: if_then_else_p_has_result(2))
+    done
+  done
+
+
 \<comment> \<open>Well Formed\<close>
 definition b2_wf_for_res_of_b1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
   "b2_wf_for_res_of_b1 b1 a2bi \<longleftrightarrow> (\<forall> i ra la. has_result (parse b1) i ra la \<longrightarrow> bidef_well_formed (a2bi ra))"
