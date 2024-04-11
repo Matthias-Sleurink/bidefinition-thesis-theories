@@ -45,6 +45,26 @@ definition is_error :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> bool
 definition has_result :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> '\<alpha> \<Rightarrow> string \<Rightarrow> bool" where
   "has_result p i r l \<longleftrightarrow> p i = Some (Some (r, l))"
 
+definition has_result_c :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> '\<alpha> \<Rightarrow> string \<Rightarrow> bool" where
+  "has_result_c p c r l \<longleftrightarrow> has_result p (c@l) r l"
+
+
+\<comment> \<open>list_upto is important for instantiating the existentials in has_result_c proofs\<close>
+fun dropLastN :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a list" where
+  "dropLastN a l = take (length l - a) l"
+
+definition list_upto :: "'a list \<Rightarrow> 'a list \<Rightarrow> 'a list" where
+  "list_upto longer shorter = dropLastN (length shorter) longer"
+
+lemma list_upto_take_cons:
+  assumes "\<exists>c. l = c@s"
+  assumes "l' = list_upto l s"
+  shows "l' @ s = l"
+  using assms
+  apply (induction s arbitrary: l l')
+  subgoal by (simp add: list_upto_def)
+  unfolding list_upto_def
+  by force
 
 
 lemma has_result_implies_not_is_error:
@@ -89,6 +109,10 @@ lemma if_has_result[NER_simps]:
   "has_result (if B then T else F) i r l \<longleftrightarrow> (if B then has_result T i r l else has_result F i r l)"
   by simp
 
+lemma if_has_result_c[NER_simps]:
+  "has_result_c (if B then T else F) c r l \<longleftrightarrow> (if B then has_result_c T c r l else has_result_c F c r l)"
+  by simp
+
 
 
 subsection \<open>NER for inlined bind\<close>
@@ -103,6 +127,8 @@ lemma bind_is_error[NER_simps]:
 lemma bind_has_result[NER_simps]:
   "has_result (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) i r l \<longleftrightarrow> (\<exists>r' l'. has_result A i r' l' \<and> has_result (B r') l' r l)"
   by (clarsimp simp add: has_result_def split: option.splits)
+
+\<comment> \<open>Version for has_result_c is way later since it depends on PNGI\<close>
 
 
 
@@ -434,7 +460,7 @@ lemma print_result_is_canon_result2:
   by (simp add: p_has_result_def has_result_def)
 
 
-
+section \<open>PASI, PNGI\<close>
 \<comment> \<open>PASI, Parser Always Shrinks Input (Including it being a tail of the input)\<close>
 definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
   "PASI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. (i = c @ l \<and> c \<noteq> [])))"
@@ -509,6 +535,52 @@ lemma if_PASI_p:
   using assms
   by (rule if_PASI)
 
+
+
+lemma bind_has_result_c[NER_simps]:
+  assumes "PNGI A"
+  assumes "\<And>r. PNGI (B r)"
+  shows "has_result_c (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) c r l
+        \<longleftrightarrow> (\<exists>r' c' c''. c = (c'@c'') \<and> has_result_c A c' r' (c''@l) \<and> has_result_c (B r') c'' r l)"
+  unfolding has_result_c_def
+  apply (subst bind_has_result[of B A \<open>c@l\<close> r l])
+  unfolding has_result_def
+  apply auto
+  subgoal for r' l'
+  proof -
+    assume A: "A (c @ l) = Some (Some (r', l'))"
+    assume B: "B r' l' = Some (Some (r, l))"
+    fix c1 and c2
+    assume C: "c1 @ c2 = c"
+    assume D: "has_result A (c1@c2@l) r' (c2@l)"
+    from A B C D have ?thesis
+      unfolding has_result_def
+      apply clarsimp
+      apply (rule exI[of _ r'])
+      apply (rule exI[of _ c1])
+      apply (rule exI[of _ c2])
+      using assms[unfolded PNGI_def has_result_def]
+      by auto
+  \<comment> \<open>HOW DO I END THIS PROOF? I can't do qed, done, nor show ?thesis.\<close>
+  oops
+
+
+lemma bind_has_result_c[NER_simps]:
+  assumes "PNGI A"
+  assumes "\<And>r. PNGI (B r)"
+  shows "has_result_c (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) c r l
+        \<longleftrightarrow> (\<exists>r' c' c''. c = (c'@c'') \<and> has_result_c A c' r' (c''@l) \<and> has_result_c (B r') c'' r l)"
+  unfolding has_result_c_def
+  apply (subst bind_has_result[of B A \<open>c@l\<close> r l])
+  unfolding has_result_def
+  apply auto
+  subgoal for r' l'
+    apply (rule exI[of _ r'])
+    by (metis PNGI_def append.assoc append_same_eq assms(1) assms(2) has_result_def)
+  done
+
+
+section \<open>Charset, first_chars\<close>
 \<comment> \<open>Charset\<close>
 text \<open>
 The idea here is that a parser has a set of characters it can parse.

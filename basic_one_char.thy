@@ -37,6 +37,11 @@ lemma one_char_is_nonterm[NER_simps]:
   apply (auto simp add: one_char_def is_nonterm_def)
   by (metis one_char_parser.elims terminate_with_def)+
 
+lemma one_char_has_result_c[NER_simps]:
+  "has_result_c (parse one_char)  c r l \<longleftrightarrow> c = [r]"
+  "has_result_c (one_char_parser) c r l \<longleftrightarrow> c = [r]"
+  by (simp add: has_result_c_def NER_simps)+
+
 
 
 \<comment> \<open>FP NER\<close>

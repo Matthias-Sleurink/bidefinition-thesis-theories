@@ -27,6 +27,10 @@ lemma transform_has_result[NER_simps]:
   "has_result (parse (transform f f' p)) i r l \<longleftrightarrow> (\<exists>r'. has_result (parse p) i r' l \<and> r = f r')"
   by (auto simp add: transform_def NER_simps)
 
+lemma transform_has_result_c[NER_simps]:
+  "has_result_c (parse (transform f f' p)) c r l \<longleftrightarrow> (\<exists>r'. has_result_c (parse p) c r' l \<and> r = f r')"
+  by (auto simp add: transform_def NER_simps)
+
 
 
 \<comment> \<open>FP ner\<close>
@@ -41,6 +45,7 @@ lemma transform_p_is_error[fp_NER]:
 lemma transform_p_is_nonterm[fp_NER]:
   "p_is_nonterm (print (transform f f' b)) i \<longleftrightarrow> p_is_nonterm (print b) (f' i)"
   by (simp add: transform_def fp_NER)
+
 
 
 \<comment> \<open>Monotone\<close>

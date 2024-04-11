@@ -108,7 +108,11 @@ lemma m_map_has_result[NER_simps]:
   "has_result (parse (m_map tc (a#as))) i r l \<longleftrightarrow> (\<exists> r' l' rs. has_result (parse (tc a)) i r' l' \<and>
                                                         has_result (parse (m_map tc as)) l' rs l \<and>
                                                         r = r'#rs)"
-  by (auto simp add: m_map_def has_result_def split: option.splits )+
+  by (auto simp add: m_map_def has_result_def split: option.splits)+
+
+\<comment> \<open>has_result_c for m_map depends on PNGI m_map, so it's below that proof\<close>
+
+
 
 lemma m_map_has_result_same_length:
   "has_result (parse (m_map tc as)) i r l \<Longrightarrow> length as = length r"
@@ -120,7 +124,7 @@ lemma m_map_has_result_not_same_length:
 
 
 
-
+\<comment> \<open>FP_ner\<close>
 lemma m_map_p_is_error[fp_NER]:
   "p_is_error (print (m_map bc [])) i \<longleftrightarrow> i \<noteq> []"
   "p_is_error (print (m_map bc (a#as))) i \<longleftrightarrow> (\<exists>i' is ir. i=[] \<or> (i = i'#is \<and>
@@ -180,6 +184,41 @@ lemma PASI_m_map:
   unfolding PASI_def
   apply (auto simp add: NER_simps)
   by (metis (no_types, lifting) Nil_is_append_conv append.assoc m_map_has_result(1))
+
+
+
+
+lemma m_map_has_result_c[NER_simps]:
+  assumes "\<forall>a' \<in>set (a#as). PNGI (parse (tc a'))"
+  shows 
+  "has_result_c (parse (m_map tc []    )) c r l \<longleftrightarrow> c = [] \<and> r = []"
+  "has_result_c (parse (m_map tc (a#as))) c r l \<longleftrightarrow> (\<exists> r' rs c' c''. c = c'@c'' \<and>
+                                                       has_result_c (parse (tc a)) c' r' (c''@l) \<and>
+                                                       has_result_c (parse (m_map tc as)) c'' rs l \<and>
+                                                       r = r'#rs)"
+  apply (auto simp add: has_result_c_def NER_simps split: option.splits)+
+  subgoal for r' l' rs
+    \<comment> \<open>l' = c'' @ l\<close>
+    \<comment> \<open>c'@c''@l = c@l, so: c = c' @ c''\<close>
+    \<comment> \<open>want to do exI with 'c' = c@l `upto` l'\<close>
+    apply (rule exI[of _ \<open>list_upto (c@l) l'\<close>])
+    using assms(1)[unfolded PNGI_def, rule_format, of a \<open>c@l\<close> r' l', OF list.set_intros(1)]
+    using list_upto_take_cons[of \<open>c@l\<close> l' ]
+    apply clarsimp
+    subgoal for ca
+      apply (rule exI[of _ \<open>drop (length ca) c\<close>])
+      apply auto
+      subgoal
+        by (metis (no_types, lifting) PNGI_def PNGI_m_map append.assoc append_eq_conv_conj append_same_eq assms in_mono set_subset_Cons)
+      subgoal
+        by (metis \<open>\<lbrakk>has_result (parse (tc a)) (ca @ l') r' l'; has_result (parse (m_map tc as)) l' rs l; r = r' # rs; list_upto (ca @ l') l' = ca; c @ l = ca @ l'\<rbrakk> \<Longrightarrow> c = ca @ drop (length ca) c\<close>
+                  append_eq_appendI same_append_eq)
+      subgoal
+        by (metis \<open>\<lbrakk>has_result (parse (tc a)) (ca @ l') r' l'; has_result (parse (m_map tc as)) l' rs l; r = r' # rs; list_upto (ca @ l') l' = ca; c @ l = ca @ l'\<rbrakk> \<Longrightarrow> c = ca @ drop (length ca) c\<close>
+                  append_eq_appendI same_append_eq)
+      done
+    done
+  done
 
 
 

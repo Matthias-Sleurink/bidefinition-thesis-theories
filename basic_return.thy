@@ -34,6 +34,13 @@ lemma return_has_result[NER_simps]:
   "has_result (\<lambda> i. Some (Some (v, i))) i r l \<longleftrightarrow> v=r \<and> i = l"
   by (simp add: return_def has_result_def)+
 
+lemma return_has_result_c[NER_simps]:
+  "has_result_c (parse (return v))                  c r l \<longleftrightarrow> v=r \<and> c = []"
+  "has_result_c (return_p v)                        c r l \<longleftrightarrow> v=r \<and> c = []"
+  "has_result_c (\<lambda> i. terminate_with (Some (v, i))) c r l \<longleftrightarrow> v=r \<and> c = []"
+  "has_result_c (\<lambda> i. Some (Some (v, i)))           c r l \<longleftrightarrow> v=r \<and> c = []"
+  by (simp add: return_def has_result_c_def NER_simps)+
+
 
 
 \<comment> \<open>FP NER\<close>

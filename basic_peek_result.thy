@@ -49,6 +49,23 @@ lemma peek_has_result_simple:
   "has_result (parse (peek b)) i r l \<longrightarrow> l = i"
   by (simp add: peek_has_result(1))
 
+lemma peek_has_result_c[NER_simps]:
+  assumes "PNGI (parse b)"
+  assumes "PNGI p"
+  shows
+  "has_result_c (parse (peek b)) c r l \<longleftrightarrow> c=[] \<and> (\<exists> c' l'. has_result_c (parse b) c' r l' \<and> l = c'@l')"
+  "has_result_c (peek_p p)       c r l \<longleftrightarrow> c=[] \<and> (\<exists> c' l'. has_result_c p         c' r l' \<and> l = c'@l')"
+  apply (auto simp add: peek_has_result has_result_c_def split: option.splits)
+  subgoal for l'
+    apply (rule exI[of _ \<open>list_upto l l'\<close>])
+    using list_upto_take_cons assms[unfolded PNGI_def]
+    by metis
+  subgoal for l'
+    apply (rule exI[of _ \<open>list_upto l l'\<close>])
+    using list_upto_take_cons assms[unfolded PNGI_def]
+    by metis
+  done
+
 
 
 \<comment> \<open>FP NER\<close>
