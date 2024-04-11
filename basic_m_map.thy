@@ -161,6 +161,29 @@ lemma m_map_pr_has_result_not_same_length:
 
 
 
+\<comment> \<open>PNGI, PASI\<close>
+lemma PNGI_m_map:
+  assumes "\<forall>e\<in>set l. PNGI (parse (b e))"
+  shows "PNGI (parse (m_map b l))"
+  using assms
+  apply (induction l)
+  unfolding PNGI_def
+  apply (auto simp add: NER_simps)
+  by fastforce
+
+lemma PASI_m_map:
+  assumes "\<forall>e\<in>set l. PASI (parse (b e))"
+  assumes "l \<noteq> []"
+  shows "PASI (parse (m_map b l))"
+  using assms
+  apply (induction l)
+  unfolding PASI_def
+  apply (auto simp add: NER_simps)
+  by (metis (no_types, lifting) Nil_is_append_conv append.assoc m_map_has_result(1))
+
+
+
+\<comment> \<open>well formed\<close>
 lemma m_map_well_formed_empty[bi_well_formed_simps]:
   shows "bidef_well_formed (m_map a2bi [])"
   apply wf_init
