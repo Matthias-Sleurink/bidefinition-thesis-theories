@@ -73,6 +73,18 @@ lemma oopr_map_Inl_Inr_neq_iff[simp]:
   "oopr_map Inl pr1 \<noteq> oopr_map Inl pr2 \<longleftrightarrow> pr1 \<noteq> pr2"
   by auto
 
+lemma oopr_map_Inl_Inr_neq[simp]:
+  "oopr_map Inr pr1 \<noteq> Some (Some (Inl r, l))"
+  "oopr_map Inl pr1 \<noteq> Some (Some (Inr r, l))"
+  by (auto simp add: oopr_map_cases split: option.splits)
+
+lemma oopr_map_has_result_eq_iff[simp]:
+  "oopr_map Inl (parse p al) = Some (Some (Inl lr, l)) \<longleftrightarrow> has_result (parse p) al lr l"
+  "oopr_map Inr (parse p al) = Some (Some (Inr lr, l)) \<longleftrightarrow> has_result (parse p) al lr l"
+  by (auto simp add: oopr_map_cases has_result_def split: option.splits)
+
+
+
 \<comment> \<open>The actual bidef\<close>
 
 fun ite_parser :: "'a parser \<Rightarrow> ('a \<Rightarrow> 'b parser) \<Rightarrow> 'c parser \<Rightarrow> ('b + 'c) parser" where
