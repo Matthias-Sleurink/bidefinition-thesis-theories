@@ -183,7 +183,7 @@ lemma separated_by_well_formed:
   apply (rule well_formed_does_not_grow_by_printer)
     defer defer
   subgoal
-    apply (clarsimp simp add: NER_simps assms(6))
+    apply (clarsimp simp add: NER_simps assms(6)) \<comment> \<open>number 6 should not be needed here since sep is not []?\<close>
     by (metis assms(8) b_then_is_error many_has_result_safe(1) many_p_has_result_safe(1) parser_can_parse_print_result_simp)
   subgoal by (rule assms(9))
   apply (rule b_then_well_formed)

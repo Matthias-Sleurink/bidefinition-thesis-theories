@@ -175,4 +175,19 @@ value "one_char"
 value "parse one_char ''abcd''"
 value "parse (b_then one_char one_char) ''abcd''"
 
+lemma first_char_not_in_charset_implies_pa_does_not_eat_into_pb_nondep:
+  assumes "bidef_well_formed a"
+  assumes "(first_chars (print b) \<inter> charset (parse a)) = {}"
+  shows "pa_does_not_eat_into_pb_nondep a b"
+  using assms[unfolded first_chars_def charset_def]
+  unfolding pa_does_not_eat_into_pb_nondep_def bidef_well_formed_def parser_can_parse_print_result_def
+  apply auto
+  oops
+
+
+
+
+
+
+
 end

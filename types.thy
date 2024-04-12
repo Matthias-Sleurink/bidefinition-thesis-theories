@@ -590,14 +590,65 @@ So, we can set up non-interference, if there is no overlap.
 
 \<comment> \<open>This is an underestimation if your parser is not PNGI.\<close>
 definition charset :: "'a parser \<Rightarrow> char set" where
-  "charset p = \<Union> {set c | i r l c. has_result p i r l \<and> i = c@l}"
+  "charset p = \<Union> {set c | r l c. has_result p (c@l) r l}"
+
+definition charset2 :: "'a parser \<Rightarrow> char set" where
+  "charset2 p = \<Union> {set c | r l c. has_result_c p c r l}"
+
+lemma charset_charset2:
+  "charset = charset2"
+  unfolding charset_def charset2_def has_result_c_def
+  by simp
+
+definition charset_must :: "'a parser \<Rightarrow> char set" where
+  "charset_must p = \<Inter> {set c | r l c. has_result p (c@l) r l}"
+
+definition charset_must2 :: "'a parser \<Rightarrow> char set" where
+  "charset_must2 p = \<Inter> {set c | r l c. has_result_c p c r l}"
+
+lemma charset_must_charset_must2:
+  "charset_must = charset_must2"
+  unfolding charset_must_def charset_must2_def has_result_c_def
+  by simp
 
 definition first_chars :: "'a printer \<Rightarrow> char set" where
   "first_chars p = {hd pr | i pr. p_has_result p i pr \<and> pr \<noteq> []}"
 
 
+lemma charset_first_chars:
+  assumes "(charset parser \<inter> first_chars printer) = {}"
+  assumes "p_has_result printer i ipr"
+  assumes "PASI parser"
+  shows "\<not>(\<exists>r l. has_result parser ipr r l)"
+  using assms[unfolded charset_def first_chars_def PASI_def]
+  apply clarsimp
+  subgoal for r l
+    apply (cases \<open>l = ipr\<close>)
+    subgoal (* l = ipr *) by fast
+    using iffD1[OF PASI_def assms(3), rule_format, of ipr r l]
+    by force
+  done
+
+lemma in_charset_eq_exists_result:
+  "c \<in> charset parser \<longleftrightarrow> (\<exists>cs r l. has_result parser (cs@l) r l \<and> c \<in> set cs)"
+  unfolding charset_def
+  by blast
+
+lemma in_charset_eq_exists_result_c:
+  "c \<in> charset parser \<longleftrightarrow> (\<exists>cs r l. has_result_c parser cs r l \<and> c \<in> set cs)"
+  unfolding charset_def has_result_c_def
+  by blast
 
 
-
+\<comment> \<open>Some extension of this where ipr must be in leftover if we feed it t@ipr?\<close>
+lemma charset_first_chars:
+  assumes "(charset parser \<inter> first_chars printer) = {}"
+  assumes "p_has_result printer i ipr"
+  assumes "PNGI parser"
+  assumes "has_result parser (t@ipr@t') r l"
+  \<comment> \<open>Basically, ipr cannot be in the consumed chars.\<close>
+  shows "\<exists>t''. l = t''@ipr@t'"
+  oops
+  
 
 end

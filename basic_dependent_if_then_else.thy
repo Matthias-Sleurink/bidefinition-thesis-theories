@@ -326,6 +326,79 @@ lemma dep_if_then_else_PASI_PNGI_PASI_PASI:
 
 
 \<comment> \<open>Charset\<close>
+\<comment> \<open>If ab always fails then a2bb's charset should not be added?\<close>
+lemma charset_dep_if_then_else:
+  "charset (parse (if_then_else ab a2bb cb b2a)) = charset (parse ab) \<union> (\<Union> {charset (parse (a2bb ar)) | i ar l. has_result (parse ab) i ar l}) \<union> charset (parse cb)"
+  unfolding charset_def
+  apply (auto simp add: NER_simps split: sum.splits)
+  subgoal for x X r l c
+    apply (rule exI[of _ X])
+    apply (cases r; clarsimp)
+    subgoal for a ar al
+      apply (rule exI[of _ ar])
+      \<comment> \<open>Need both l and al in the leftover position\<close>
+      \<comment> \<open>The only place that references them both is \<^term>\<open>has_result (parse (a2bb ar)) al a l\<close>\<close>
+      \<comment> \<open>Which does not inspire confidence\<close>
+      apply (rule exI[of _ al])
+      apply (rule exI[of _ c])
+      
+      supply [[show_types]]
+      
+      sorry
+    subgoal auto
+      
+      sorry
+    
+  oops
+
+lemma charset_dep_if_then_else_subset:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall>abr. PNGI (parse (a2bb abr))"
+  assumes "PNGI (parse cb)"
+  shows "charset (parse (if_then_else ab a2bb cb b2a)) \<subseteq> (charset (parse ab) \<union> (\<Union> {charset (parse (a2bb ar)) | ar. True}) \<union> charset (parse cb))"
+  using PNGI_dep_if_then_else[OF assms]
+        assms
+  unfolding charset_def PNGI_def
+  apply (auto simp add: NER_simps split: sum.splits)
+  subgoal for x X r l c
+    apply (cases r; clarsimp)
+    subgoal for br ar al
+      apply (rule exI[of _ \<open>set c\<close>])
+      apply clarsimp
+      
+      apply (rule exI[of _ ar])
+      apply (rule exI[of _ l]) \<comment> \<open>or AL here?\<close>
+      apply (rule exI[of _ c])
+      apply clarsimp
+      apply (cases \<open>al = l\<close>)
+      subgoal by force
+      subgoal
+        
+        sorry
+      
+      
+      \<comment> \<open>Need both l and al in the leftover position\<close>
+      \<comment> \<open>The only place that references them both is \<^term>\<open>has_result (parse (a2bb ar)) al a l\<close>\<close>
+      \<comment> \<open>Which does not inspire confidence\<close>
+      
+      supply [[show_types]]
+      
+      sorry
+    subgoal apply (rule exI[of _ \<open>set c\<close>]) by metis
+    done
+  oops
+
+
+lemma first_chars_dep_if_then_else:
+  "first_chars (print (if_then_else ab a2bb cb b2a)) = (
+    if (\<exists>pi. p_has_result (print ab) pi []) then
+      first_chars (print ab) \<union> (\<Union> {first_chars (print (a2bb ar)) | ar . True}) \<union> first_chars (print cb)
+    else
+      first_chars (print ab) \<union> first_chars (print cb)
+)"
+  unfolding first_chars_def
+  apply (auto simp add: fp_NER)
+  oops
 
 
 lemma first_chars_dep_if_then_else_subset:

@@ -642,6 +642,16 @@ lemma well_formed_does_not_grow_by_printer:
     using assms(2) by blast
   done
 
+lemma charset_first_chars_to_parse_result_cannot_be_grown_by_printer:
+  assumes "bidef_well_formed a"
+  assumes "(first_chars (print b) \<inter> charset (parse a)) = {}"
+  shows "parse_result_cannot_be_grown_by_printer (parse a) (print b)"
+  using assms[unfolded bidef_well_formed_def parser_can_parse_print_result_def first_chars_def charset_def]
+  unfolding parse_result_cannot_be_grown_by_printer_def
+  apply auto
+  oops
+
+
 \<comment> \<open>Would be nice: cannot be grown by self implies cannot be grown by many self\<close>
 \<comment> \<open> But not sure if that is realistic.\<close>
 
