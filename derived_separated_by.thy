@@ -287,4 +287,22 @@ lemma separated_by_well_formed2:
     by (subst b_then_is_error; simp add: assms(5, 8))
   done
 
+lemma cannot_be_grown_to_many:
+  assumes "parse_result_cannot_be_grown_by_printer (parse elem) (print sep)"
+  assumes "pa_does_not_eat_into_pb_nondep elem (many (b_then sep elem))"
+  \<comment> \<open>possibly need that sep will never print [] !! NOTE: this might be constrainable to sep only printing the oracle?\<close>
+  shows "parse_result_cannot_be_grown_by_printer (parse (b_then sep elem)) (print (many (b_then sep elem)))"
+  using assms
+  unfolding parse_result_cannot_be_grown_by_printer_def pa_does_not_eat_into_pb_nondep_def
+  apply (auto simp add: b_then_has_result)
+  subgoal for i a b l pri prt l'
+    apply (rule exI[of _ \<open>l' @ prt\<close>])
+    apply auto
+    \<comment> \<open>Here it would be nice to have something like the charset thing.\<close>
+    \<comment> \<open>Basically the idea is that either prt =[] in which case this is trivial\<close>
+    \<comment> \<open>Or \<open>hd prt\<close> is not in the set of chars that sep will consume.\<close>
+
+    oops
+
+
 end
