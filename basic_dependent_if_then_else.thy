@@ -251,22 +251,9 @@ lemma if_then_else_has_result_c[NER_simps]:
       apply (rule exI[of _ \<open>list_upto (c@l) al\<close>])
       \<comment> \<open>c'' = drop (length (list_upto (c @ l) al)) c\<close>
       apply (rule exI[of _ \<open>drop (length (list_upto (c @ l) al)) c\<close>])
-      apply auto
-      subgoal
-        using assms(1)[unfolded PNGI_def has_result_def, rule_format, of \<open>c@l\<close> ar al]
-        using assms(2)[unfolded PNGI_def, rule_format, of ar al lr l]
-        by (clarsimp simp add: list_upto_def)
-      subgoal
-        using assms(1)[unfolded PNGI_def has_result_def, rule_format, of \<open>c@l\<close> ar al]
-        using assms(2)[unfolded PNGI_def, rule_format, of ar al lr l]
-        by (clarsimp simp add: list_upto_def)
-      subgoal
-        using assms(1)[unfolded PNGI_def has_result_def, rule_format, of \<open>c@l\<close> ar al]
-        using assms(2)[unfolded PNGI_def, rule_format, of ar al lr l]
-        apply clarsimp
-        by (metis (no_types, lifting) \<open>\<lbrakk>parse ab (c @ l) = Some (Some (ar, al)); has_result (parse (a2bb ar)) al lr l\<rbrakk> \<Longrightarrow> c = list_upto (c @ l) al @ drop (length (list_upto (c @ l) al)) c\<close> \<open>\<lbrakk>parse ab (c @ l) = Some (Some (ar, al)); has_result (parse (a2bb ar)) al lr l\<rbrakk> \<Longrightarrow> parse ab (list_upto (c @ l) al @ drop (length (list_upto (c @ l) al)) c @ l) = Some (Some (ar, drop (length (list_upto (c @ l) al)) c @ l))\<close>
-                                      Pair_inject append_assoc drop_append has_result_def option.inject)
-      done
+      using assms(1)[unfolded PNGI_def has_result_def, rule_format, of \<open>c@l\<close> ar al]
+      using assms(2)[unfolded PNGI_def, rule_format, of ar al lr l]
+      by (auto simp add: list_upto_def has_result_def)
     done
   by (auto simp add: if_then_else_has_result)
 
