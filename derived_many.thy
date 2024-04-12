@@ -610,6 +610,32 @@ lemma parse_result_cannot_be_grown_by_printer_apply:
   using assms parse_result_cannot_be_grown_by_printer_def
   by fast
 
+lemma parser_can_parse_print_result_many:
+  assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
+  assumes "bidef_well_formed b"
+  assumes "is_error (parse b) []"
+  shows "parser_can_parse_print_result (parse (many b)) (print (many b))"
+  unfolding parser_can_parse_print_result_def
+  apply clarsimp
+  subgoal for ts pr
+    apply (induction ts arbitrary: pr)
+    subgoal by (clarsimp simp add: NER_simps fp_NER assms(3))
+    subgoal for t ts' pr'
+      unfolding many_p_has_result_safe many_has_result_safe
+      apply clarsimp
+      subgoal for tpr ts'pr
+        apply (rule exI[where x=ts'pr])
+        apply clarsimp
+        \<comment> \<open>Cannot grab literal fact\<close>
+        using wf_parser_can_parse_print_result_apply[OF assms(2), of t tpr]
+        apply clarsimp \<comment> \<open>Succeeds in getting \<open>has_result (parse b) tpr t []\<close> into the assms\<close>
+        \<comment> \<open>Cannot grab literal fact again here.\<close>
+        using parse_result_cannot_be_grown_by_printer_apply[OF assms(1), of tpr t \<open>[]\<close> _ ts'pr]
+        by auto
+      done
+    done
+  done
+
 lemma well_formed_does_not_grow_by_printer:
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
   assumes "bidef_well_formed b"
@@ -617,26 +643,8 @@ lemma well_formed_does_not_grow_by_printer:
   shows "bidef_well_formed (many b)"
   apply wf_init
   subgoal
-    unfolding parser_can_parse_print_result_def
-    apply clarsimp
-    subgoal for ts pr
-      apply (induction ts arbitrary: pr)
-      subgoal by (clarsimp simp add: NER_simps fp_NER assms(3))
-      subgoal for t ts' pr'
-        unfolding many_p_has_result_safe many_has_result_safe
-        apply clarsimp
-        subgoal for tpr ts'pr
-          apply (rule exI[where x=ts'pr])
-          apply clarsimp
-          \<comment> \<open>Cannot grab literal fact\<close>
-          using wf_parser_can_parse_print_result_apply[OF assms(2), of t tpr]
-          apply clarsimp \<comment> \<open>Succeeds in getting \<open>has_result (parse b) tpr t []\<close> into the assms\<close>
-          \<comment> \<open>Cannot grab literal fact again here.\<close>
-          using parse_result_cannot_be_grown_by_printer_apply[OF assms(1), of tpr t \<open>[]\<close> _ ts'pr]
-          by auto
-        done
-      done
-    done
+    apply (rule parser_can_parse_print_result_many)
+    using assms(1,2,3) by blast+
   subgoal
     apply (rule printer_can_print_parse_result_many)
     using assms(2) by blast
