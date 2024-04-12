@@ -226,7 +226,50 @@ lemma if_then_else_has_result_no_split[NER_simps]:
       case r of
         Inl lr \<Rightarrow> (\<exists> ar al. has_result ap i ar al \<and> has_result (a2bp ar) al lr l)
       | Inr rr \<Rightarrow> (is_error ap i \<and> has_result cp i rr l))"
-  by (simp add: NER_simps split: sum.splits)+
+  by (simp add: NER_simps split: sum.splits)+ 
+
+
+lemma if_then_else_has_result_c[NER_simps]:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall>a. PNGI (parse (a2bb a))"
+  assumes "PNGI (parse ac)"
+  shows
+  "has_result_c (parse (if_then_else ab a2bb cb b2a)) c (Inl lr) l \<longleftrightarrow> (\<exists> ar c' c''. c = c' @ c'' \<and> has_result_c (parse ab) c' ar (c''@l) \<and> has_result_c (parse (a2bb ar)) c'' lr l)"
+  "has_result_c (parse (if_then_else ab a2bb cb b2a)) c (Inr rr) l \<longleftrightarrow> is_error (parse ab) (c@l) \<and> has_result_c (parse cb) c rr l"
+  unfolding has_result_c_def
+  apply auto
+  \<comment> \<open>This first subgoal is a lot harder if we use if_then_else_has_result.\<close>
+  \<comment> \<open>So, we first split into subgoals without it, and then we solve the other subgoals with it.\<close>
+  subgoal
+    unfolding if_then_else_def ite_parser.simps has_result_def
+    apply (auto split: option.splits)
+    subgoal for ar al
+      apply (rule exI[of _ ar])
+      \<comment> \<open>al = c'' @l\<close>
+      \<comment> \<open>c@l = c' @ c'' @ l\<close>
+      \<comment> \<open>So, c' = (c@l) upto c'' @ l = (c@l) upto al\<close>
+      apply (rule exI[of _ \<open>list_upto (c@l) al\<close>])
+      \<comment> \<open>c'' = drop (length (list_upto (c @ l) al)) c\<close>
+      apply (rule exI[of _ \<open>drop (length (list_upto (c @ l) al)) c\<close>])
+      apply auto
+      subgoal
+        using assms(1)[unfolded PNGI_def has_result_def, rule_format, of \<open>c@l\<close> ar al]
+        using assms(2)[unfolded PNGI_def, rule_format, of ar al lr l]
+        by (clarsimp simp add: list_upto_def)
+      subgoal
+        using assms(1)[unfolded PNGI_def has_result_def, rule_format, of \<open>c@l\<close> ar al]
+        using assms(2)[unfolded PNGI_def, rule_format, of ar al lr l]
+        by (clarsimp simp add: list_upto_def)
+      subgoal
+        using assms(1)[unfolded PNGI_def has_result_def, rule_format, of \<open>c@l\<close> ar al]
+        using assms(2)[unfolded PNGI_def, rule_format, of ar al lr l]
+        apply clarsimp
+        by (metis (no_types, lifting) \<open>\<lbrakk>parse ab (c @ l) = Some (Some (ar, al)); has_result (parse (a2bb ar)) al lr l\<rbrakk> \<Longrightarrow> c = list_upto (c @ l) al @ drop (length (list_upto (c @ l) al)) c\<close> \<open>\<lbrakk>parse ab (c @ l) = Some (Some (ar, al)); has_result (parse (a2bb ar)) al lr l\<rbrakk> \<Longrightarrow> parse ab (list_upto (c @ l) al @ drop (length (list_upto (c @ l) al)) c @ l) = Some (Some (ar, drop (length (list_upto (c @ l) al)) c @ l))\<close>
+                                      Pair_inject append_assoc drop_append has_result_def option.inject)
+      done
+    done
+  by (auto simp add: if_then_else_has_result)
+
 
 
 \<comment> \<open>FP NER\<close>
