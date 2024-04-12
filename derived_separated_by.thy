@@ -193,4 +193,98 @@ lemma separated_by_well_formed:
   done
 
 
+\<comment> \<open>USE WRAPPER LEMMA BELOW!\<close>
+lemma separated_by_well_formed_sub_lemma:
+  assumes "good_separated_by_oracle sep sep_oracle"
+  assumes "pa_does_not_eat_into_pb_nondep sep elem"
+  assumes "bidef_well_formed elem"
+  assumes "bidef_well_formed sep"
+  assumes "is_error (parse elem) []"
+  assumes "pa_does_not_eat_into_pb_nondep elem (many (b_then sep elem))"
+  assumes "parse_result_cannot_be_grown_by_printer (parse (b_then sep elem)) (print (many (b_then sep elem)))"
+  assumes "bidef_well_formed (b_then sep elem)" \<comment> \<open>can be proven from other requirements. Wrap this lemma in lemma that does that!\<close>
+  assumes "is_error (parse (b_then sep elem)) []" \<comment> \<open>Same as above.\<close>
+  shows "bidef_well_formed (separated_by sep elem sep_oracle)"
+  unfolding separated_by_def
+  apply (rule transform_well_formed3)
+  defer
+  subgoal
+    using assms(1,3,5)
+    unfolding well_formed_transform_funcs3_def
+    unfolding good_separated_by_oracle_def
+              bidef_well_formed_def printer_can_print_parse_result_def
+              separated_byBase_def
+    apply (auto simp add: fp_NER NER_simps split: option.splits)
+    subgoal for x i a b xa l'
+      unfolding optional_p_has_result(2) b_then_p_has_result
+      apply (auto simp add: fp_NER NER_simps split: option.splits)
+      apply (induction b arbitrary: i a l')
+      subgoal by (auto simp add: fp_NER)
+      subgoal
+        apply (auto simp add: fp_NER NER_simps split: option.splits)
+        unfolding many_p_has_result_safe \<comment> \<open>Inside the Ex auto does not do these, so we force it\<close>
+        by (metis b_then_p_has_result(1))
+      done
+    subgoal for _ t by (cases t; clarsimp; blast)
+    subgoal for x t a b ta tb
+      apply (cases t; clarsimp) \<comment> \<open>t=[] removed by clarsimp, left: t = a # as\<close>
+      subgoal for as
+        using assms(6)[unfolded pa_does_not_eat_into_pb_nondep_def,
+                       rule_format,
+                       of a ta \<open>(map (Pair sep_oracle) as)\<close> tb]
+        using parser_can_parse_print_result_many[
+                      unfolded parser_can_parse_print_result_def, rule_format,
+                      of \<open>b_then sep elem\<close> \<open>map (Pair sep_oracle) as\<close> tb,
+                      OF assms(7) assms(8) assms(9)]
+        apply clarsimp
+        apply (rule exI[of _ \<open>[]\<close>])
+        apply (rule exI[of _ \<open>Some (a, (map (Pair sep_oracle) as))\<close>])
+        by auto
+      done
+    done
+  apply (rule optional_well_formed)
+      \<comment> \<open>This rule makes us require \<^term>\<open>is_error (parse (separated_byBase sep elem)) []\<close>\<close>
+      \<comment> \<open>This is good, since the empty list printer (prints []) must never be parsed into a nonempty list.\<close>
+      \<comment> \<open>So, we need to ensure that the first element in the list cannot be parsed from empty.\<close>
+      \<comment> \<open>Since if it could, we could print [] and get back [e]. Which is not allowed by WF.\<close>
+  subgoal by (clarsimp simp add: separated_byBase_def NER_simps assms(5))
+  unfolding separated_byBase_def
+  apply (rule b_then_well_formed)
+  subgoal by (rule assms(3))
+    defer
+  subgoal by (rule assms(6))
+  apply (rule well_formed_does_not_grow_by_printer) \<comment> \<open>rule for WF many\<close>
+    defer defer
+  subgoal by (rule assms(9))
+  subgoal by (rule assms(7))
+  apply (rule b_then_well_formed)
+  subgoal by (rule assms(4))
+  subgoal by (rule assms(3))
+  subgoal by (rule assms(2))
+  done
+
+lemma separated_by_well_formed2:
+  assumes "good_separated_by_oracle sep sep_oracle"
+  assumes "pa_does_not_eat_into_pb_nondep sep elem"
+  assumes "bidef_well_formed elem"
+  assumes "bidef_well_formed sep"
+  assumes "is_error (parse elem) []"
+  assumes "pa_does_not_eat_into_pb_nondep elem (many (b_then sep elem))"
+  assumes "parse_result_cannot_be_grown_by_printer (parse (b_then sep elem)) (print (many (b_then sep elem)))"
+  assumes "is_error (parse sep) []"
+  shows "bidef_well_formed (separated_by sep elem sep_oracle)"
+  apply (rule separated_by_well_formed_sub_lemma)
+  subgoal by (rule assms(1))
+  subgoal by (rule assms(2))
+  subgoal by (rule assms(3))
+  subgoal by (rule assms(4))
+  subgoal by (rule assms(5))
+  subgoal by (rule assms(6))
+  subgoal by (rule assms(7))
+  subgoal by (rule b_then_well_formed; rule assms(2, 3, 4))
+  subgoal
+    \<comment> \<open>Why does this not apply as a rule?\<close>
+    by (subst b_then_is_error; simp add: assms(5, 8))
+  done
+
 end
