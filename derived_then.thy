@@ -23,6 +23,11 @@ lemma b_then_is_error[NER_simps]:
   "is_error (parse (b_then ab bb)) i \<longleftrightarrow> is_error (parse ab) i \<or> (\<exists> r l. has_result (parse ab) i r l \<and> is_error (parse bb) l)"
   by (simp add: b_then_def NER_simps)
 
+lemma b_then_is_error_from_first:
+  assumes "is_error (parse ab) i"
+  shows "is_error (parse (b_then ab bb)) i"
+  by (auto simp add: NER_simps assms)
+
 lemma b_then_has_result[NER_simps]:
   "has_result (parse (b_then ab bb)) i (ra, rb) l \<longleftrightarrow> (\<exists> l'. has_result (parse ab) i ra l' \<and> has_result (parse bb) l' rb l)"
   "has_result (parse (b_then ab bb)) i r l \<longleftrightarrow> (\<exists> l'. has_result (parse ab) i (fst r) l' \<and> has_result (parse bb) l' (snd r) l)"
