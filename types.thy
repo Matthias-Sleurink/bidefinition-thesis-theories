@@ -537,7 +537,7 @@ lemma if_PASI_p:
 
 
 
-lemma bind_has_result_c[NER_simps]:
+lemma bind_has_result_c_isar:
   assumes "PNGI A"
   assumes "\<And>r. PNGI (B r)"
   shows "has_result_c (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) c r l
@@ -550,10 +550,14 @@ lemma bind_has_result_c[NER_simps]:
   proof -
     assume A: "A (c @ l) = Some (Some (r', l'))"
     assume B: "B r' l' = Some (Some (r, l))"
-    fix c1 and c2
-    assume C: "c1 @ c2 = c"
-    assume D: "has_result A (c1@c2@l) r' (c2@l)"
-    from A B C D have ?thesis
+
+    obtain c1 where P1: "c@l = c1@l'" by (metis A PNGI_def assms(1) has_result_def)
+    obtain c2 where P2: "l' = c2@l" by (metis B PNGI_def assms(2) has_result_def)
+
+    have C: "c1 @ c2 = c" using P1 P2 by simp
+    have D: "has_result A (c1@c2@l) r' (c2@l)" by (metis A P1 P2 has_result_def)
+
+    from A B C D show ?thesis
       unfolding has_result_def
       apply clarsimp
       apply (rule exI[of _ r'])
@@ -561,8 +565,8 @@ lemma bind_has_result_c[NER_simps]:
       apply (rule exI[of _ c2])
       using assms[unfolded PNGI_def has_result_def]
       by auto
-  \<comment> \<open>HOW DO I END THIS PROOF? I can't do qed, done, nor show ?thesis.\<close>
-  oops
+    qed
+  done
 
 
 lemma bind_has_result_c[NER_simps]:

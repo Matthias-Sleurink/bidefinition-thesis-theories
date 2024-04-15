@@ -283,8 +283,8 @@ lemma separated_by_well_formed2:
   subgoal by (rule assms(7))
   subgoal by (rule b_then_well_formed; rule assms(2, 3, 4))
   subgoal
-    \<comment> \<open>Why does this not apply as a rule?\<close>
-    by (subst b_then_is_error; simp add: assms(5, 8))
+    apply (rule b_then_is_error[of sep elem \<open>[]\<close>, THEN iffD2])
+    by (simp add: assms(5, 8))
   done
 
 lemma cannot_be_grown_to_many:
