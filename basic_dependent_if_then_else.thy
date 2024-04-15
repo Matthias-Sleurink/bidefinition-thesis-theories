@@ -289,6 +289,15 @@ lemma if_then_else_p_is_nonterm[fp_NER]:
 \<comment> \<open>PNGI, PASI\<close>
 lemma PNGI_dep_if_then_else:
   assumes "PNGI (parse ab)"
+  assumes "\<forall> i r l. has_result (parse ab) i r l \<longrightarrow> PNGI (parse (a2bb r))"
+  assumes "PNGI (parse cb)"
+  shows "PNGI (parse (if_then_else ab a2bb cb b2a))"
+  using assms
+  apply (simp add: PNGI_def NER_simps split: sum.splits)
+  by fastforce
+
+lemma PNGI_dep_if_then_else_all:
+  assumes "PNGI (parse ab)"
   assumes "\<forall> i. PNGI (parse (a2bb i))"
   assumes "PNGI (parse cb)"
   shows "PNGI (parse (if_then_else ab a2bb cb b2a))"
@@ -356,7 +365,7 @@ lemma charset_dep_if_then_else_subset:
   assumes "\<forall>abr. PNGI (parse (a2bb abr))"
   assumes "PNGI (parse cb)"
   shows "charset (parse (if_then_else ab a2bb cb b2a)) \<subseteq> (charset (parse ab) \<union> (\<Union> {charset (parse (a2bb ar)) | ar. True}) \<union> charset (parse cb))"
-  using PNGI_dep_if_then_else[OF assms]
+  using PNGI_dep_if_then_else_all[OF assms]
         assms
   unfolding charset_def PNGI_def
   apply (auto simp add: NER_simps split: sum.splits)
