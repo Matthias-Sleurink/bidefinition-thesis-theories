@@ -137,10 +137,11 @@ lemma b_then_wf_derived:
       using assms(2)[unfolded bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def]
             assms(3)[unfolded pa_does_not_eat_into_pb_nondep_def]
       apply (auto simp add: NER_simps fp_NER)
-      subgoal for i ra la b x a
-        (* Nitpick finds a counterexample here. *)
+      subgoal using transform_PNGI by blast
+      subgoal for i r l b x last
+        \<comment> \<open>not really viable here since last is not mentioned in any other assumption\<close>
         sorry
-      subgoal by (metis snd_conv transform_p_has_result(1))
+      subgoal by (metis snd_conv transform_p_has_result)
       done
     subgoal
       unfolding reversed_b2_result_is_b1_result_def
@@ -159,6 +160,7 @@ lemma b_then_well_formed:
   assumes "pa_does_not_eat_into_pb_nondep b1 b2"
   shows   "bidef_well_formed (b_then b1 b2)"
   apply wf_init
+  subgoal by (rule then_PNGI[OF assms(1,2)[THEN get_pngi]])
   subgoal
     using assms(2, 3)
     unfolding bidef_well_formed_def (* assms(2) *)

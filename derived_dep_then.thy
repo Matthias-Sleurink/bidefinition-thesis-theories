@@ -60,6 +60,18 @@ lemma dep_then_PNGI:
   shows "PNGI (parse (dep_then ab a2bb b2a))"
   unfolding dep_then_def
   unfolding transform_PNGI[symmetric, of projl Inl]
+  apply (rule PNGI_dep_if_then_else_all)
+  subgoal by (rule assms(1))
+  subgoal by (rule assms(2))
+  subgoal by (rule fail_PNGI)
+  done
+
+lemma dep_then_PNGI_for_ab_results:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall>i r l. has_result (parse ab) i r l \<longrightarrow> PNGI (parse (a2bb r))"
+  shows "PNGI (parse (dep_then ab a2bb b2a))"
+  unfolding dep_then_def
+  unfolding transform_PNGI[symmetric, of projl Inl]
   apply (rule PNGI_dep_if_then_else)
   subgoal by (rule assms(1))
   subgoal by (rule assms(2))
@@ -138,6 +150,10 @@ lemma dep_then_well_formed:
   assumes "well_formed_dep_then_pair ba a2bb b2a"
   shows "bidef_well_formed (dep_then ba a2bb b2a)"
   apply wf_init
+  subgoal using assms(2)[unfolded well_formed_dep_then_pair_def b2_wf_for_all_res_of_b1_def bidef_well_formed_def]
+                assms(1)[THEN get_pngi]
+                dep_then_PNGI_for_ab_results
+    by blast
   subgoal
     using assms
     unfolding bidef_well_formed_def

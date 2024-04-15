@@ -89,6 +89,9 @@ lemma or_well_formed:
   shows "bidef_well_formed (or b1 b2)"
   apply wf_init
   subgoal
+    using assms(1,2)[THEN get_pngi] or_PNGI
+    by blast
+  subgoal
     using assms
     unfolding parser_can_parse_print_result_def
               bidef_well_formed_def

@@ -64,8 +64,10 @@ lemma char_for_predicate_PASI:
 lemma char_for_predicate_well_formed:
   "bidef_well_formed (char_for_predicate p)"
   apply wf_init
+  subgoal by (rule char_for_predicate_PNGI)
   subgoal by (simp add: parser_can_parse_print_result_def fp_NER NER_simps)
-  by (auto simp add: printer_can_print_parse_result_def fp_NER NER_simps)
+  subgoal by (auto simp add: printer_can_print_parse_result_def fp_NER NER_simps)
+  done
 
 
 end

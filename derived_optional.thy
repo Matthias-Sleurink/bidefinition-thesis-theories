@@ -58,7 +58,7 @@ lemma optional_PNGI:
   unfolding transform_PNGI[symmetric]
   apply (rule PNGI_dep_if_then_else)
   subgoal by (rule assms(1))
-  subgoal using return_PNGI by blast
+  subgoal using return_PNGI by fast
   subgoal using return_PNGI by fast
   done
 
@@ -78,6 +78,7 @@ lemma optional_well_formed:
   assumes "bidef_well_formed b"
   shows "bidef_well_formed (optional b)"
   apply wf_init
+  subgoal by (rule optional_PNGI[OF assms(2)[THEN get_pngi]])
   subgoal
     using assms
     unfolding parser_can_parse_print_result_def
@@ -114,13 +115,16 @@ lemma optional_well_formed_minimal2:
   unfolding bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def
   unfolding fp_NER NER_simps
   unfolding is_error_def has_result_def p_has_result_def p_is_error_def
+  using optional_PNGI
   apply auto
-  subgoal by (metis (mono_tags, lifting) option.case_eq_if)
-  subgoal by (metis (mono_tags, lifting) option.case(2))
+  subgoal by (metis (mono_tags, lifting) option.simps(4))
+  subgoal by (meson PNGI_def optional_has_result(2))
   subgoal by (metis (mono_tags, lifting) option.simps(5))
-  subgoal by (metis (mono_tags, lifting) option.case_eq_if)
+  subgoal by (metis (mono_tags) option.simps(5))
+  subgoal by (simp add: option.case_eq_if)
   subgoal by (metis (mono_tags, lifting) option.case_eq_if)
   done
+
 
 
 end
