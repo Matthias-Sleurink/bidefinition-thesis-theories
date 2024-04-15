@@ -412,54 +412,6 @@ type_synonym '\<alpha> bidef = "'\<alpha> bd"
 
 
 
-section \<open>Well formed\<close>
-
-definition parser_can_parse_print_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
-  "parser_can_parse_print_result par pri \<longleftrightarrow>
-      (\<forall>(t :: '\<alpha>) pr. p_has_result pri t pr \<longrightarrow> has_result par pr t [])"
-
-\<comment> \<open>note how due to the parse '015' = 15 print 15 = '15' issue we cannot attach the text here.\<close>
-definition printer_can_print_parse_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
-  "printer_can_print_parse_result par pri \<longleftrightarrow>
-      (\<forall>(t :: '\<alpha>) i l. has_result par i t l \<longrightarrow> (\<exists>pr. p_has_result pri t pr))"
-
-
-definition bidef_well_formed :: "'\<alpha> bidef \<Rightarrow> bool" where
-  "bidef_well_formed bi = (parser_can_parse_print_result (parse bi) (print bi) \<and>
-                           printer_can_print_parse_result (parse bi) (print bi))"
-named_theorems bi_well_formed_simps
-
-lemma conjI3:
-  "A \<Longrightarrow> B \<Longrightarrow> C \<Longrightarrow> A \<and> B \<and> C"
-  by blast
-
-method wf_init = ((simp only: bidef_well_formed_def); (rule conjI))
-
-lemma print_results_always_same:
-  assumes "p_has_result printer ojb res1"
-  assumes "p_has_result printer ojb res2"
-  shows "res1 = res2"
-  using assms
-  by (simp add: p_has_result_def)
-
-
-lemma print_result_is_canon_result:
-  assumes "bidef_well_formed bd"
-  assumes "p_has_result (print bd) obj canon"
-  shows "has_result (parse bd) canon obj []"
-  using assms
-  by (simp add: bidef_well_formed_def parser_can_parse_print_result_def)
-
-lemma print_result_is_canon_result2:
-  assumes "bidef_well_formed bd"
-  assumes "p_has_result (print bd) obj canon"
-  assumes "has_result (parse bd) canon obj2 []"
-  shows "obj = obj2"
-  using assms
-  unfolding bidef_well_formed_def parser_can_parse_print_result_def
-  by (simp add: p_has_result_def has_result_def)
-
-
 section \<open>PASI, PNGI\<close>
 \<comment> \<open>PASI, Parser Always Shrinks Input (Including it being a tail of the input)\<close>
 definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
@@ -582,6 +534,70 @@ lemma bind_has_result_c[NER_simps]:
     apply (rule exI[of _ r'])
     by (metis PNGI_def append.assoc append_same_eq assms(1) assms(2) has_result_def)
   done
+
+
+
+section \<open>Well formed\<close>
+
+definition parser_can_parse_print_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
+  "parser_can_parse_print_result par pri \<longleftrightarrow>
+      (\<forall>(t :: '\<alpha>) pr. p_has_result pri t pr \<longrightarrow> has_result par pr t [])"
+
+\<comment> \<open>note how due to the parse '015' = 15 print 15 = '15' issue we cannot attach the text here.\<close>
+definition printer_can_print_parse_result :: "'\<alpha> parser \<Rightarrow> '\<alpha> printer \<Rightarrow> bool" where
+  "printer_can_print_parse_result par pri \<longleftrightarrow>
+      (\<forall>(t :: '\<alpha>) i l. has_result par i t l \<longrightarrow> (\<exists>pr. p_has_result pri t pr))"
+
+
+definition bidef_well_formed :: "'\<alpha> bidef \<Rightarrow> bool" where
+  "bidef_well_formed bi = (PNGI (parse bi) \<and>
+                           parser_can_parse_print_result (parse bi) (print bi) \<and>
+                           printer_can_print_parse_result (parse bi) (print bi)
+                           )"
+named_theorems bi_well_formed_simps
+
+\<comment> \<open>The idea is to do get_pngi[of assms(...)]\<close>
+lemma get_pngi:
+  assumes "bidef_well_formed a"
+  shows "PNGI (parse a)"
+  using assms[unfolded bidef_well_formed_def]
+  by blast
+
+lemma test:
+  assumes "bidef_well_formed a"
+  shows "PNGI (parse a)"
+  by (rule get_pngi[OF assms(1)])
+
+lemma conjI3:
+  "A \<Longrightarrow> B \<Longrightarrow> C \<Longrightarrow> A \<and> B \<and> C"
+  by blast
+
+method wf_init = ((simp only: bidef_well_formed_def); (rule conjI3))
+
+lemma print_results_always_same:
+  assumes "p_has_result printer ojb res1"
+  assumes "p_has_result printer ojb res2"
+  shows "res1 = res2"
+  using assms
+  by (simp add: p_has_result_def)
+
+
+lemma print_result_is_canon_result:
+  assumes "bidef_well_formed bd"
+  assumes "p_has_result (print bd) obj canon"
+  shows "has_result (parse bd) canon obj []"
+  using assms
+  by (simp add: bidef_well_formed_def parser_can_parse_print_result_def)
+
+lemma print_result_is_canon_result2:
+  assumes "bidef_well_formed bd"
+  assumes "p_has_result (print bd) obj canon"
+  assumes "has_result (parse bd) canon obj2 []"
+  shows "obj = obj2"
+  using assms
+  unfolding bidef_well_formed_def parser_can_parse_print_result_def
+  by (simp add: p_has_result_def has_result_def)
+
 
 
 section \<open>Charset, first_chars\<close>

@@ -227,16 +227,16 @@ lemma m_map_well_formed_empty[bi_well_formed_simps]:
   shows "bidef_well_formed (m_map a2bi [])"
   apply wf_init
   unfolding parser_can_parse_print_result_def printer_can_print_parse_result_def
-  by (auto simp add: fp_NER NER_simps)+
+  by (auto simp add: fp_NER NER_simps PNGI_m_map)+
 
 lemma m_map_well_formed_one[bi_well_formed_simps]:
   assumes "bidef_well_formed (a2bi x)"
   shows "bidef_well_formed (m_map a2bi [x])"
-  using assms
+  using assms PNGI_m_map
   unfolding bidef_well_formed_def parser_can_parse_print_result_def printer_can_print_parse_result_def
             m_map_has_result \<comment> \<open>Due to these being stuck in Ex we cannot unfold normally.\<close>
             m_map_p_has_result
-  by fastforce
+  by (metis list.discI list.set_cases self_append_conv set_ConsD)
 
 (*
 lemma m_map_well_formed_two[bi_well_formed_simps]:

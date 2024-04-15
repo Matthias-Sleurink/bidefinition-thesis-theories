@@ -468,6 +468,11 @@ lemma if_then_else_well_formed:
   shows "bidef_well_formed (if_then_else ab a2bb cb b2a)"
   apply wf_init
   subgoal
+    using assms(1, 3)[THEN get_pngi]
+          assms(2)[unfolded b2_wf_for_res_of_b1_def bidef_well_formed_def]
+          PNGI_dep_if_then_else
+    by blast
+  subgoal
     using assms
     unfolding bidef_well_formed_def
               parser_can_parse_print_result_def

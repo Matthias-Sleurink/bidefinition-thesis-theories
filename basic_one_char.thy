@@ -90,6 +90,7 @@ lemma first_chars_one_char:
 lemma one_char_well_formed[bi_well_formed_simps]:
   "bidef_well_formed one_char"
   apply wf_init
+  subgoal by (rule one_char_PNGI)
   subgoal by (simp add: parser_can_parse_print_result_def NER_simps fp_NER)
   subgoal by (simp add: printer_can_print_parse_result_def fp_NER)
   done

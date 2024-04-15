@@ -105,6 +105,8 @@ lemma transform_well_formed:
   assumes "well_formed_transform_funcs f f' b"
   shows "bidef_well_formed (transform f f' b)"
   apply wf_init
+  subgoal using assms[unfolded bidef_well_formed_def] transform_PNGI
+    by blast
   subgoal
     using assms[unfolded bidef_well_formed_def
                          well_formed_transform_funcs_def]
@@ -133,6 +135,8 @@ lemma transform_well_formed2:
   assumes "well_formed_transform_funcs2 f f' b"
   shows "bidef_well_formed (transform f f' b)"
   apply wf_init
+  subgoal using assms[unfolded bidef_well_formed_def] transform_PNGI
+    by blast
   subgoal
     using assms[unfolded bidef_well_formed_def
                          well_formed_transform_funcs2_def]
@@ -163,6 +167,8 @@ lemma transform_well_formed3:
   assumes "well_formed_transform_funcs3 f f' b"
   shows "bidef_well_formed (transform f f' b)"
   apply wf_init
+  subgoal using assms[unfolded bidef_well_formed_def] transform_PNGI
+    by blast
   subgoal
     using assms[unfolded bidef_well_formed_def
                          well_formed_transform_funcs3_def]

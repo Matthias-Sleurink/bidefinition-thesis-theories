@@ -127,6 +127,7 @@ lemma peek_well_formed_empty:
   assumes "\<forall> t. t \<noteq> [] \<longrightarrow> is_error (parse b) t"
   shows "bidef_well_formed (peek b)"
   apply wf_init
+  subgoal by (rule peek_PNGI)
   subgoal
     using assms(1,2)[unfolded bidef_well_formed_def]
     unfolding parser_can_parse_print_result_def

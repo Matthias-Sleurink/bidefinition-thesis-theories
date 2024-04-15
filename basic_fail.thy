@@ -96,6 +96,7 @@ lemma first_chars_fail:
 lemma fail_well_formed:
   "bidef_well_formed fail"
   apply wf_init
+  subgoal by (rule fail_PNGI)
   subgoal by (simp add: parser_can_parse_print_result_def fp_NER)
   subgoal by (simp add: printer_can_print_parse_result_def NER_simps)
   done
