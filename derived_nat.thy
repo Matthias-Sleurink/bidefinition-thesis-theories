@@ -88,6 +88,26 @@ lemma nat_p_has_result[fp_NER]:
   using print_nat_domain
   by auto
 
+
+
+\<comment> \<open>PASI, PNGI\<close>
+lemma nat_b_PNGI:
+  "PNGI (parse nat_b)"
+  unfolding nat_b_def
+  using transform_PNGI
+        many1_PNGI[OF digit_char_PASI]
+  by blast
+
+lemma nat_b_PASI:
+  "PASI (parse nat_b)"
+  unfolding nat_b_def
+  using transform_PASI
+        many1_PASI[OF digit_char_PASI]
+  by blast
+
+
+
+\<comment> \<open>WF\<close>
 lemma takeWhileAllTrue:
   assumes "\<forall>a \<in> set as. P a"
   shows "as = takeWhile P as"
