@@ -48,6 +48,10 @@ definition has_result :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> '\
 definition has_result_c :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> '\<alpha> \<Rightarrow> string \<Rightarrow> bool" where
   "has_result_c p c r l \<longleftrightarrow> has_result p (c@l) r l"
 
+definition has_result_ci :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> string \<Rightarrow> '\<alpha> \<Rightarrow> string \<Rightarrow> bool" where
+  "has_result_ci p i c r l \<longleftrightarrow> has_result_c p c r l \<and> i = c@l"
+
+
 
 \<comment> \<open>list_upto is important for instantiating the existentials in has_result_c proofs\<close>
 fun dropLastN :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a list" where
@@ -113,6 +117,10 @@ lemma if_has_result_c[NER_simps]:
   "has_result_c (if B then T else F) c r l \<longleftrightarrow> (if B then has_result_c T c r l else has_result_c F c r l)"
   by simp
 
+lemma if_has_result_ci:
+  "has_result_ci (if B then T else F) i c r l \<longleftrightarrow> (if B then has_result_ci T i c r l else has_result_ci F i c r l)"
+  by simp
+
 
 
 subsection \<open>NER for inlined bind\<close>
@@ -128,7 +136,7 @@ lemma bind_has_result[NER_simps]:
   "has_result (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) i r l \<longleftrightarrow> (\<exists>r' l'. has_result A i r' l' \<and> has_result (B r') l' r l)"
   by (clarsimp simp add: has_result_def split: option.splits)
 
-\<comment> \<open>Version for has_result_c is way later since it depends on PNGI\<close>
+\<comment> \<open>Version for has_result_c and has_result_ci are later since they depend on PNGI\<close>
 
 
 
@@ -536,6 +544,19 @@ lemma bind_has_result_c[NER_simps]:
   done
 
 
+lemma bind_has_result_ci:
+  assumes "PNGI A"
+  assumes "\<And>r. PNGI (B r)"
+  shows "has_result_ci (\<lambda> i. case A i of None \<Rightarrow> None | Some None \<Rightarrow> Some None | Some (Some (r,l)) \<Rightarrow> B r l) i c r l \<longleftrightarrow>
+          (\<exists>r' l' c' c''. c = c'@c'' \<and> has_result_ci A i c' r' l' \<and> has_result_ci (B r') l' c'' r l)"
+  unfolding has_result_ci_def has_result_c_def has_result_def
+  using bind_has_result[of B A i r l]
+        assms[unfolded PNGI_def has_result_def]
+  apply (auto split: option.splits)
+  subgoal by fastforce
+  subgoal by fastforce
+  done
+
 
 section \<open>Well formed\<close>
 
@@ -680,6 +701,7 @@ lemma charset_not_in_c:
   unfolding charset_charset2
             charset2_def first_chars_def
   by blast
+
 
 
 end
