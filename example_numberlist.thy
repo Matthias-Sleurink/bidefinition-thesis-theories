@@ -200,7 +200,9 @@ lemma numberlist_well_formed:
   subgoal by (rule nat_does_not_into_ws_then_nat)
   subgoal by (rule can_parse_print_result_then_many1_ws_nat)
   subgoal by (rule many1_ws_natb_cannot_be_grown_by_many_self)
+  subgoal by (clarsimp simp add: nat_b_PASI)
   done
+
 
 
 end

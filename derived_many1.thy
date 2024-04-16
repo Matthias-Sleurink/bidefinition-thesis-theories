@@ -126,9 +126,11 @@ lemma printer_can_print_parse_result_many1:
 lemma many1_well_formed:
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
   assumes "bidef_well_formed b"
-  assumes "is_error (parse b) []"
+  assumes "is_error (parse b) []" \<comment> \<open>can get this from PASI\<close>
+  assumes "PASI (parse b)"
   shows "bidef_well_formed (many1 b)"
   apply wf_init
+  subgoal using many1_PNGI[OF assms(4)] by fast
   subgoal
     unfolding parser_can_parse_print_result_def
     apply clarsimp \<comment> \<open>To move \<forall> to \<And>\<close>
@@ -151,6 +153,9 @@ lemma many1_well_formed_from_many:
   assumes "bidef_well_formed (many b)"
   shows "bidef_well_formed (many1 b)"
   apply wf_init
+  subgoal
+    using assms[unfolded bidef_well_formed_def]
+    by (metis PNGI_def many1_has_result many_has_result_safe(2))
   subgoal
     using assms[unfolded bidef_well_formed_def]
     unfolding parser_can_parse_print_result_def

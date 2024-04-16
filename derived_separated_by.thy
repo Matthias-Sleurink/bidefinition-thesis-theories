@@ -137,6 +137,7 @@ lemma separated_by_well_formed:
   assumes "pa_does_not_eat_into_pb_nondep elem (many (b_then sep elem))"
   assumes "parser_can_parse_print_result (parse (many (b_then sep elem))) (print (many (b_then sep elem)))" \<comment> \<open>Would be ideal to get this from WF elem, sep, and more.\<close>
   assumes "parse_result_cannot_be_grown_by_printer (parse (b_then sep elem)) (print (many (b_then sep elem)))"
+  assumes "PASI (parse elem) \<or> PASI (parse sep)"
   shows "bidef_well_formed (separated_by sep elem sep_oracle)"
   unfolding separated_by_def
   apply (rule transform_well_formed3)
@@ -185,6 +186,10 @@ lemma separated_by_well_formed:
   subgoal
     apply (clarsimp simp add: NER_simps assms(6)) \<comment> \<open>number 6 should not be needed here since sep is not []?\<close>
     by (metis assms(8) b_then_is_error many_has_result_safe(1) many_p_has_result_safe(1) parser_can_parse_print_result_simp)
+  subgoal
+    using assms(10)
+          assms(4,5)[THEN get_pngi]
+    using then_PASI_from_pasi_pngi then_PASI_from_pngi_pasi by blast
   subgoal by (rule assms(9))
   apply (rule b_then_well_formed)
   subgoal by (rule assms(5))
@@ -204,6 +209,7 @@ lemma separated_by_well_formed_sub_lemma:
   assumes "parse_result_cannot_be_grown_by_printer (parse (b_then sep elem)) (print (many (b_then sep elem)))"
   assumes "bidef_well_formed (b_then sep elem)" \<comment> \<open>can be proven from other requirements. Wrap this lemma in lemma that does that!\<close>
   assumes "is_error (parse (b_then sep elem)) []" \<comment> \<open>Same as above.\<close>
+  assumes "PASI (parse elem) \<or> PASI (parse sep)"
   shows "bidef_well_formed (separated_by sep elem sep_oracle)"
   unfolding separated_by_def
   apply (rule transform_well_formed3)
@@ -256,6 +262,10 @@ lemma separated_by_well_formed_sub_lemma:
   apply (rule well_formed_does_not_grow_by_printer) \<comment> \<open>rule for WF many\<close>
     defer defer
   subgoal by (rule assms(9))
+  subgoal
+    using assms(10)
+          assms(3,4)[THEN get_pngi]
+    using then_PASI_from_pasi_pngi then_PASI_from_pngi_pasi by blast
   subgoal by (rule assms(7))
   apply (rule b_then_well_formed)
   subgoal by (rule assms(4))
@@ -272,6 +282,7 @@ lemma separated_by_well_formed2:
   assumes "pa_does_not_eat_into_pb_nondep elem (many (b_then sep elem))"
   assumes "parse_result_cannot_be_grown_by_printer (parse (b_then sep elem)) (print (many (b_then sep elem)))"
   assumes "is_error (parse sep) []"
+  assumes "PASI (parse elem) \<or> PASI (parse sep)"
   shows "bidef_well_formed (separated_by sep elem sep_oracle)"
   apply (rule separated_by_well_formed_sub_lemma)
   subgoal by (rule assms(1))
@@ -285,6 +296,7 @@ lemma separated_by_well_formed2:
   subgoal
     apply (rule b_then_is_error[of sep elem \<open>[]\<close>, THEN iffD2])
     by (simp add: assms(5, 8))
+  subgoal by (rule assms(9))
   done
 
 lemma cannot_be_grown_to_many:
@@ -298,6 +310,12 @@ lemma cannot_be_grown_to_many:
   subgoal for i a b l pri prt l'
     apply (rule exI[of _ \<open>l' @ prt\<close>])
     apply auto
+     apply (cases prt)
+    subgoal \<comment> \<open>prt = []\<close> by fastforce
+    subgoal for t ts\<comment> \<open>= prt\<close>
+      apply clarsimp
+      
+      sorry
     \<comment> \<open>Here it would be nice to have something like the charset thing.\<close>
     \<comment> \<open>Basically the idea is that either prt =[] in which case this is trivial\<close>
     \<comment> \<open>Or \<open>hd prt\<close> is not in the set of chars that sep will consume.\<close>

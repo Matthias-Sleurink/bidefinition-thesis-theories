@@ -52,13 +52,25 @@ lemma this_string_p_has_result[fp_NER]:
 
 
 
+\<comment> \<open>PASI, PNGI\<close>
+lemma this_string_PNGI:
+  "PNGI (parse (this_string s))"
+  by (simp add: this_string_def this_char_PNGI PNGI_m_map)
+
+lemma this_string_PASI:
+  "s \<noteq> [] \<Longrightarrow> PASI (parse (this_string s))"
+  by (simp add: this_string_def this_char_PASI PASI_m_map)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma this_string_wf:
   "bidef_well_formed (this_string s)"
   apply wf_init
+  subgoal by (rule this_string_PNGI)
   subgoal by (auto simp add: parser_can_parse_print_result_def fp_NER NER_simps)
-  by (auto simp add: printer_can_print_parse_result_def fp_NER NER_simps)
-
+  subgoal by (auto simp add: printer_can_print_parse_result_def fp_NER NER_simps)
+  done
 
 
 

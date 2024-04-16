@@ -104,6 +104,10 @@ lemma then_drop_second_well_formed:
   shows   "bidef_well_formed (then_drop_second b1 b2 b)"
   apply wf_init
   subgoal
+    using assms(1,2)[THEN get_pngi]
+          then_drop_second_PNGI
+    by fast
+  subgoal
     using assms(2, 3, 4)
     unfolding bidef_well_formed_def (* assms(2) *)
                 parser_can_parse_print_result_def

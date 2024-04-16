@@ -109,6 +109,7 @@ lemma dropWhileNoneTrue:
 lemma nat_b_well_formed:
   "bidef_well_formed nat_b"
   apply wf_init
+  subgoal by (rule nat_b_PNGI)
   subgoal
     unfolding parser_can_parse_print_result_def
     apply (auto simp add: NER_simps fp_NER)
@@ -136,6 +137,7 @@ lemma nat_b_wf_from_many1:
     subgoal by (clarsimp simp add: fp_NER NER_simps parse_result_cannot_be_grown_by_printer_def)
     subgoal by (rule digit_char_well_formed)
     subgoal by (simp add: digit_char_is_error)
+    subgoal by (rule digit_char_PASI)
     done
   unfolding well_formed_transform_funcs_def
   apply (auto simp add: NER_simps fp_NER)
@@ -151,6 +153,7 @@ lemma nat_b_wf_from_transform_many1:
     subgoal by (clarsimp simp add: fp_NER NER_simps parse_result_cannot_be_grown_by_printer_def)
     subgoal by (rule digit_char_well_formed)
     subgoal by (simp add: digit_char_is_error)
+    subgoal by (rule digit_char_PASI)
     done
   unfolding well_formed_transform_funcs2_def
   apply (auto simp add: NER_simps fp_NER)
@@ -176,6 +179,7 @@ lemma nat_b_wf_from_transform_many1:
     subgoal by (clarsimp simp add: fp_NER NER_simps parse_result_cannot_be_grown_by_printer_def)
     subgoal by (rule digit_char_well_formed)
     subgoal by (simp add: digit_char_is_error)
+    subgoal by (rule digit_char_PASI)
     done
   unfolding well_formed_transform_funcs3_def
   apply (auto simp add: NER_simps fp_NER)

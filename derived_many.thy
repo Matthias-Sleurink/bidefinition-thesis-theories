@@ -343,6 +343,7 @@ lemma printer_can_print_parse_result_many:
 lemma many_char_for_predicate_well_formed:
   shows "bidef_well_formed (many (char_for_predicate P))"
   apply wf_init
+  subgoal using many_PNGI[OF char_for_predicate_PASI] by fast
   subgoal
     unfolding parser_can_parse_print_result_def
     apply (clarsimp simp add: NER_simps)
@@ -474,6 +475,7 @@ lemma many_well_formed:
   assumes "PASI (parse b)"
   shows "bidef_well_formed (many b)"
   apply wf_init
+  subgoal using many_PNGI[OF assms(4)] by fast
   subgoal
     supply [[show_types=false]]
     unfolding parser_can_parse_print_result_def
@@ -518,6 +520,7 @@ lemma many_well_formed:
 lemma many_char_for_pred_well_formed:
   shows "bidef_well_formed (many (char_for_predicate p))"
   apply wf_init
+  subgoal using many_PNGI[OF char_for_predicate_PASI] by fast
   subgoal
     unfolding parser_can_parse_print_result_def
     apply clarsimp
@@ -568,8 +571,11 @@ lemma well_formed_does_not_grow:
   assumes "parse_result_cannot_be_grown (parse b)"
   assumes "bidef_well_formed b"
   assumes "is_error (parse b) []"
+  \<comment> \<open>This here really shows it would be great to have PNGI -> PNGI many, but not sure if that's possible.\<close>
+  assumes "PASI (parse b)"
   shows "bidef_well_formed (many b)"
   apply wf_init
+  subgoal using many_PNGI[OF assms(4)] by fast
   subgoal
     unfolding parser_can_parse_print_result_def
     apply clarsimp
@@ -639,9 +645,11 @@ lemma parser_can_parse_print_result_many:
 lemma well_formed_does_not_grow_by_printer:
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
   assumes "bidef_well_formed b"
-  assumes "is_error (parse b) []"
+  assumes "is_error (parse b) []" \<comment> \<open>can get this from PASI...\<close>
+  assumes "PASI (parse b)"
   shows "bidef_well_formed (many b)"
   apply wf_init
+  subgoal using many_PNGI[OF assms(4)] by fast
   subgoal
     apply (rule parser_can_parse_print_result_many)
     using assms(1,2,3) by blast+
