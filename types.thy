@@ -669,6 +669,17 @@ lemma charset_first_chars:
   \<comment> \<open>Basically, ipr cannot be in the consumed chars.\<close>
   shows "\<exists>t''. l = t''@ipr@t'"
   oops
-  
+
+lemma charset_not_in_c:
+  assumes "(charset parser \<inter> first_chars printer) = {}"
+  assumes "p_has_result printer i ipr"
+  assumes "ipr \<noteq> []"
+  assumes "has_result_c parser c r l"
+  shows "hd ipr \<notin> set c"
+  using assms
+  unfolding charset_charset2
+            charset2_def first_chars_def
+  by blast
+
 
 end
