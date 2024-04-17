@@ -28,6 +28,10 @@ lemma lowercase_char_has_result[NER_simps]:
   "has_result (parse lowercase_char) i r l \<longleftrightarrow> i \<noteq> [] \<and> (r = hd i \<and> l = tl i \<and> r \<in> lowercase_chars)"
   by (auto simp add: lowercase_char_def any_from_set_has_result)
 
+lemma lowercase_char_has_result_ci[NER_simps]:
+  "has_result_ci (parse lowercase_char) i c r l \<longleftrightarrow> i \<noteq> [] \<and> c = [hd i] \<and> (r = hd i \<and> l = tl i \<and> r \<in> lowercase_chars)"
+  by (auto simp add: lowercase_char_def any_from_set_has_result_ci)
+
 
 
 \<comment> \<open>fp NER\<close>
