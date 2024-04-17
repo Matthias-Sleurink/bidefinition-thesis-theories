@@ -28,6 +28,11 @@ lemma char_not_in_set_has_result[NER_simps]:
   unfolding char_not_in_set_def
   by (simp add: NER_simps)
 
+lemma char_not_in_set_has_result_ci[NER_simps]:
+  "has_result_ci (parse (char_not_in_set s)) i c r l \<longleftrightarrow> i \<noteq> [] \<and> c = [hd i]  \<and> hd i \<notin> s \<and> i = r#l"
+  unfolding char_not_in_set_def
+  by (simp add: NER_simps)
+
 
 
 \<comment> \<open>FP NER\<close>
