@@ -48,6 +48,11 @@ lemma fail_has_result_c[NER_simps]:
   "has_result_c fail_p       c r l \<longleftrightarrow> False"
   by (simp add: has_result_c_def fail_has_result)+
 
+lemma fail_has_result_ci[NER_simps]:
+  "has_result_ci (parse fail) i c r l \<longleftrightarrow> False"
+  "has_result_ci fail_p       i c r l \<longleftrightarrow> False"
+  by (simp add: has_result_ci_def fail_has_result_c)+
+
 
 
 \<comment> \<open>FP NER\<close>

@@ -66,6 +66,20 @@ lemma peek_has_result_c[NER_simps]:
     by metis
   done
 
+lemma peek_has_result_ci[NER_simps]:
+  assumes "PNGI (parse b)"
+  shows
+  "has_result_ci (parse (peek b))   i c r l \<longleftrightarrow> c=[] \<and> l=i \<and> (\<exists> c' l'. has_result_ci (parse b) i c' r l' \<and> l = c'@l')"
+  "has_result_ci (peek_p (parse b)) i c r l \<longleftrightarrow> c=[] \<and> l=i \<and> (\<exists> c' l'. has_result_ci (parse b) i c' r l' \<and> l = c'@l')"
+  apply (clarsimp simp add: peek_def)+
+  subgoal
+    using assms has_result_ci_def peek_has_result_c(2)
+    by fastforce
+  subgoal
+    using assms has_result_ci_def peek_has_result_c(2)
+    by fastforce
+  done
+
 
 
 \<comment> \<open>FP NER\<close>

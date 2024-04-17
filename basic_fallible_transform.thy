@@ -55,6 +55,11 @@ lemma ftransform_has_result_c[NER_simps]:
   "has_result_c (ftransform_p t p)           c r l \<longleftrightarrow> (\<exists> r'. has_result_c p c r' l \<and> t r' = Some r)"
   by (auto simp add: ftransform_def has_result_c_def NER_simps split: option.splits)
 
+lemma ftransform_has_result_ci[NER_simps]:
+  "has_result_ci (parse (ftransform t t' bi)) i c r l \<longleftrightarrow> (\<exists> r'. has_result_ci (parse bi) i c r' l \<and> t r' = Some r)"
+  "has_result_ci (ftransform_p t p)           i c r l \<longleftrightarrow> (\<exists> r'. has_result_ci p          i c r' l \<and> t r' = Some r)"
+  by (auto simp add: ftransform_def has_result_ci_def NER_simps split: option.splits)
+
 
 
 \<comment> \<open>FP NER\<close>

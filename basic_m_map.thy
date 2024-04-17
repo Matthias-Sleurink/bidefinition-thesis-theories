@@ -220,6 +220,18 @@ lemma m_map_has_result_c[NER_simps]:
     done
   done
 
+lemma m_map_has_result_ci[NER_simps]:
+  assumes "\<forall>a' \<in>set (a#as). PNGI (parse (tc a'))"
+  shows 
+  "has_result_ci (parse (m_map tc []    )) i c r l \<longleftrightarrow> c = [] \<and> r = [] \<and> l = i"
+  "has_result_ci (parse (m_map tc (a#as))) i c r l \<longleftrightarrow> (\<exists> r' rs c' c''. c = c'@c'' \<and>
+                                                       has_result_ci (parse (tc a))        i       c'  r' (c''@l) \<and>
+                                                       has_result_ci (parse (m_map tc as)) (c''@l) c'' rs l \<and>
+                                                       r = r'#rs)"
+  subgoal by (auto simp add: has_result_ci_def has_result_c_def NER_simps)
+  apply (auto simp add: has_result_ci_def has_result_c_def NER_simps)
+  by (metis PNGI_def PNGI_m_map append.assoc append_same_eq assms list.set_intros(1) list.set_intros(2))
+
 
 
 \<comment> \<open>well formed\<close>

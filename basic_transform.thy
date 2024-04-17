@@ -31,6 +31,10 @@ lemma transform_has_result_c[NER_simps]:
   "has_result_c (parse (transform f f' p)) c r l \<longleftrightarrow> (\<exists>r'. has_result_c (parse p) c r' l \<and> r = f r')"
   by (auto simp add: transform_def NER_simps)
 
+lemma transform_has_result_ci[NER_simps]:
+  "has_result_ci (parse (transform f f' p)) i c r l \<longleftrightarrow> (\<exists>r'. has_result_ci (parse p) i c r' l \<and> r = f r')"
+  by (auto simp add: transform_def NER_simps)
+
 
 
 \<comment> \<open>FP ner\<close>

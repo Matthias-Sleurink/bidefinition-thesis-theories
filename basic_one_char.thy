@@ -42,6 +42,11 @@ lemma one_char_has_result_c[NER_simps]:
   "has_result_c (one_char_parser) c r l \<longleftrightarrow> c = [r]"
   by (simp add: has_result_c_def NER_simps)+
 
+lemma one_char_has_result_ci[NER_simps]:
+  "has_result_ci (parse one_char)  i c r l \<longleftrightarrow> c = [r] \<and> (c@l) = i"
+  "has_result_ci (one_char_parser) i c r l \<longleftrightarrow> c = [r] \<and> (c@l) = i"
+  by (auto simp add: has_result_ci_def NER_simps)+
+
 
 
 \<comment> \<open>FP NER\<close>
