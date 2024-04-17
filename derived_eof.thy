@@ -31,6 +31,10 @@ lemma eof_has_result[NER_simps]:
   apply (auto simp add: eof_def NER_simps split: sum.splits)
   by (metis (full_types) old.sum.exhaust old.unit.exhaust)+
 
+lemma eof_has_result_ci[NER_simps]:
+  "has_result_ci (parse eof) i c r l \<longleftrightarrow> i = [] \<and> c = [] \<and> r = () \<and> l = []"
+  by (auto simp add: has_result_ci_def has_result_c_def NER_simps split: sum.splits)
+
 
 
 \<comment> \<open>FP NER\<close>
