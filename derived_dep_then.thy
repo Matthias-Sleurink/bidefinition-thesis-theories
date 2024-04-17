@@ -33,6 +33,33 @@ lemma dep_then_has_result[NER_simps]:
   using Inl_Inr_False
   by blast
 
+lemma dep_then_has_result_ci[NER_simps]:
+  assumes "PNGI (parse ab)"
+  assumes "\<And>i r l. has_result (parse ab) i r l \<longrightarrow> PNGI (parse (a2bb r))"
+  shows
+  "has_result_ci (parse (dep_then ab a2bb b2a)) i c r l \<longleftrightarrow>
+    (\<exists> r' c' c''. (c'@c'') = c \<and>
+        has_result_ci (parse ab) i c' r' (c''@l) \<and>
+        has_result_ci (parse (a2bb r')) (c''@l) c'' r l)"
+  unfolding has_result_ci_def has_result_c_def
+  apply (auto simp add: NER_simps)
+  subgoal for r' l'
+    apply (rule exI[of _ r'])
+    apply (rule exI[of _ \<open>list_upto (c@l) l'\<close>])
+    apply (rule exI[of _ \<open>list_upto l'    l\<close>])
+    using list_upto_take_cons
+    apply auto
+    subgoal by (metis PNGI_def list_upto_take_cons assms(1,2) append_assoc append_same_eq)
+    subgoal by (metis PNGI_def list_upto_take_cons assms(1,2))
+    subgoal by (metis PNGI_def list_upto_take_cons assms(1,2) append.assoc append_same_eq)
+    subgoal by (metis PNGI_def list_upto_take_cons assms(  2))
+    done
+  subgoal for r' c' c''
+    apply (rule exI[of _ r'])
+    apply (rule exI[of _ \<open>(c'' @ l)\<close>])
+    by blast
+  done
+
 
 
 \<comment> \<open>FP NER\<close>
