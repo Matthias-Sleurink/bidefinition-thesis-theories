@@ -228,7 +228,6 @@ lemma if_then_else_has_result_no_split[NER_simps]:
       | Inr rr \<Rightarrow> (is_error ap i \<and> has_result cp i rr l))"
   by (simp add: NER_simps split: sum.splits)+ 
 
-
 lemma if_then_else_has_result_c[NER_simps]:
   assumes "PNGI (parse ab)"
   assumes "\<forall>a. PNGI (parse (a2bb a))"
@@ -256,6 +255,23 @@ lemma if_then_else_has_result_c[NER_simps]:
       by (auto simp add: list_upto_def has_result_def)
     done
   by (auto simp add: if_then_else_has_result)
+
+
+lemma if_then_else_has_result_ci[NER_simps]:
+  assumes "PNGI (parse ab)"
+  assumes "\<forall>a. PNGI (parse (a2bb a))"
+  assumes "PNGI (parse ac)"
+  shows
+  "has_result_ci (parse (if_then_else ab a2bb cb b2a)) i c (Inl lr) l \<longleftrightarrow> (\<exists> ar c' c''. c = c' @ c'' \<and> has_result_ci (parse ab) i c' ar (c''@l) \<and> has_result_ci (parse (a2bb ar)) (c''@l) c'' lr l)"
+  "has_result_ci (parse (if_then_else ab a2bb cb b2a)) i c (Inr rr) l \<longleftrightarrow> is_error (parse ab) (c@l)  \<and> has_result_ci (parse cb) i c rr l"
+  subgoal
+    using if_then_else_has_result_c(1)[OF assms, of cb b2a c lr l]
+    apply (auto simp add: has_result_ci_def)
+    by blast
+  subgoal
+    using if_then_else_has_result_c(2)[OF assms, of cb b2a c rr l]
+    by (clarsimp simp add: has_result_ci_def)
+  done
 
 
 
