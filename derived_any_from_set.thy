@@ -28,6 +28,11 @@ lemma any_from_set_has_result[NER_simps]:
   unfolding any_from_set_def
   by (simp add: NER_simps)
 
+lemma any_from_set_has_result_ci[NER_simps]:
+  "has_result_ci (parse (any_from_set s)) i c r l \<longleftrightarrow> i \<noteq> [] \<and> c = [hd i]  \<and> hd i \<in> s \<and> i = r#l"
+  unfolding any_from_set_def
+  by (simp add: NER_simps)
+
 
 
 \<comment> \<open>FP NER\<close>
