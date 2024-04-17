@@ -27,6 +27,12 @@ lemma optional_has_result[NER_simps]:
   apply (auto simp add: optional_def NER_simps split: sum.splits option.splits)
   by (metis (full_types) old.sum.exhaust old.unit.exhaust)+
 
+lemma optional_has_result_ci[NER_simps]:
+  "has_result_ci (parse (optional p)) i c None     l \<longleftrightarrow> is_error (parse p) i \<and> i = l \<and> c = []"
+  "has_result_ci (parse (optional p)) i c (Some r) l \<longleftrightarrow> has_result_ci (parse p) i c r l"
+  "has_result_ci (parse (optional p)) i c rr       l \<longleftrightarrow> (case rr of None \<Rightarrow> is_error (parse p) i \<and> i = l \<and> c = [] | Some r \<Rightarrow> has_result_ci (parse p) i c r l)"
+  by (auto simp add: NER_simps has_result_c_def has_result_ci_def split: option.splits)
+
 
 
 \<comment> \<open>fp_NER\<close>
