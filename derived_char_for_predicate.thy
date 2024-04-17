@@ -25,6 +25,12 @@ lemma char_for_predicate_has_result[NER_simps]:
   apply (simp add: NER_simps)
   by fastforce
 
+lemma char_for_predicate_has_result_ci[NER_simps]:
+  "has_result_ci (parse (char_for_predicate p)) i c r l \<longleftrightarrow> i\<noteq>[] \<and> c = [hd i] \<and> p (hd i) \<and> i = r#l"
+  unfolding char_for_predicate_def has_result_ci_def has_result_c_def
+  apply (simp add: NER_simps)
+  by fastforce
+
 
 
 \<comment> \<open>fp NER\<close>
