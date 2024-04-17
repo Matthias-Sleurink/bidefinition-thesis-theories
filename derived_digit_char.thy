@@ -39,6 +39,10 @@ lemma digit_char_has_result[NER_simps]:
   "has_result (parse digit_char) i r l \<longleftrightarrow> i \<noteq> [] \<and> (r = hd i \<and> l = tl i \<and> r \<in> digit_chars)"
   by (auto simp add: digit_char_def any_from_set_has_result)
 
+lemma digit_char_has_result_ci[NER_simps]:
+  "has_result_ci (parse digit_char) i c r l \<longleftrightarrow> i \<noteq> [] \<and> c = [hd i] \<and> (r = hd i \<and> l = tl i \<and> r \<in> digit_chars)"
+  by (auto simp add: digit_char_def any_from_set_has_result_ci)
+
 
 
 \<comment> \<open>fp NER\<close>
