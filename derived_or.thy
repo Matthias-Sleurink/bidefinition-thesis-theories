@@ -32,6 +32,11 @@ lemma or_has_result_non_split[NER_simps]:
       | Inr rr \<Rightarrow> is_error (parse p1) i \<and> has_result (parse p2) i rr l)"
   by (simp add: or_def NER_simps split: sum.splits)
 
+lemma or_has_result_ci[NER_simps]:
+  "has_result_ci (parse (or p1 p2)) i c (Inl lr) l \<longleftrightarrow> has_result_ci (parse p1) i c lr l"
+  "has_result_ci (parse (or p1 p2)) i c (Inr rr) l \<longleftrightarrow> is_error (parse p1) i \<and> has_result_ci (parse p2) i c rr l"
+  by (auto simp add: has_result_ci_def has_result_c_def NER_simps)+
+
 
 
 \<comment> \<open>FP NER\<close>
