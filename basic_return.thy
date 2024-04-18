@@ -92,6 +92,14 @@ lemma first_chars_return:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma return_does_not_peek_past_end[peek_past_end_simps]:
+  shows "does_not_peek_past_end (parse (return v))"
+  unfolding does_not_peek_past_end_def
+  by (clarsimp simp add: return_has_result)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma b_return_well_formed:
   "bidef_well_formed (return v)"

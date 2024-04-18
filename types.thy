@@ -709,6 +709,7 @@ lemma charset_not_in_c:
 definition char_cannot_extend :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
   "char_cannot_extend p ch \<longleftrightarrow> (\<forall>c r l. has_result_ci p (c@l) c r l \<longrightarrow> has_result_ci p (c@(ch#l)) c r (ch#l))"
 
+named_theorems peek_past_end_simps
 definition does_not_peek_past_end :: "'a parser \<Rightarrow> bool" where
   "does_not_peek_past_end p \<longleftrightarrow> (\<forall> c r l l'. has_result p (c@l) r l \<longrightarrow> has_result p (c@l') r l')"
 

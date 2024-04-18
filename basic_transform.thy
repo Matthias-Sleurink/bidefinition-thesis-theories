@@ -99,6 +99,17 @@ lemma first_chars_ftransform:
   by force
 
 
+
+\<comment> \<open>Does not peek past end\<close>
+lemma transform_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "does_not_peek_past_end (parse A)"
+  shows "does_not_peek_past_end (parse (transform f f' A))"
+  using assms
+  unfolding does_not_peek_past_end_def
+  by (auto simp add: transform_has_result)
+
+
+
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>
 definition well_formed_transform_funcs :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
   "well_formed_transform_funcs f f' b \<longleftrightarrow> ((\<forall> i v l. has_result (parse b) i v l \<longrightarrow> f' (f v) = v)

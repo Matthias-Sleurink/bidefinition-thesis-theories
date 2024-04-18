@@ -157,6 +157,16 @@ lemma first_chars_ftransform_subset:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma ftrans_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "does_not_peek_past_end (parse A)"
+  shows "does_not_peek_past_end (parse (ftransform f f' A))"
+  using assms ftransform_has_result
+  unfolding does_not_peek_past_end_def
+  by meson
+
+
+
 \<comment> \<open>Well Formed\<close>
 
 

@@ -97,6 +97,14 @@ lemma first_chars_fail:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma fail_does_not_peek_past_end[peek_past_end_simps]:
+  shows "does_not_peek_past_end (parse fail)"
+  unfolding does_not_peek_past_end_def
+  by (clarsimp simp add: fail_has_result)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma fail_well_formed:
   "bidef_well_formed fail"

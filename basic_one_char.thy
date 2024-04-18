@@ -91,6 +91,14 @@ lemma first_chars_one_char:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma one_char_does_not_peek_past_end[peek_past_end_simps]:
+  shows "does_not_peek_past_end (parse one_char)"
+  unfolding does_not_peek_past_end_def
+  by (clarsimp simp add: one_char_has_result)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma one_char_well_formed[bi_well_formed_simps]:
   "bidef_well_formed one_char"
