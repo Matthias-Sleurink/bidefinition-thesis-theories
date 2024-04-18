@@ -472,6 +472,16 @@ definition pa_does_not_eat_into_pb :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> 
         \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
 )"
 
+lemma does_not_eat_into_when_no_peek_past:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "bidef_well_formed A"
+  shows "pa_does_not_eat_into_pb A B"
+  using no_peek_past_end_wf_stronger[OF assms]
+  unfolding pa_does_not_eat_into_pb_def
+  by blast
+
+
+
 \<comment> \<open>We for sure should not need all of these assms.\<close>
 lemma if_then_else_well_formed:
   assumes "bidef_well_formed ab"

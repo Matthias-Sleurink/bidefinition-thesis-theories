@@ -607,6 +607,17 @@ lemma well_formed_does_not_grow:
 definition parse_result_cannot_be_grown_by_printer :: "'a parser \<Rightarrow> 'b printer \<Rightarrow> bool" where
   "parse_result_cannot_be_grown_by_printer pa pr \<longleftrightarrow> (\<forall>i r l pri prt. has_result pa i r l \<and> p_has_result pr pri prt \<longrightarrow> has_result pa (i@prt) r (l@prt))"
 
+lemma cannot_be_grown_by_when_no_peek_past:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "bidef_well_formed A"
+  shows "parse_result_cannot_be_grown_by_printer (parse A) pB"
+  unfolding parse_result_cannot_be_grown_by_printer_def
+  using assms(1)[unfolded does_not_peek_past_end_def]
+        assms(2)[THEN get_pngi, unfolded PNGI_def]
+  by force
+
+
+
 \<comment> \<open>This should be able to be done more easily?\<close>
 lemma parse_result_cannot_be_grown_by_printer_apply:
   assumes "parse_result_cannot_be_grown_by_printer pa pr"
