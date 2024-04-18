@@ -25,6 +25,11 @@ lemma this_char_has_result[NER_simps]:
   unfolding this_char_def
   by (auto simp add: NER_simps)
 
+lemma this_char_has_result_ci[NER_simps]:
+  "has_result_ci (parse (this_char char)) i c r l \<longleftrightarrow> i \<noteq> [] \<and> r#l=i \<and> r=char \<and> c=[char]"
+  unfolding this_char_def
+  by (auto simp add: NER_simps)
+
 
 
 \<comment> \<open>FP NER\<close>

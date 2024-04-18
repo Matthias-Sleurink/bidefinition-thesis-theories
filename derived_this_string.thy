@@ -27,6 +27,11 @@ lemma this_string_has_result[NER_simps]:
   apply (induction s arbitrary: i r l)
   by (auto simp add: NER_simps)
 
+lemma this_string_has_result_ci[NER_simps]:
+  "has_result_ci (parse (this_string s)) i c r l \<longleftrightarrow> r=s \<and> r@l=i \<and> c=s"
+  unfolding has_result_ci_def has_result_c_def
+  by (auto simp add: NER_simps)
+
 
 
 \<comment> \<open>FP ner\<close>

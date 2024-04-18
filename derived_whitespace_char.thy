@@ -35,6 +35,14 @@ lemma whitespace_char_has_result[NER_simps]:
   "has_result (parse whitespace_char) i r l \<longleftrightarrow> i \<noteq> [] \<and> (r = hd i \<and> l = tl i \<and> r \<in> whitespace_chars)"
   by (auto simp add: whitespace_char_def any_from_set_has_result)
 
+lemma whitespace_char_has_result_ci[NER_simps]:
+  "has_result_ci (parse whitespace_char) i c r l \<longleftrightarrow> i \<noteq> [] \<and> (r = hd i \<and> l = tl i \<and> r \<in> whitespace_chars \<and> c = [hd i])"
+  unfolding has_result_ci_def has_result_c_def
+  apply (auto simp add: whitespace_char_has_result)
+  subgoal using list.collapse by fastforce
+  subgoal by (metis hd_append2 list.collapse not_Cons_self2 self_append_conv2 tl_append2)
+  done
+
 
 
 \<comment> \<open>fp NER\<close>
