@@ -25,6 +25,20 @@ lemma then_drop_second_has_result[NER_simps]:
   "has_result (parse (then_drop_second ab bb b)) i ra l \<longleftrightarrow> (\<exists> l'. has_result (parse ab) i ra l' \<and> (\<exists> rb. has_result (parse bb) l' rb l))"
   by (auto simp add: then_drop_second_def NER_simps split: prod.splits)
 
+lemma then_drop_second_has_result_ci[NER_simps]:
+  assumes "PNGI (parse ab)"
+  assumes "PNGI (parse bb)"
+  shows
+  "has_result_ci (parse (then_drop_second ab bb b)) i c ra l \<longleftrightarrow> (\<exists> c' c''. c'@c''=c \<and> has_result_ci (parse ab) i c' ra (c''@l) \<and> (\<exists> rb. has_result_ci (parse bb) (c''@l) c'' rb l))"
+  apply (auto simp add: has_result_ci_def has_result_c_def then_drop_second_has_result)
+  subgoal for l' rb
+    apply (rule exI[of _ \<open>list_upto (c@l) l'\<close>])
+    apply (rule exI[of _ \<open>list_upto l' l\<close>])
+    using list_upto_take_cons[of \<open>c@l\<close> l'] list_upto_take_cons[of l' l]
+          assms[unfolded PNGI_def]
+    by force
+  done
+
 
 
 \<comment> \<open>FP NER\<close>
