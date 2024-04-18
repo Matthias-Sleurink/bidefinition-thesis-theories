@@ -38,6 +38,37 @@ lemma peek_bool_has_result[NER_simps]:
   "has_result (parse (peek_bool a v)) i b     l \<longleftrightarrow> i = l \<and> (if b then (\<exists> r l. has_result (parse a) i r l) else is_error (parse a) i)"
   by (auto simp add: NER_simps peek_bool_def Option.is_none_def split: option.splits)
 
+lemma peek_bool_has_result_ci[NER_simps]:
+  assumes "PNGI (parse a)"
+  shows
+  "has_result_ci (parse (peek_bool a v)) i c False l \<longleftrightarrow> l = i \<and> c=[] \<and> is_error (parse a) i"
+  "has_result_ci (parse (peek_bool a v)) i c True  l \<longleftrightarrow> l = i \<and> c=[] \<and> (\<exists> c' r l'. has_result_ci (parse a) i c' r l')"
+  "has_result_ci (parse (peek_bool a v)) i c b     l \<longleftrightarrow> l = i \<and> c=[] \<and> (if b then (\<exists> c' r l'. has_result_ci (parse a) i c' r l') else is_error (parse a) i)"
+    apply (auto simp add: NER_simps has_result_ci_def has_result_c_def split: option.splits)
+  subgoal for r ll
+    \<comment> \<open>c'@l' = l\<close>
+    \<comment> \<open>l' = ll\<close>
+    \<comment> \<open>c' = list_upto l ll\<close>
+    apply (rule exI[of _ \<open>list_upto l ll\<close>])
+    apply (rule exI[of _ r])
+    apply (rule exI[of _ ll])
+    subgoal
+      using assms[unfolded PNGI_def]
+      using list_upto_take_cons[of l ll]
+      by force
+    done
+  subgoal by fast
+  subgoal for r ll \<comment> \<open>Same argumentation as first subgoal.\<close>
+    apply (rule exI[of _ \<open>list_upto l ll\<close>])
+    apply (rule exI[of _ r])
+    apply (rule exI[of _ ll])
+    subgoal
+      using assms[unfolded PNGI_def]
+      using list_upto_take_cons[of l ll]
+      by force
+    done
+  subgoal by fast
+  done
 
 
 \<comment> \<open>FP NER\<close>
