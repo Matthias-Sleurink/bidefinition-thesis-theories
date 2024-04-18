@@ -34,6 +34,49 @@ lemma b_then_has_result[NER_simps]:
   "has_result (parse (b_then ab bb)) i r l \<longleftrightarrow> (case r of (ra, rb) \<Rightarrow> (\<exists> l'. has_result (parse ab) i ra l' \<and> has_result (parse bb) l' rb l))"
   by (auto simp add: b_then_def NER_simps split: prod.splits) fastforce+
 
+lemma b_then_has_result_ci[NER_simps]:
+  assumes "PNGI (parse ab)"
+  assumes "PNGI (parse bb)"
+  shows
+  "has_result_ci (parse (b_then ab bb)) i c (ra, rb) l \<longleftrightarrow> (\<exists> c' c''. c'@c''=c \<and> has_result_ci (parse ab) i c' ra      (c''@l) \<and> has_result_ci (parse bb) (c''@l) c'' rb      l)"
+  "has_result_ci (parse (b_then ab bb)) i c r        l \<longleftrightarrow> (\<exists> c' c''. c'@c''=c \<and> has_result_ci (parse ab) i c' (fst r) (c''@l) \<and> has_result_ci (parse bb) (c''@l) c'' (snd r) l)"
+  "has_result_ci (parse (b_then ab bb)) i c r        l \<longleftrightarrow> (case r of (ra, rb) \<Rightarrow> (\<exists> c' c''. c'@c''=c \<and> has_result_ci (parse ab) i c' ra (c''@l) \<and> has_result_ci (parse bb) (c''@l) c'' rb l))"
+  apply (auto simp add: has_result_ci_def has_result_c_def NER_simps split: prod.splits)
+  subgoal for l'
+    apply (rule exI[of _ \<open>list_upto (c@l) l'\<close>])
+    apply (rule exI[of _ \<open>list_upto l' l\<close>])
+    using list_upto_take_cons[of \<open>c@l\<close> l']
+          assms[unfolded PNGI_def]
+    apply auto
+    subgoal by (metis list_upto_take_cons append.assoc append_same_eq)
+    subgoal by (metis list_upto_take_cons)
+    subgoal by (metis list_upto_take_cons append.assoc append_same_eq)
+    subgoal by (metis list_upto_take_cons)
+    done
+  subgoal for l'
+    apply (rule exI[of _ \<open>list_upto (c@l) l'\<close>])
+    apply (rule exI[of _ \<open>list_upto l' l\<close>])
+    using list_upto_take_cons[of \<open>c@l\<close> l']
+          assms[unfolded PNGI_def]
+    apply auto
+    subgoal by (metis list_upto_take_cons append.assoc append_same_eq)
+    subgoal by (metis list_upto_take_cons)
+    subgoal by (metis list_upto_take_cons append.assoc append_same_eq)
+    subgoal by (metis list_upto_take_cons)
+    done
+  subgoal for r1 r2 l'
+    apply (rule exI[of _ \<open>list_upto (c@l) l'\<close>])
+    apply (rule exI[of _ \<open>list_upto l' l\<close>])
+    using list_upto_take_cons[of \<open>c@l\<close> l']
+          assms[unfolded PNGI_def]
+    apply auto
+    subgoal by (metis list_upto_take_cons append_assoc append_same_eq)
+    subgoal by (metis list_upto_take_cons)
+    subgoal by (metis list_upto_take_cons append.assoc append_same_eq)
+    subgoal by (metis list_upto_take_cons)
+    done
+  done
+
 
 
 \<comment> \<open>FP NER\<close>
