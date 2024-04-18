@@ -125,6 +125,19 @@ lemma first_chars_peek:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma peek_result_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "bidef_well_formed A"
+  assumes "does_not_peek_past_end (parse A)"
+  shows "does_not_peek_past_end (parse (peek A))"
+  using assms
+  unfolding does_not_peek_past_end_def
+  apply (auto simp add: peek_has_result)
+  subgoal for r i l i'
+    \<comment> \<open>i and i' are in no way connected here, so I don't think this is viable.\<close>
+    oops
+
+
 
 \<comment> \<open>Well Formed\<close>
 text \<open>
