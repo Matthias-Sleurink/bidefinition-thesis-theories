@@ -71,6 +71,7 @@ lemma peek_bool_has_result_ci[NER_simps]:
   done
 
 
+
 \<comment> \<open>FP NER\<close>
 lemma peek_bool_p_is_nonterm[fp_NER]:
   assumes "wf_peek_oracle a v"
