@@ -443,6 +443,57 @@ lemma first_chars_dep_if_then_else_subset:
   done
 
 
+
+\<comment> \<open>Does not peek past end\<close>
+definition A_is_error_on_C_result_prefix :: "'\<alpha> bidef \<Rightarrow> '\<gamma> bidef \<Rightarrow> bool" where
+  "A_is_error_on_C_result_prefix A C \<longleftrightarrow> (\<forall>c l r l'. has_result (parse C) (c @ l) r l \<longrightarrow> is_error (parse A) (c @ l'))"
+
+lemma if_then_else_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "PNGI (parse A)"
+  assumes "\<forall> i r l. has_result (parse A) i r l \<longrightarrow> PNGI (parse (a2B r))"
+  assumes "PNGI (parse C)"
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "\<forall> i r l. has_result (parse A) i r l \<longrightarrow> does_not_peek_past_end (parse (a2B r))"
+  assumes "does_not_peek_past_end (parse C)"
+  assumes "A_is_error_on_C_result_prefix A C"
+  shows "does_not_peek_past_end (parse (if_then_else A a2B C b2a))"
+  using assms unfolding does_not_peek_past_end_def
+  apply clarsimp \<comment> \<open>\<forall> \<rightarrow> \<And> so that we can use the names\<close>
+  subgoal for c r l l'
+    apply (cases r) \<comment> \<open>Does the if succeed or not?\<close>
+    subgoal for rl \<comment> \<open>r = Inl rl\<close>
+      apply (clarsimp simp add: if_then_else_has_result(1))
+      subgoal for ra la
+        apply (rule exI[of _ ra])
+        proof -
+          assume PNGI_A: "PNGI (parse A)"
+          assume PNGI_B: "\<forall>i r. (\<exists>l. has_result (parse A) i r l) \<longrightarrow> PNGI (parse (a2B r))"
+          assume not_peek_past_A: "\<forall>c r. (\<exists>l. has_result (parse A) (c @ l) r l) \<longrightarrow> (\<forall>l'. has_result (parse A) (c @ l') r l')"
+          assume not_peek_past_B: "\<forall>i r. (\<exists>l. has_result (parse A) i r l) \<longrightarrow> (\<forall>c ra. (\<exists>l. has_result (parse (a2B r)) (c @ l) ra l) \<longrightarrow> (\<forall>l'. has_result (parse (a2B r)) (c @ l') ra l'))"
+          assume hr_A: "has_result (parse A) (c @ l) ra la"
+          assume hr_B: "has_result (parse (a2B ra)) la rl l"
+          obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+            f7: "c @ l = ccs la (c @ l) @ la"
+            using hr_A PNGI_A[unfolded PNGI_def] by meson
+          obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+            f8: "la = ccsa l la @ l"
+            using hr_B hr_A PNGI_B[unfolded PNGI_def] by meson
+          then have "has_result (parse A) (c @ l') ra (ccsa l la @ l')"
+            using f7 hr_A not_peek_past_A 
+            by (smt (verit, best) append.assoc append_same_eq)
+          then show "\<exists>cs. has_result (parse A) (c @ l') ra cs \<and> has_result (parse (a2B ra)) cs rl l'"
+            using f8 hr_B not_peek_past_B by metis
+        qed
+      done
+    subgoal for rr \<comment> \<open>r = Inr rr\<close>
+      unfolding A_is_error_on_C_result_prefix_def
+      apply (clarsimp simp add: if_then_else_has_result(2))
+      by blast
+    done
+  done
+
+
+
 \<comment> \<open>Well Formed\<close>
 definition b2_wf_for_res_of_b1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
   "b2_wf_for_res_of_b1 b1 a2bi \<longleftrightarrow> (\<forall> i ra la. has_result (parse b1) i ra la \<longrightarrow> bidef_well_formed (a2bi ra))"
