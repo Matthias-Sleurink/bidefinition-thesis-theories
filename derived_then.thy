@@ -151,6 +151,37 @@ lemma then_PASI_from_pngi_pasi:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma then_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "PNGI (parse A)"
+  assumes "does_not_peek_past_end (parse B)"
+  assumes "PNGI (parse B)"
+  shows "does_not_peek_past_end (parse (b_then A B))"
+  unfolding does_not_peek_past_end_def
+  apply (clarsimp simp add: NER_simps)
+  proof -
+    fix c a b l l' l'a
+    assume hr_A: "has_result (parse A) (c @ l) a l'"
+    assume hr_B: "has_result (parse B) l' b l"
+    have f3: "\<forall>cs csa csb csc. (cs::char list) @ csb @ csa \<noteq> csc @ csa \<or> cs @ csb = csc"
+      by auto
+    obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f5: "c @ l = ccsa l' (c @ l) @ l'"
+      using hr_A by (meson assms(2)[unfolded PNGI_def])
+    obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f4: "l' = ccs l l' @ l"
+      using hr_B by (meson assms(4)[unfolded PNGI_def])
+    have "\<forall>cs csa. cs @ l \<noteq> csa @ l' \<or> csa @ ccs l l' = cs"
+      using f4 f3 by metis
+    then have "\<forall>cs. ccsa l' (c @ l) @ ccs l l' @ cs = c @ cs"
+      using f5 append_eq_appendI by blast
+    then show "\<exists>cs. has_result (parse A) (c @ l'a) a cs \<and> has_result (parse B) cs b l'a"
+    using f4 hr_B hr_A by (metis assms(1, 3)[unfolded does_not_peek_past_end_def])
+  qed
+
+
+
 \<comment> \<open>well formed\<close>
 
 definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
