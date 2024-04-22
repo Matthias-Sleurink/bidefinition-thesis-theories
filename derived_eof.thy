@@ -70,6 +70,14 @@ lemma eof_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma eof_does_not_peek_past_end[peek_past_end_simps]:
+  "\<not>does_not_peek_past_end (parse eof)"
+  unfolding does_not_peek_past_end_def
+  by (auto simp add: NER_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma eof_well_formed:
   "bidef_well_formed eof"
