@@ -78,6 +78,52 @@ lemma optional_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "PNGI (parse b)"
+  assumes "does_not_peek_past_end (parse b)"
+  assumes "is_error (parse b) []"
+  shows "does_not_peek_past_end (parse (optional b))"
+  unfolding optional_def
+  apply (rule transform_does_not_peek_past_end)
+  apply (rule if_then_else_does_not_peek_past_end)
+  apply (auto simp add: assms return_PNGI peek_past_end_simps A_is_error_on_C_consumed_def return_has_result)
+  \<comment> \<open>\<And>x. is_error (parse b) x\<close>
+  oops \<comment> \<open>So, via combinators not viable, are they too constrained?\<close>
+
+lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "does_not_peek_past_end (parse b)"
+  shows "does_not_peek_past_end (parse (optional b))"
+  unfolding does_not_peek_past_end_def
+  apply (auto simp add: NER_simps split: option.splits)
+  subgoal using assms(1)[unfolded does_not_peek_past_end_def] by blast
+  subgoal for l l'
+    \<comment> \<open>is_error (parse b) l \<Longrightarrow> is_error (parse b) l'\<close>
+    sorry
+  subgoal using is_error_implies_not_has_result by blast
+  oops \<comment> \<open>So, via this also not really feasible.\<close>
+  \<comment> \<open>I'm convinced this cannot work without \<forall>x. is_error (parse b) x.
+The idea being, when b fails to parse, optional succeeds with r=None and c=[].
+Then, we need to prove that optional succeeds with r=None and i=[]@x for any x.
+But, this can only be true if b always fails.
+I could not get an actual proof of this to work easily, so not going to spend more time on it,
+but the intuition seems clear, so I'm also not going to spend more time on it.
+\<close>
+
+
+lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "does_not_peek_past_end (parse b)"
+  assumes "\<forall>x. is_error (parse b) x"
+  shows "does_not_peek_past_end (parse (optional b))"
+  unfolding does_not_peek_past_end_def
+  apply (auto simp add: NER_simps assms(1)[unfolded does_not_peek_past_end_def] assms(2) split: option.splits)
+  using assms(2) is_error_implies_not_has_result
+  by blast
+
+
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma optional_well_formed:
   assumes "is_error (parse b) []"
