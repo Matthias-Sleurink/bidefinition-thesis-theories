@@ -143,6 +143,34 @@ lemma dep_then_PASI_PNGI_PASI:
   done
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma dep_then_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "PNGI (parse A)"
+  assumes "\<forall> i r l. has_result (parse A) i r l \<longrightarrow> PNGI (parse (a2B r))"
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "\<forall> i r l. has_result (parse A) i r l \<longrightarrow> does_not_peek_past_end (parse (a2B r))"
+  shows "does_not_peek_past_end (parse (dep_then A a2B b2a))"
+  unfolding does_not_peek_past_end_def dep_then_has_result
+  apply clarsimp  \<comment> \<open>\<forall> \<rightarrow> \<And> so that we can use the names\<close>
+  subgoal for c r l r' l' l''
+    apply (rule exI[of _ r'])
+  proof -
+    assume hr_A: "has_result (parse A) (c @ l) r' l'"
+    assume hr_B: "has_result (parse (a2B r')) l' r l"
+    obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f3: "c @ l = ccs l' (c @ l) @ l'"
+      using hr_A by (meson assms(1)[unfolded PNGI_def])
+    obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f4: "l' = ccsa l l' @ l"
+      using hr_A hr_B by (meson assms(2)[unfolded PNGI_def])
+    then have "has_result (parse A) (c @ l'') r' (ccsa l l' @ l'')"
+      using f3 hr_A by (smt (verit, best) append.assoc append_same_eq assms(3) does_not_peek_past_end_def)
+    then show "\<exists>cs. has_result (parse A) (c @ l'') r' cs \<and> has_result (parse (a2B r')) cs r l''"
+      using f4 hr_B by (metis (no_types) assms(4) does_not_peek_past_end_def)
+  qed
+  done
+
+
 
 \<comment> \<open>Well Formed\<close>
 
