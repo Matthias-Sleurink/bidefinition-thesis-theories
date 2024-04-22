@@ -82,6 +82,19 @@ lemma or_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma or_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "PNGI (parse A)"
+  assumes "does_not_peek_past_end (parse B)"
+  assumes "PNGI (parse B)"
+  assumes "A_is_error_on_C_consumed A B"
+  shows "does_not_peek_past_end (parse (or A B))"
+  unfolding or_def
+  by (auto simp add: peek_past_end_simps assms return_PNGI)
+
+
+
 \<comment> \<open>Well Formed\<close>
 \<comment> \<open>A print result of b2 must not be parsable by b1\<close>
 definition well_formed_or_pair :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
