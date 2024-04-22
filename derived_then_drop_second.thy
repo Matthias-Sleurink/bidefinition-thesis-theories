@@ -82,6 +82,35 @@ lemma then_drop_second_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma then_drop_second_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "PNGI (parse A)"
+  assumes "does_not_peek_past_end (parse B)"
+  assumes "PNGI (parse B)"
+  assumes "pa_does_not_eat_into_pb_nondep A B"
+  shows "does_not_peek_past_end (parse (then_drop_second A B oracle))"
+  unfolding does_not_peek_past_end_def
+  apply (clarsimp simp add: NER_simps)
+  proof -
+    fix c r l l' l'a rb
+    assume hr_A: "has_result (parse A) (c @ l) r l'"
+    assume hr_B: "has_result (parse B) l' rb l"
+    obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f3: "c @ l = ccs l' (c @ l) @ l'"
+      using hr_A by (meson assms(2)[unfolded PNGI_def])
+    obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f4: "l' = ccsa l l' @ l"
+      using hr_B by (meson assms(4)[unfolded PNGI_def])
+    have "\<forall>cs. has_result (parse A) (ccs l' (c @ l) @ cs) r cs"
+      using f3 hr_A by (metis (full_types) assms(1) does_not_peek_past_end_def)
+    then show "\<exists>cs. has_result (parse A) (c @ l'a) r cs \<and> (\<exists>b. has_result (parse B) cs b l'a)"
+      using f4 f3 hr_B
+      by (smt (z3) append.assoc append_same_eq assms(3) does_not_peek_past_end_def)
+  qed
+
+
+
 \<comment> \<open>well formed\<close>
 
 lemma b_then_drop_second_wf_derived:
