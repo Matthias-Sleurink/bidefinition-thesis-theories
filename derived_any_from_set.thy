@@ -66,6 +66,14 @@ lemma any_from_set_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma any_from_set_does_not_peek_past_end[peek_past_end_simps]:
+  "does_not_peek_past_end (parse (any_from_set s))"
+  unfolding does_not_peek_past_end_def
+  by (clarsimp simp add: any_from_set_has_result)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma any_from_set_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (any_from_set s)"
