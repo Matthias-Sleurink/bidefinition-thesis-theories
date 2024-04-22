@@ -66,6 +66,14 @@ lemma char_not_in_set_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma char_not_in_set_set_does_not_peek_past_end[peek_past_end_simps]:
+  "does_not_peek_past_end (parse (char_not_in_set s))"
+  unfolding char_not_in_set_def
+  by (clarsimp simp add: peek_past_end_simps)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma char_not_in_set_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (char_not_in_set s)"

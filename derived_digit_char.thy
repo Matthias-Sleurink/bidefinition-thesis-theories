@@ -73,6 +73,14 @@ lemma digit_char_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma digit_char_does_not_peek_past_end[peek_past_end_simps]:
+  "does_not_peek_past_end (parse digit_char)"
+  unfolding digit_char_def
+  by (clarsimp simp add: peek_past_end_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma digit_char_well_formed:
   "bidef_well_formed digit_char"
