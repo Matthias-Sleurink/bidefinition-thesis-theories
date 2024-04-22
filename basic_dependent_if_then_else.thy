@@ -445,8 +445,8 @@ lemma first_chars_dep_if_then_else_subset:
 
 
 \<comment> \<open>Does not peek past end\<close>
-definition A_is_error_on_C_result_prefix :: "'\<alpha> bidef \<Rightarrow> '\<gamma> bidef \<Rightarrow> bool" where
-  "A_is_error_on_C_result_prefix A C \<longleftrightarrow> (\<forall>c l r l'. has_result (parse C) (c @ l) r l \<longrightarrow> is_error (parse A) (c @ l'))"
+definition A_is_error_on_C_consumed :: "'\<alpha> bidef \<Rightarrow> '\<gamma> bidef \<Rightarrow> bool" where
+  "A_is_error_on_C_consumed A C \<longleftrightarrow> (\<forall>c l r l'. has_result (parse C) (c @ l) r l \<longrightarrow> is_error (parse A) (c @ l'))"
 
 lemma if_then_else_does_not_peek_past_end[peek_past_end_simps]:
   assumes "PNGI (parse A)"
@@ -455,7 +455,7 @@ lemma if_then_else_does_not_peek_past_end[peek_past_end_simps]:
   assumes "does_not_peek_past_end (parse A)"
   assumes "\<forall> i r l. has_result (parse A) i r l \<longrightarrow> does_not_peek_past_end (parse (a2B r))"
   assumes "does_not_peek_past_end (parse C)"
-  assumes "A_is_error_on_C_result_prefix A C"
+  assumes "A_is_error_on_C_consumed A C"
   shows "does_not_peek_past_end (parse (if_then_else A a2B C b2a))"
   using assms unfolding does_not_peek_past_end_def
   apply clarsimp \<comment> \<open>\<forall> \<rightarrow> \<And> so that we can use the names\<close>
@@ -486,7 +486,7 @@ lemma if_then_else_does_not_peek_past_end[peek_past_end_simps]:
         qed
       done
     subgoal for rr \<comment> \<open>r = Inr rr\<close>
-      unfolding A_is_error_on_C_result_prefix_def
+      unfolding A_is_error_on_C_consumed_def
       apply (clarsimp simp add: if_then_else_has_result(2))
       by blast
     done
