@@ -79,7 +79,7 @@ lemma optional_PASI:
 
 
 \<comment> \<open>Does not peek past end\<close>
-lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
+lemma optional_does_not_peek_past_end:
   assumes "PNGI (parse b)"
   assumes "does_not_peek_past_end (parse b)"
   assumes "is_error (parse b) []"
@@ -91,7 +91,7 @@ lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
   \<comment> \<open>\<And>x. is_error (parse b) x\<close>
   oops \<comment> \<open>So, via combinators not viable, are they too constrained?\<close>
 
-lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
+lemma optional_does_not_peek_past_end:
   assumes "does_not_peek_past_end (parse b)"
   shows "does_not_peek_past_end (parse (optional b))"
   unfolding does_not_peek_past_end_def
@@ -111,7 +111,7 @@ but the intuition seems clear, so I'm also not going to spend more time on it.
 \<close>
 
 
-lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
+lemma optional_does_not_peek_past_end:
   assumes "does_not_peek_past_end (parse b)"
   assumes "\<forall>x. is_error (parse b) x"
   shows "does_not_peek_past_end (parse (optional b))"
@@ -120,7 +120,18 @@ lemma optional_char_does_not_peek_past_end[peek_past_end_simps]:
   using assms(2) is_error_implies_not_has_result
   by blast
 
-
+lemma optional_does_not_peek_past_end_not_if_has_result_and_error:
+  assumes "\<exists>i r l. has_result (parse b) i r l"
+  assumes "\<exists>i. is_error (parse b) i"
+  shows "\<not>does_not_peek_past_end (parse (optional b))"
+  using assms unfolding does_not_peek_past_end_def
+  apply (auto simp add: NER_simps split: option.splits)
+  subgoal for i r l
+    apply (rule exI[of _ \<open>[]\<close>])
+    apply (rule exI[of _ None])
+    apply (auto simp add: assms(1))
+    by (meson has_result_implies_not_is_error)
+  done
 
 
 
