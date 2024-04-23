@@ -63,6 +63,14 @@ lemma this_char_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma this_char_does_not_peek_past_end[peek_past_end_simps]:
+  "does_not_peek_past_end (parse (this_char CHR ''a''))"
+  unfolding this_char_def
+  by (clarsimp simp add: peek_past_end_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma this_char_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (this_char c)"
