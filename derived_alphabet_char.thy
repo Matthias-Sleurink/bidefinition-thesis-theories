@@ -76,6 +76,14 @@ lemma alphabet_char_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma alphabet_char_does_not_peek_past_end[peek_past_end_simps]:
+  "does_not_peek_past_end (parse alphabet_char)"
+  unfolding alphabet_char_def
+  by (clarsimp simp add: peek_past_end_simps)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma alphabet_char_well_formed:
   "bidef_well_formed alphabet_char"
