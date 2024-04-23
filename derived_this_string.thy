@@ -68,6 +68,14 @@ lemma this_string_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma this_string_does_not_peek_past_end[peek_past_end_simps]:
+  "does_not_peek_past_end (parse (this_string s))"
+  unfolding this_string_def
+  by (clarsimp simp add: peek_past_end_simps this_char_PNGI)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma this_string_wf:
   "bidef_well_formed (this_string s)"
