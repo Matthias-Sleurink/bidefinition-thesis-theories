@@ -65,7 +65,7 @@ lemma this_char_PASI:
 
 \<comment> \<open>Does not peek past end\<close>
 lemma this_char_does_not_peek_past_end[peek_past_end_simps]:
-  "does_not_peek_past_end (parse (this_char CHR ''a''))"
+  "does_not_peek_past_end (parse (this_char c))"
   unfolding this_char_def
   by (clarsimp simp add: peek_past_end_simps)
 
