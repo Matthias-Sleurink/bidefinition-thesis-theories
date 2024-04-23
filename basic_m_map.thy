@@ -254,6 +254,39 @@ lemma m_map_has_result_ci[NER_simps]:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+lemma m_map_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "\<And>a. PNGI (parse (e2b a))"                      \<comment> \<open>TODO: constrain this to a\<in>as?\<close>
+  assumes "\<And>a. does_not_peek_past_end (parse (e2b a))"    \<comment> \<open>TODO: constrain this to a\<in>as?\<close>
+  shows "does_not_peek_past_end (parse (m_map e2b as))"
+  using assms(1, 2) unfolding does_not_peek_past_end_def
+  apply (induction as; clarsimp simp add: NER_simps)
+  \<comment> \<open>This ISAR proof transplanted from and name-fixed from the sledgehammer generated proof at\<close>
+  \<comment> \<open>then_does_not_peek_past_end (which is not in scope here)\<close>
+  proof -
+    fix a as c l r' l' l'a rs
+    assume dnppe_induct: "\<forall>c r. (\<exists>l. has_result (parse (m_map e2b as)) (c @ l) r l) \<longrightarrow> (\<forall>l'. has_result (parse (m_map e2b as)) (c @ l') r l')"
+    assume hr_A: "has_result (parse (e2b a)) (c @ l) r' l'"
+    assume hr_B: "has_result (parse (m_map e2b as)) l' rs l"
+    have f3: "\<forall>cs csa csb csc. (cs::char list) @ csb @ csa \<noteq> csc @ csa \<or> cs @ csb = csc"
+      by auto
+    obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+       f5: "c @ l = ccsa l' (c @ l) @ l'"
+      using hr_A by (meson assms(1)[unfolded PNGI_def])
+    obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f4: "l' = ccs l l' @ l"
+      using hr_B by (meson PNGI_def PNGI_m_map[of as e2b] assms(1))
+    have "\<forall>cs csa. cs @ l \<noteq> csa @ l' \<or> csa @ ccs l l' = cs"
+      using f4 f3 by metis
+    then have "\<forall>cs. ccsa l' (c @ l) @ ccs l l' @ cs = c @ cs"
+      using f5 append_eq_appendI by blast
+    then show "\<exists>cs. has_result (parse (e2b a)) (c @ l'a) r' cs \<and> has_result (parse (m_map e2b as)) cs rs l'a"
+      using f4 hr_B hr_A dnppe_induct
+      by (metis assms(2)[unfolded does_not_peek_past_end_def])
+  qed
+
+
+
 \<comment> \<open>well formed\<close>
 lemma m_map_well_formed_empty[bi_well_formed_simps]:
   shows "bidef_well_formed (m_map a2bi [])"
