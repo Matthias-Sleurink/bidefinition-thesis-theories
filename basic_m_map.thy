@@ -123,6 +123,26 @@ lemma m_map_has_result_not_same_length:
   by (induction as arbitrary: i r l) (auto simp add: NER_simps)
 
 
+lemma m_map_has_result_rev[NER_simps]:
+  "has_result (parse (m_map tc (as@[a]))) i r l \<longleftrightarrow> (\<exists> rs r' l'. has_result (parse (m_map tc as)) i rs l' \<and>
+                                                                 has_result (parse (tc a)) l' r' l \<and>
+                                                                 r = rs@[r'])"
+  apply (induction as arbitrary: i r l)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal for hd_as tl_as i' r' l'
+    apply auto
+    subgoal
+      apply (rule exI[of _ \<open>butlast r'\<close>])
+      apply (rule exI[of _ \<open>last r'\<close>])
+      apply (auto simp add: m_map_has_result(2))
+      by blast
+    subgoal for r'' r_a l''
+      apply (auto simp add: NER_simps)
+      by blast
+    done
+  done
+
+
 
 \<comment> \<open>FP_ner\<close>
 lemma m_map_p_is_error[fp_NER]:
