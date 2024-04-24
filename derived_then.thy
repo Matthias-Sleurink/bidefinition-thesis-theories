@@ -28,6 +28,15 @@ lemma b_then_is_error_from_first:
   shows "is_error (parse (b_then ab bb)) i"
   by (auto simp add: NER_simps assms)
 
+lemma b_then_is_error_from_second:
+  assumes "has_result (parse ab) i r l"
+  assumes "is_error (parse bb) l"
+  shows "is_error (parse (b_then ab bb)) i"
+  using assms
+  by (clarsimp simp add: NER_simps)
+
+
+
 lemma b_then_has_result[NER_simps]:
   "has_result (parse (b_then ab bb)) i (ra, rb) l \<longleftrightarrow> (\<exists> l'. has_result (parse ab) i ra l' \<and> has_result (parse bb) l' rb l)"
   "has_result (parse (b_then ab bb)) i r l \<longleftrightarrow> (\<exists> l'. has_result (parse ab) i (fst r) l' \<and> has_result (parse bb) l' (snd r) l)"
