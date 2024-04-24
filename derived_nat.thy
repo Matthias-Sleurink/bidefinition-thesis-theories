@@ -107,6 +107,21 @@ lemma nat_b_PASI:
 
 
 
+\<comment> \<open>Does not peek past end\<close>
+\<comment> \<open>This is the argument that shows that does_not_peek_past_end isn't true for "most" many1 parsers.\<close>
+lemma nat_does_peek_past_end[peek_past_end_simps]:
+  "\<not>does_not_peek_past_end (parse nat_b)"
+  unfolding does_not_peek_past_end_def
+  apply clarsimp
+  apply (rule exI[of _ \<open>''1''\<close>])
+  apply (rule exI[of _ 1])
+  apply (rule conjI)
+  subgoal by (rule exI[of _ \<open>''''\<close>]; clarsimp simp add: NER_simps char_in_digit_chars)
+  subgoal by (rule exI[of _ \<open>''1''\<close>]; clarsimp simp add: NER_simps char_in_digit_chars)
+  done
+
+
+
 \<comment> \<open>WF\<close>
 lemma takeWhileAllTrue:
   assumes "\<forall>a \<in> set as. P a"
