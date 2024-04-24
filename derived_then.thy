@@ -271,6 +271,18 @@ lemma b_then_well_formed:
     by fast
   done
 
+
+
+lemma b_then_well_formed_does_not_peek_past:
+  assumes "bidef_well_formed A"
+  assumes "bidef_well_formed B"
+  assumes "does_not_peek_past_end (parse A)"
+  shows "bidef_well_formed (b_then A B)"
+  by (clarsimp simp add: assms b_then_well_formed
+                         does_not_peek_past_end_implies_does_not_eat_into)
+
+
+
 value "one_char"
 value "parse one_char ''abcd''"
 value "parse (b_then one_char one_char) ''abcd''"
