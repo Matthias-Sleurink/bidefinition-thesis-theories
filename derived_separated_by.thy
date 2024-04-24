@@ -337,6 +337,7 @@ lemma separated_by_well_formed2:
   done
 
 
+
 lemma separated_by_well_formed_does_not_peek_past:
   assumes "good_separated_by_oracle sep sep_oracle"
   assumes "does_not_peek_past_end (parse elem)"
