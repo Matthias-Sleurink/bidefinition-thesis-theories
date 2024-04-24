@@ -131,11 +131,39 @@ lemma separated_by_p_has_result[fp_NER]:
   apply (clarsimp simp add: fp_NER)+
   by blast
 
+
+
+\<comment> \<open>Does not peek past end\<close>
+lemma separated_by_does_peek_past_end[peek_past_end_simps]:
+  assumes "\<exists> i r l. has_result (parse elem) i r l \<and> is_error (parse sep) l"
+  assumes "\<exists> i r l re le. has_result (parse sep) i r l \<and> has_result (parse elem) l re le \<and> is_error (parse sep) le"
+  assumes "PNGI (parse elem)"
+  shows "\<not>does_not_peek_past_end (parse (separated_by sep elem oracle))"
+  using assms unfolding does_not_peek_past_end_def PNGI_def
+  apply (clarsimp simp add: NER_simps)
+  subgoal for i ia r ra l la re x
+    apply (rule exI[of _ \<open>list_upto i l\<close>])
+    apply (rule exI[of _ \<open>[r]\<close>])
+    apply (rule conjI)
+    subgoal
+      apply (rule exI[of _ l])
+      using list_upto_cons_second[of i l]
+      by (clarsimp simp add: NER_simps)
+    subgoal
+      apply (rule exI[of _ ia])
+      apply (clarsimp simp add: NER_simps has_result_implies_not_is_error)
+      by (metis (no_types, opaque_lifting) has_result_def is_error_implies_not_has_result option.inject snd_eqD)
+    done
+  done
+
+
+
+\<comment> \<open>Well formed\<close>
 lemma snd_comp_pair_id[simp]:
   "(snd \<circ> Pair a) = id"
   by fastforce
 
-\<comment> \<open>Well formed\<close>
+
 lemma separated_by_well_formed:
   assumes "good_separated_by_oracle sep sep_oracle"
   assumes "pa_does_not_eat_into_pb_nondep elem sep"
