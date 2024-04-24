@@ -122,6 +122,34 @@ lemma printer_can_print_parse_result_many1:
   done
 
 
+
+\<comment> \<open>Does not peek past end\<close>
+\<comment> \<open>This is the argument that shows that does_not_peek_past_end isn't true for "most" many1 parsers.\<close>
+lemma many_does_not_peek_past_end[peek_past_end_simps]:
+  assumes "\<exists> i r l. has_result (parse b) i r l \<and> is_error (parse b) l"
+  assumes "PNGI (parse b)"
+  shows "\<not>does_not_peek_past_end (parse (many1 b))"
+  unfolding does_not_peek_past_end_def
+  using assms[unfolded PNGI_def]
+  apply (auto simp add: NER_simps)
+  subgoal for i r l
+    apply (rule exI[of _ \<open>list_upto i l\<close>])
+    apply (rule exI[of _ \<open>[r]\<close>])
+    apply clarsimp
+    apply (rule conjI)
+    subgoal
+      apply (rule exI[of _ l])
+      apply (rule exI[of _ l])
+      apply (clarsimp simp add: NER_simps)
+      using list_upto_take_cons[of i l \<open>list_upto i l\<close>]
+      by presburger
+    subgoal
+      by (metis is_error_implies_not_has_result many_has_result_safe(1))
+    done
+  done
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma many1_well_formed:
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
