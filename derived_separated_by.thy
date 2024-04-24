@@ -75,6 +75,15 @@ lemma separated_by_has_result_safe_Cons[NER_simps]:
   apply (subst separated_byBase_def)
   oops
 
+lemma separated_by_has_result_safe_one[NER_simps]:
+  "has_result (parse (separated_by sep elem sep_oracle)) i [r] l \<longleftrightarrow> (
+      has_result (parse elem) i r l \<and> is_error (parse (b_then sep elem)) l)"
+  unfolding separated_by_def separated_byBase_def
+  apply (auto simp add: NER_simps split: option.splits)
+  using b_then_is_error many_has_result_when_first_parse_fails
+  by blast+
+
+
 
 \<comment> \<open>fp_NER\<close>
 lemma separated_by_p_is_nonterm[fp_NER]:
