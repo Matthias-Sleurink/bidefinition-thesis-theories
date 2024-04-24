@@ -336,6 +336,36 @@ lemma separated_by_well_formed2:
   subgoal by (rule assms(9))
   done
 
+
+lemma separated_by_well_formed_does_not_peek_past:
+  assumes "good_separated_by_oracle sep sep_oracle"
+  assumes "does_not_peek_past_end (parse elem)"
+  assumes "does_not_peek_past_end (parse sep)"
+  assumes "bidef_well_formed elem"
+  assumes "bidef_well_formed sep"
+  assumes "is_error (parse elem) []"
+  assumes "is_error (parse sep) []"
+  assumes "PASI (parse elem) \<or> PASI (parse sep)"
+  shows "bidef_well_formed (separated_by sep elem sep_oracle)"
+  apply (rule separated_by_well_formed2)
+  subgoal by (rule assms(1))
+  subgoal by (clarsimp simp add: does_not_peek_past_end_implies_does_not_eat_into assms(3,5))
+  subgoal by (rule assms(4))
+  subgoal by (rule assms(5))
+  subgoal by (rule assms(6))
+  subgoal by (clarsimp simp add: does_not_peek_past_end_implies_does_not_eat_into assms(2,4))
+  subgoal
+    using cannot_be_grown_by_when_no_peek_past[of \<open>b_then sep elem\<close>]
+          then_does_not_peek_past_end[OF assms(3) assms(5)[THEN get_pngi]
+                                         assms(2) assms(4)[THEN get_pngi]]
+          b_then_well_formed_does_not_peek_past[OF assms(5, 4, 3)]
+    by blast
+  subgoal by (rule assms(7))
+  subgoal by (rule assms(8))
+  done
+
+
+
 lemma cannot_be_grown_to_many:
   assumes "parse_result_cannot_be_grown_by_printer (parse elem) (print sep)"
   assumes "pa_does_not_eat_into_pb_nondep elem (many (b_then sep elem))"
