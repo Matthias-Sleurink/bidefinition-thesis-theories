@@ -199,6 +199,16 @@ definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<b
         \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
 )"
 
+lemma does_not_peek_past_end_implies_does_not_eat_into:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "bidef_well_formed A"
+  shows "pa_does_not_eat_into_pb_nondep A B"
+  using no_peek_past_end_wf_stronger[OF assms(1, 2)]
+        pa_does_not_eat_into_pb_nondep_def
+  by blast
+
+
+
 
 lemma b_then_wf_derived:
   assumes "bidef_well_formed b1"
