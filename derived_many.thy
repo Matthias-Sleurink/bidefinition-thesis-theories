@@ -268,7 +268,7 @@ lemma dropWhile_hd_no_match:
 
 \<comment> \<open>Does not peek past end\<close>
 \<comment> \<open>This is the argument that shows that does_not_peek_past_end isn't true for "most" many parsers.\<close>
-lemma many_does_not_peek_past_end[peek_past_end_simps]:
+lemma many_does_peek_past_end[peek_past_end_simps]:
   assumes "\<exists> i r l. has_result (parse b) i r l \<and> is_error (parse b) l"
   assumes "PNGI (parse b)"
   shows "\<not>does_not_peek_past_end (parse (many b))"

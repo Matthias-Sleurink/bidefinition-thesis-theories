@@ -125,7 +125,7 @@ lemma printer_can_print_parse_result_many1:
 
 \<comment> \<open>Does not peek past end\<close>
 \<comment> \<open>This is the argument that shows that does_not_peek_past_end isn't true for "most" many1 parsers.\<close>
-lemma many_does_not_peek_past_end[peek_past_end_simps]:
+lemma many1_does_peek_past_end[peek_past_end_simps]:
   assumes "\<exists> i r l. has_result (parse b) i r l \<and> is_error (parse b) l"
   assumes "PNGI (parse b)"
   shows "\<not>does_not_peek_past_end (parse (many1 b))"
