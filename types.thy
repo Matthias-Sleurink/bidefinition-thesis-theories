@@ -70,6 +70,13 @@ lemma list_upto_take_cons:
   unfolding list_upto_def
   by force
 
+lemma list_upto_cons_second:
+  assumes "\<exists>c. l = c@s"
+  shows "(list_upto l s) @ s = l"
+  using list_upto_take_cons[OF assms, of \<open>list_upto l s\<close>]
+  by fast
+
+
 
 lemma has_result_implies_not_is_error:
   "has_result p i r l \<Longrightarrow> \<not> is_error p i"
