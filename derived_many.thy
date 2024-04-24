@@ -633,16 +633,6 @@ lemma well_formed_does_not_grow:
 definition parse_result_cannot_be_grown_by_printer :: "'a parser \<Rightarrow> 'b printer \<Rightarrow> bool" where
   "parse_result_cannot_be_grown_by_printer pa pr \<longleftrightarrow> (\<forall>i r l pri prt. has_result pa i r l \<and> p_has_result pr pri prt \<longrightarrow> has_result pa (i@prt) r (l@prt))"
 
-lemma cannot_be_grown_by_when_no_peek_past:
-  assumes "does_not_peek_past_end (parse A)"
-  assumes "bidef_well_formed A"
-  shows "parse_result_cannot_be_grown_by_printer (parse A) pB"
-  unfolding parse_result_cannot_be_grown_by_printer_def
-  using assms(1)[unfolded does_not_peek_past_end_def]
-        assms(2)[THEN get_pngi, unfolded PNGI_def]
-  by force
-
-
 
 \<comment> \<open>This should be able to be done more easily?\<close>
 lemma parse_result_cannot_be_grown_by_printer_apply:
@@ -694,6 +684,30 @@ lemma well_formed_does_not_grow_by_printer:
     apply (rule printer_can_print_parse_result_many)
     using assms(2) by blast
   done
+
+
+lemma cannot_be_grown_by_when_no_peek_past:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "bidef_well_formed A"
+  shows "parse_result_cannot_be_grown_by_printer (parse A) pB"
+  unfolding parse_result_cannot_be_grown_by_printer_def
+  using assms(1)[unfolded does_not_peek_past_end_def]
+        assms(2)[THEN get_pngi, unfolded PNGI_def]
+  by force
+
+lemma does_not_peek_past_well_formed_many:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "bidef_well_formed A"
+  assumes "PASI (parse A)"
+  assumes "\<not>is_nonterm (parse A) [] \<or> is_error (parse A) []"
+  shows "bidef_well_formed (many A)"
+  apply (rule well_formed_does_not_grow_by_printer)
+  apply (rule cannot_be_grown_by_when_no_peek_past)
+  apply (auto simp add: assms)+
+  using PASI_implies_error_from_empty[OF assms(3)] assms(4)
+  by blast
+
+
 
 lemma charset_first_chars_to_parse_result_cannot_be_grown_by_printer:
   assumes "bidef_well_formed a"
