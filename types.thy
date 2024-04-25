@@ -591,6 +591,18 @@ lemma get_pngi:
   using assms[unfolded bidef_well_formed_def]
   by blast
 
+lemma get_parser_can_parse:
+  assumes "bidef_well_formed a"
+  shows "parser_can_parse_print_result (parse a) (print a)"
+  using assms[unfolded bidef_well_formed_def]
+  by blast
+
+lemma get_parser_can_parse_unfold:
+  assumes "bidef_well_formed a"
+  shows "(\<forall>(t :: '\<alpha>) pr. p_has_result (print a) t pr \<longrightarrow> has_result (parse a) pr t [])"
+  using assms[unfolded bidef_well_formed_def parser_can_parse_print_result_def]
+  by blast
+
 lemma test:
   assumes "bidef_well_formed a"
   shows "PNGI (parse a)"
@@ -712,10 +724,6 @@ lemma charset_not_in_c:
 
 
 \<comment> \<open>Characters that cannot extend\<close>
-(* Usable, for example, together with parser can parse print result and first_chars? *)
-definition char_cannot_extend :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
-  "char_cannot_extend p ch \<longleftrightarrow> (\<forall>c r l. has_result_ci p (c@l) c r l \<longrightarrow> has_result_ci p (c@(ch#l)) c r (ch#l))"
-
 named_theorems peek_past_end_simps
 definition does_not_peek_past_end :: "'a parser \<Rightarrow> bool" where
   "does_not_peek_past_end p \<longleftrightarrow> (\<forall> c r l l'. has_result p (c@l) r l \<longrightarrow> has_result p (c@l') r l')"
@@ -730,5 +738,42 @@ lemma no_peek_past_end_wf_stronger:
   by (metis append.right_neutral)
 
 
+(* Usable, for example, together with parser can parse print result and first_chars? *)
+definition does_not_consume_past_char :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
+  "does_not_consume_past_char p ch \<longleftrightarrow> (\<forall>c r l l'. has_result p (c@l) r l \<longrightarrow> has_result p (c@ch#l') r (ch#l'))"
+
+lemma no_consume_past_wf_stronger:
+  assumes "does_not_consume_past_char (parse A) ch"
+  assumes "bidef_well_formed A"
+  assumes "p_has_result (print A) i ipr"
+  shows "\<And>cs. has_result (parse A) (ipr@ch#cs) i (ch#cs)"
+  subgoal for cs
+    using assms(1)[unfolded does_not_consume_past_char_def, rule_format, of ipr \<open>[]\<close> i cs]
+          assms(2)[THEN get_parser_can_parse_unfold, rule_format, of i \<open>ipr@[]\<close>]
+          assms(3)
+    by clarsimp
+  done
+
+lemma does_not_peek_past_end_implies_does_not_consume_past_char:
+  assumes "does_not_peek_past_end A"
+  shows "\<And>ch. does_not_consume_past_char A ch"
+  using assms unfolding does_not_consume_past_char_def does_not_peek_past_end_def
+  by blast
+
+\<comment> \<open>This does not hold since for consume_past_char we always assume that the appended text is nonempty,
+     but does not peek past end also supports the empty case.\<close>
+lemma does_not_consume_past_any_char_eq_not_peek_past_end:
+  shows "(\<forall>ch. does_not_consume_past_char A ch) \<longleftrightarrow> does_not_peek_past_end A"
+  unfolding does_not_consume_past_char_def does_not_peek_past_end_def
+  apply auto
+  subgoal for c r l l'
+    apply (cases l')
+    subgoal \<comment> \<open>l'=[]\<close>
+      apply clarsimp
+      
+      sorry
+    subgoal
+      by blast
+    oops
 
 end

@@ -109,6 +109,15 @@ lemma transform_does_not_peek_past_end[peek_past_end_simps]:
   by (auto simp add: transform_has_result)
 
 
+\<comment> \<open>Does not consume past char.\<close>
+lemma transform_does_not_consume_past_char:
+  assumes "does_not_consume_past_char (parse a) ch"
+  shows "does_not_consume_past_char (parse (transform f f' a)) ch"
+  using assms
+  unfolding does_not_consume_past_char_def
+  by (auto simp add: transform_has_result)
+
+
 
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>
 definition well_formed_transform_funcs :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
