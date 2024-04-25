@@ -445,6 +445,30 @@ lemma first_chars_dep_if_then_else_subset:
 
 
 \<comment> \<open>Does not peek past end\<close>
+lemma second_attempt:
+  assumes PNGI_A: "PNGI (parse A)"
+  assumes PNGI_B: "\<forall>i r. (\<exists>l. has_result (parse A) i r l) \<longrightarrow> PNGI (parse (a2B r))"
+  assumes not_peek_past_A: "\<forall>c r. (\<exists>l. has_result (parse A) (c @ l) r l) \<longrightarrow> (\<forall>l'. has_result (parse A) (c @ l') r l')"
+  assumes not_peek_past_B: "\<forall>i r. (\<exists>l. has_result (parse A) i r l) \<longrightarrow> (\<forall>c ra. (\<exists>l. has_result (parse (a2B r)) (c @ l) ra l) \<longrightarrow> (\<forall>l'. has_result (parse (a2B r)) (c @ l') ra l'))"
+  assumes hr_A: "has_result (parse A) (c @ l) ra la"
+  assumes hr_B: "has_result (parse (a2B ra)) la rl l"
+  shows "\<exists>cs. has_result (parse A) (c @ l') ra cs \<and> has_result (parse (a2B ra)) cs rl l'"
+  proof -
+    obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f7: "c @ l = ccs la (c @ l) @ la"
+      using hr_A PNGI_A[unfolded PNGI_def] by meson
+    obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
+      f8: "la = ccsa l la @ l"
+      using hr_B hr_A PNGI_B[unfolded PNGI_def] by meson
+    then have "has_result (parse A) (c @ l') ra (ccsa l la @ l')"
+      using f7 hr_A not_peek_past_A 
+      by (smt (verit, best) append.assoc append_same_eq)
+    then show "\<exists>cs. has_result (parse A) (c @ l') ra cs \<and> has_result (parse (a2B ra)) cs rl l'"
+      using f8 hr_B not_peek_past_B by metis
+  qed
+
+
+
 definition A_is_error_on_C_consumed :: "'\<alpha> bidef \<Rightarrow> '\<gamma> bidef \<Rightarrow> bool" where
   "A_is_error_on_C_consumed A C \<longleftrightarrow> (\<forall>c l r l'. has_result (parse C) (c @ l) r l \<longrightarrow> is_error (parse A) (c @ l'))"
 
@@ -465,25 +489,8 @@ lemma if_then_else_does_not_peek_past_end[peek_past_end_simps]:
       apply (clarsimp simp add: if_then_else_has_result(1))
       subgoal for ra la
         apply (rule exI[of _ ra])
-        proof -
-          assume PNGI_A: "PNGI (parse A)"
-          assume PNGI_B: "\<forall>i r. (\<exists>l. has_result (parse A) i r l) \<longrightarrow> PNGI (parse (a2B r))"
-          assume not_peek_past_A: "\<forall>c r. (\<exists>l. has_result (parse A) (c @ l) r l) \<longrightarrow> (\<forall>l'. has_result (parse A) (c @ l') r l')"
-          assume not_peek_past_B: "\<forall>i r. (\<exists>l. has_result (parse A) i r l) \<longrightarrow> (\<forall>c ra. (\<exists>l. has_result (parse (a2B r)) (c @ l) ra l) \<longrightarrow> (\<forall>l'. has_result (parse (a2B r)) (c @ l') ra l'))"
-          assume hr_A: "has_result (parse A) (c @ l) ra la"
-          assume hr_B: "has_result (parse (a2B ra)) la rl l"
-          obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
-            f7: "c @ l = ccs la (c @ l) @ la"
-            using hr_A PNGI_A[unfolded PNGI_def] by meson
-          obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
-            f8: "la = ccsa l la @ l"
-            using hr_B hr_A PNGI_B[unfolded PNGI_def] by meson
-          then have "has_result (parse A) (c @ l') ra (ccsa l la @ l')"
-            using f7 hr_A not_peek_past_A 
-            by (smt (verit, best) append.assoc append_same_eq)
-          then show "\<exists>cs. has_result (parse A) (c @ l') ra cs \<and> has_result (parse (a2B ra)) cs rl l'"
-            using f8 hr_B not_peek_past_B by metis
-        qed
+        using second_attempt[of A a2B c l ra la rl l']
+        by fast
       done
     subgoal for rr \<comment> \<open>r = Inr rr\<close>
       unfolding A_is_error_on_C_consumed_def
