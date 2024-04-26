@@ -798,6 +798,14 @@ lemma does_not_consume_past_any_char2_eq_not_peek_past_end:
   unfolding does_not_consume_past_char2_def does_not_peek_past_end_def
   by blast
 
+lemma does_not_consume_past_char2_implies_does_not_consume_past_char:
+  assumes "does_not_consume_past_char2 p c"
+  shows "does_not_consume_past_char p c"
+  using assms
+  unfolding does_not_consume_past_char2_def does_not_consume_past_char_def
+  by fastforce
+
+
 
 
 end
