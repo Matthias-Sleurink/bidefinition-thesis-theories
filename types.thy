@@ -776,4 +776,28 @@ lemma does_not_consume_past_any_char_eq_not_peek_past_end:
       by blast
     oops
 
+(*Attempt 2, what if the text is empty?*)
+definition does_not_consume_past_char2 :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
+  "does_not_consume_past_char2 p ch \<longleftrightarrow> (\<forall>c r l l'. has_result p (c@l) r l \<longrightarrow> (l'=[] \<or> hd l'=ch) \<longrightarrow> has_result p (c@l') r l')"
+
+lemma no_consume_past2_wf_stronger:
+  assumes "does_not_consume_past_char2 (parse A) ch"
+  assumes "bidef_well_formed A"
+  assumes "p_has_result (print A) i ipr"
+  shows "\<And>cs. cs=[] \<or> hd cs = ch \<longrightarrow> has_result (parse A) (ipr@cs) i cs"
+  subgoal for cs
+    using assms(1)[unfolded does_not_consume_past_char2_def, rule_format, of ipr \<open>[]\<close> i cs]
+          assms(2)[THEN get_parser_can_parse_unfold, rule_format, of i \<open>ipr@[]\<close>]
+          assms(3)
+    by clarsimp
+  done
+
+
+lemma does_not_consume_past_any_char2_eq_not_peek_past_end:
+  shows "(\<forall>ch. does_not_consume_past_char2 A ch) \<longleftrightarrow> does_not_peek_past_end A"
+  unfolding does_not_consume_past_char2_def does_not_peek_past_end_def
+  by blast
+
+
+
 end
