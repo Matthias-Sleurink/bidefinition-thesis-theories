@@ -174,6 +174,13 @@ lemma ftrans_does_not_consume_past_char:
   unfolding does_not_consume_past_char_def
   by (auto simp add: ftransform_has_result)
 
+lemma ftrans_does_not_consume_past_char2:
+  assumes "does_not_consume_past_char2 (parse a) ch"
+  shows "does_not_consume_past_char2 (parse (ftransform f f' a)) ch"
+  using assms
+  unfolding does_not_consume_past_char2_def
+  by (auto simp add: ftransform_has_result)
+
 
 
 

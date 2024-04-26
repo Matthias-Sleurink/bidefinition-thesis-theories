@@ -117,6 +117,13 @@ lemma transform_does_not_consume_past_char:
   unfolding does_not_consume_past_char_def
   by (auto simp add: transform_has_result)
 
+lemma transform_does_not_consume_past_char2:
+  assumes "does_not_consume_past_char2 (parse a) ch"
+  shows "does_not_consume_past_char2 (parse (transform f f' a)) ch"
+  using assms
+  unfolding does_not_consume_past_char2_def
+  by (auto simp add: transform_has_result)
+
 
 
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>

@@ -105,6 +105,11 @@ lemma return_does_not_consume_past_char:
   unfolding does_not_consume_past_char_def
   by (clarsimp simp add: return_has_result)
 
+lemma return_does_not_consume_past_char2:
+  shows "does_not_consume_past_char2 (parse (return a)) ch"
+  unfolding does_not_consume_past_char2_def
+  by (clarsimp simp add: return_has_result)
+
 
 
 \<comment> \<open>Well Formed\<close>
