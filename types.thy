@@ -162,6 +162,13 @@ definition p_is_nonterm :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarr
 
 named_theorems fp_NER
 
+lemma p_has_result_deterministic: \<comment> \<open>it might be worth it also doing these for the others.\<close>
+  assumes "p_has_result pri i r"
+  assumes "p_has_result pri i r'"
+  shows "r = r'"
+  using assms unfolding p_has_result_def
+  by simp
+
 lemma p_has_result_impl_not_error:
   "p_has_result fp v s \<Longrightarrow> \<not>p_is_error fp v"
   unfolding p_has_result_def p_is_error_def

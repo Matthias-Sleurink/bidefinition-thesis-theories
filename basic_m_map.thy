@@ -287,6 +287,50 @@ lemma m_map_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma m_map_first_printed_char_empty:
+  shows "\<nexists>c. first_printed_char (print (m_map e2A [])) B c"
+  unfolding first_printed_char_def
+  by (auto simp add: m_map_p_has_result)
+
+\<comment> \<open>For the B', also require that the m_map printer has a result with t#ts!\<close>
+lemma m_map_first_printed_char_cons:
+  assumes "if (\<exists>t. p_has_result (print (e2A e)) t [] \<and> (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr')))
+            then (first_printed_char (print (e2A e)) (\<lambda>t. (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr'))) c \<or>
+                  first_printed_char (print (m_map e2A es)) B c)
+            else (first_printed_char (print (e2A e)) (\<lambda>t. (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr'))) c)"
+  shows "first_printed_char (print (m_map e2A (e#es))) B c"
+  using assms
+  unfolding first_printed_char_def
+  apply (auto simp add: m_map_p_has_result split: if_splits)
+  subgoal for x xs e_x_pr es_xs_pr e_y_pr y ys e_y_pr' es_ys_pr
+    apply (rule exI[of _ \<open>y#ys\<close>])
+    by fastforce
+  subgoal for x xs e_x_pr es_xs_pr ys es_ys_pr
+    apply (rule exI[of _ \<open>ys\<close>])
+    apply clarsimp
+    apply (rule exI[of _ \<open>e_x_pr@es_ys_pr\<close>])
+    apply (cases \<open>e_x_pr=[]\<close>; clarsimp simp add: p_has_result_deterministic)
+    \<comment> \<open>now we know it is indeed empty.\<close>
+    apply (rule exI[of _ \<open>x\<close>])
+    apply (rule exI[of _ \<open>tl ys\<close>])
+    apply (rule exI[of _ \<open>[]\<close>])
+    apply auto
+    \<comment> \<open>still something wrong here. Precondition wrong?\<close>
+    
+    sorry
+  subgoal by fastforce
+  oops
+
+
+lemma test:
+  shows "first_printed_char (print (m_map e2A (e#es))) B c \<longleftrightarrow> test"
+  unfolding first_printed_char_def p_has_result_def m_map_def
+  apply clarsimp
+  using m_map_pr.simps
+
+
+
 \<comment> \<open>well formed\<close>
 lemma m_map_well_formed_empty[bi_well_formed_simps]:
   shows "bidef_well_formed (m_map a2bi [])"
