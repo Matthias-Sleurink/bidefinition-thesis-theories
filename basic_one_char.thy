@@ -110,6 +110,14 @@ lemma one_char_does_not_consume_past_char2:
   by (clarsimp simp add: one_char_has_result)
 
 
+\<comment> \<open>First printed char\<close>
+lemma one_char_first_printed_char:
+  assumes "B c"
+  shows "first_printed_char (print one_char) B c"
+  unfolding first_printed_char_def
+  by (clarsimp simp add: one_char_p_has_result assms)
+
+
 
 \<comment> \<open>Well Formed\<close>
 lemma one_char_well_formed[bi_well_formed_simps]:

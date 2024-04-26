@@ -126,6 +126,15 @@ lemma transform_does_not_consume_past_char2:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma transform_first_printed_char:
+  assumes "first_printed_char (print A) (\<lambda>a. (\<exists>b. f' b = a \<and> B b)) c"
+  shows "first_printed_char (print (transform f f' A)) B c"
+  using assms unfolding first_printed_char_def
+  by (auto simp add: transform_p_has_result)
+
+
+
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>
 definition well_formed_transform_funcs :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
   "well_formed_transform_funcs f f' b \<longleftrightarrow> ((\<forall> i v l. has_result (parse b) i v l \<longrightarrow> f' (f v) = v)

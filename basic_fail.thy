@@ -116,6 +116,13 @@ lemma fail_does_not_consume_past_char2:
   by (clarsimp simp add: fail_has_result)
 
 
+\<comment> \<open>First printed char\<close>
+lemma fail_first_printed_char:
+  shows "(\<nexists>c. first_printed_char (print fail) B c)"
+  unfolding first_printed_char_def
+  by (clarsimp simp add: fail_p_has_result)
+
+
 
 \<comment> \<open>Well Formed\<close>
 lemma fail_well_formed:

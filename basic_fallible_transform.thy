@@ -73,7 +73,7 @@ lemma ftransform_p_is_error[fp_NER]:
   subgoal by (cases \<open>t' i\<close>) simp_all
   done
 
-lemma f_transform_p_has_result[fp_NER]:
+lemma ftransform_p_has_result[fp_NER]:
   "p_has_result (print (ftransform t t' bi)) i r \<longleftrightarrow> (\<exists> i'. Some i' = t' i \<and> p_has_result (print bi) i' r)"
   "p_has_result (ftransform_pr t' p) i r \<longleftrightarrow> (\<exists> i'. Some i' = t' i \<and> p_has_result p i' r)"
   apply (auto simp add: ftransform_def p_has_result_def)
@@ -181,6 +181,14 @@ lemma ftrans_does_not_consume_past_char2:
   unfolding does_not_consume_past_char2_def
   by (auto simp add: ftransform_has_result)
 
+
+\<comment> \<open>First printed char\<close>
+lemma ftransform_first_printed_char:
+  assumes "first_printed_char (print A) (\<lambda>a. (\<exists>b. f' b = Some a \<and> B b)) c"
+  shows "first_printed_char (print (ftransform f f' A)) B c"
+  using assms unfolding first_printed_char_def
+  apply (clarsimp simp add: ftransform_p_has_result)
+  by force
 
 
 

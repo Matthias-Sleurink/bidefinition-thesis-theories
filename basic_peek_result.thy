@@ -138,6 +138,13 @@ lemma peek_result_does_not_peek_past_end[peek_past_end_simps]:
     oops
 
 
+\<comment> \<open>First printed char\<close>
+lemma peek_first_printed_char:
+  shows "(\<nexists>c. first_printed_char (print (peek A)) B c)"
+  unfolding first_printed_char_def
+  by (clarsimp simp add: peek_p_has_result)
+
+
 
 \<comment> \<open>Well Formed\<close>
 text \<open>
