@@ -328,7 +328,7 @@ lemma test:
   unfolding first_printed_char_def p_has_result_def m_map_def
   apply clarsimp
   using m_map_pr.simps
-
+  oops
 
 
 \<comment> \<open>well formed\<close>
