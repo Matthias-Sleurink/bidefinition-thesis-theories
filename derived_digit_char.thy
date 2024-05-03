@@ -81,6 +81,14 @@ lemma digit_char_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma digit_char_fpci:
+  shows "(i \<in> digit_chars \<and> c = i) \<longleftrightarrow>first_printed_chari (print digit_char) i c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: digit_char_p_has_result; blast)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma digit_char_well_formed:
   "bidef_well_formed digit_char"

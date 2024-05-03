@@ -70,6 +70,14 @@ lemma lowercase_char_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma lowercase_char_fpci:
+  shows "(i \<in> lowercase_chars \<and> c = i) \<longleftrightarrow>first_printed_chari (print lowercase_char) i c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: lowercase_char_p_has_result; blast)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma lowercase_char_well_formed:
   "bidef_well_formed lowercase_char"

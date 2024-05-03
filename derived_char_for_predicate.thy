@@ -74,6 +74,14 @@ lemma char_for_predicate_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma char_for_predicate_fpci:
+  shows "(P i \<and> c = i) \<longleftrightarrow> first_printed_chari (print (char_for_predicate P)) i c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: char_for_predicate_p_has_result; blast)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma char_for_predicate_well_formed:
   "bidef_well_formed (char_for_predicate p)"

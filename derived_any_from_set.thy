@@ -74,6 +74,14 @@ lemma any_from_set_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma any_from_set_fpci:
+  shows "(i\<in>S \<and> c = i) \<longleftrightarrow> first_printed_chari (print (any_from_set S)) i c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: any_from_set_p_has_result; blast)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma any_from_set_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (any_from_set s)"

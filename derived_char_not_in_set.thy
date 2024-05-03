@@ -74,6 +74,14 @@ lemma char_not_in_set_set_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma char_not_in_set_fpci:
+  shows "(i \<notin> S \<and> c = i) \<longleftrightarrow> first_printed_chari (print (char_not_in_set S)) i c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: char_not_in_set_p_has_result; blast)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma char_not_in_set_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (char_not_in_set s)"
