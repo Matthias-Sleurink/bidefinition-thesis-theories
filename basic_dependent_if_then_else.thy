@@ -559,6 +559,32 @@ lemma if_then_else_does_not_consume_past_char:
 
 
 
+
+\<comment> \<open>First printed char\<close>
+lemma if_then_else_fpci_ri:
+  assumes "first_printed_chari (print C) ri c"
+  shows "first_printed_chari (print (if_then_else A a2B C b2a)) (Inr ri) c"
+  using assms unfolding first_printed_chari_def
+  by (clarsimp simp add: if_then_else_p_has_result)
+
+lemma if_then_else_fpci_li_nonempty_A:
+  assumes "first_printed_chari (print A) (b2a li) c"
+  assumes "\<exists>tb. p_has_result (print (a2B (b2a li))) li tb"
+  shows "first_printed_chari (print (if_then_else A a2B C b2a)) (Inl li) c"
+  using assms unfolding first_printed_chari_def
+  apply (clarsimp simp add: if_then_else_p_has_result)
+  by force
+
+lemma if_then_else_fpci_li_empty_A:
+  assumes "p_has_result (print A) (b2a li) []"
+  assumes "first_printed_chari (print (a2B (b2a li))) li c"
+  shows "first_printed_chari (print (if_then_else A a2B C b2a)) (Inl li) c"
+  using assms unfolding first_printed_chari_def
+  apply (clarsimp simp add: if_then_else_p_has_result)
+  by fastforce
+
+
+
 \<comment> \<open>Well Formed\<close>
 definition b2_wf_for_res_of_b1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
   "b2_wf_for_res_of_b1 b1 a2bi \<longleftrightarrow> (\<forall> i ra la. has_result (parse b1) i ra la \<longrightarrow> bidef_well_formed (a2bi ra))"

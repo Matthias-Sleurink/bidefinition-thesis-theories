@@ -118,6 +118,11 @@ lemma return_first_printed_char:
   unfolding first_printed_char_def
   by (clarsimp simp add: return_p_has_result)
 
+lemma return_fpci:
+  shows "\<nexists>v i c. first_printed_chari (print (return v)) i c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: return_p_has_result)
+
 
 
 \<comment> \<open>Well Formed\<close>

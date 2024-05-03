@@ -827,5 +827,9 @@ definition first_printed_char :: "'a printer \<Rightarrow> ('a \<Rightarrow> boo
 
 
 
+definition first_printed_chari :: "'a printer \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
+  "first_printed_chari p i c \<equiv> (\<exists>t. p_has_result p i t \<and> t\<noteq>[] \<and> (hd t) = c)"
+
+
 
 end

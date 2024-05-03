@@ -190,6 +190,13 @@ lemma ftransform_first_printed_char:
   apply (clarsimp simp add: ftransform_p_has_result)
   by force
 
+lemma ftransform_fpci:
+  assumes "first_printed_chari (print A) (the (f' i)) c"
+  assumes "\<exists>i'. f' i = Some i'"
+  shows "first_printed_chari (print (ftransform f f' A)) i c"
+  using assms unfolding first_printed_chari_def
+  by (auto simp add: ftransform_p_has_result)
+
 
 
 \<comment> \<open>Well Formed\<close>

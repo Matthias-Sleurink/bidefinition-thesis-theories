@@ -323,6 +323,29 @@ lemma m_map_first_printed_char_from_first_printer_nonempty:
   oops
 
 
+lemma m_map_fpci_empty:
+  shows "\<not>first_printed_chari (print (m_map e2A [])) i c"
+  unfolding first_printed_chari_def
+  by (auto simp add: m_map_p_has_result)
+
+lemma m_map_fpci_cons:
+  assumes "first_printed_chari (print (e2A e)) i c"
+  assumes "\<exists>ts. p_has_result (print (m_map e2A es)) is ts"
+  shows "first_printed_chari (print (m_map e2A (e#es))) (i#is) c"
+  using assms unfolding first_printed_chari_def
+  apply (auto simp add: m_map_p_has_result)
+  by fastforce
+
+lemma m_map_fpci_cons_empty:
+  assumes "p_has_result (print (e2A e)) i []"
+  assumes "first_printed_chari (print (m_map e2A es)) is c"
+  shows "first_printed_chari (print (m_map e2A (e#es))) (i#is) c"
+  using assms unfolding first_printed_chari_def
+  apply (auto simp add: m_map_p_has_result)
+  by fast
+
+
+
 
 \<comment> \<open>For the B', also require that the m_map printer has a result with t#ts!\<close>
 lemma m_map_first_printed_char_cons:

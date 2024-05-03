@@ -133,6 +133,12 @@ lemma transform_first_printed_char:
   using assms unfolding first_printed_char_def
   by (auto simp add: transform_p_has_result)
 
+lemma transform_fpci:
+  assumes "first_printed_chari (print A) (f' i) c"
+  shows "first_printed_chari (print (transform f f' A)) i c"
+  using assms unfolding first_printed_chari_def
+  by (auto simp add: transform_p_has_result)
+
 
 
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>
