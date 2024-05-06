@@ -172,6 +172,19 @@ lemma dep_then_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma dep_then_fpci:
+  shows "first_printed_chari (print (dep_then A a2B b2a)) i c \<longleftrightarrow>
+          (if (p_has_result (print A) (b2a i) []) then
+            (first_printed_chari (print (a2B (b2a i))) i c)
+          else
+            (first_printed_chari (print A) (b2a i) c \<and> (\<exists>t. p_has_result (print (a2B (b2a i))) i t))
+)"
+  unfolding dep_then_def
+  by (simp add: if_then_else_fpci_li_iff transform_fpci2)
+
+
+
 \<comment> \<open>Well Formed\<close>
 
 \<comment> \<open>For all two print texts, the parser for ba only consumes its own section.\<close>
