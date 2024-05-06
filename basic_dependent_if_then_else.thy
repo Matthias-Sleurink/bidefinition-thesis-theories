@@ -589,6 +589,22 @@ lemma if_then_else_fpci_li_empty_A:
   by fastforce
 
 
+lemma if_then_else_fpci_li_iff:
+  shows "first_printed_chari (print (if_then_else A a2B C b2a)) (Inl li) c \<longleftrightarrow>
+          (if p_has_result (print A) (b2a li) [] then
+            (first_printed_chari (print (a2B (b2a li))) li c) else
+            (first_printed_chari (print A) (b2a li) c) \<and> (\<exists> t'. p_has_result (print (a2B (b2a li))) li t'))"
+  unfolding first_printed_chari_def
+  apply (auto simp add: if_then_else_p_has_result)
+  subgoal by (metis p_has_result_deterministic)
+  subgoal by (metis append_Nil p_has_result_deterministic)
+  subgoal by (metis append_Nil)
+  subgoal by (metis hd_append)
+  subgoal by (metis hd_append)
+  subgoal by (metis Nil_is_append_conv hd_append2)
+  done
+
+
 
 \<comment> \<open>Well Formed\<close>
 definition b2_wf_for_res_of_b1 :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> bool" where
