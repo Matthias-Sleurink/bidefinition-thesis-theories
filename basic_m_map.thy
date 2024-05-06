@@ -345,6 +345,22 @@ lemma m_map_fpci_cons_empty:
   by fast
 
 
+lemma m_map_fpci_cons_iff:
+  shows "first_printed_chari (print (m_map e2A (e#es))) (i#is) c \<longleftrightarrow>(
+          if p_has_result (print (e2A e)) i [] then
+            (first_printed_chari (print (m_map e2A es)) is c)
+          else
+            ((\<exists>t. p_has_result (print (m_map e2A es)) is t) \<and> first_printed_chari (print (e2A e)) i c)
+)"
+  unfolding first_printed_chari_def
+  apply (auto simp add: m_map_p_has_result)
+  subgoal by (simp add: p_has_result_deterministic)
+  subgoal by (metis append_Nil p_has_result_deterministic)
+  subgoal by fast
+  subgoal by (metis hd_append)
+  subgoal by fastforce
+  done
+
 
 
 \<comment> \<open>For the B', also require that the m_map printer has a result with t#ts!\<close>
