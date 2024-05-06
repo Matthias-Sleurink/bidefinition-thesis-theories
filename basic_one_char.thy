@@ -118,7 +118,7 @@ lemma one_char_first_printed_char:
   by (clarsimp simp add: one_char_p_has_result assms)
 
 lemma one_char_fpci:
-  shows "i = c \<longleftrightarrow> first_printed_chari (print one_char) i c"
+  shows "first_printed_chari (print one_char) i c \<longleftrightarrow> i = c"
   unfolding first_printed_chari_def
   by (clarsimp simp add: one_char_p_has_result)
 
