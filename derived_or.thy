@@ -95,6 +95,16 @@ lemma or_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma or_fpci:
+  "first_printed_chari (print (or A B)) (Inl i) c \<longleftrightarrow> first_printed_chari (print A) i c"
+  "first_printed_chari (print (or A B)) (Inr i) c \<longleftrightarrow> first_printed_chari (print B) i c"
+  unfolding or_def
+  apply (metis eq_id_iff if_then_else_fpci_li_iff if_then_else_fpci_li_nonempty_A return_fpci return_p_has_result(1))
+  by (simp add: if_then_else_fpci_ri_iff)
+
+
+
 \<comment> \<open>Well Formed\<close>
 \<comment> \<open>A print result of b2 must not be parsable by b1\<close>
 definition well_formed_or_pair :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
