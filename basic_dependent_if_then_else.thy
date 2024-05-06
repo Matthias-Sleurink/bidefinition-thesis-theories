@@ -567,6 +567,11 @@ lemma if_then_else_fpci_ri:
   using assms unfolding first_printed_chari_def
   by (clarsimp simp add: if_then_else_p_has_result)
 
+lemma if_then_else_fpci_ri_iff:
+  shows "first_printed_chari (print (if_then_else A a2B C b2a)) (Inr ri) c \<longleftrightarrow> first_printed_chari (print C) ri c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: if_then_else_p_has_result)
+
 lemma if_then_else_fpci_li_nonempty_A:
   assumes "first_printed_chari (print A) (b2a li) c"
   assumes "\<exists>tb. p_has_result (print (a2B (b2a li))) li tb"
