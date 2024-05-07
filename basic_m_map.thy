@@ -323,7 +323,7 @@ lemma m_map_first_printed_char_from_first_printer_nonempty:
   oops
 
 
-lemma m_map_fpci_empty:
+lemma m_map_fpci_empty[fpci_simps]:
   shows "\<not>first_printed_chari (print (m_map e2A [])) i c"
   unfolding first_printed_chari_def
   by (auto simp add: m_map_p_has_result)
@@ -345,7 +345,7 @@ lemma m_map_fpci_cons_empty:
   by fast
 
 
-lemma m_map_fpci_cons_iff:
+lemma m_map_fpci_cons_iff[fpci_simps]:
   shows "first_printed_chari (print (m_map e2A (e#es))) (i#is) c \<longleftrightarrow>(
           if p_has_result (print (e2A e)) i [] then
             (first_printed_chari (print (m_map e2A es)) is c)
