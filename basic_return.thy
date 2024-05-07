@@ -120,8 +120,9 @@ lemma return_first_printed_char:
 
 lemma return_fpci:
   shows "\<nexists>v i c. first_printed_chari (print (return v)) i c"
+        "first_printed_chari (print (return v)) i c \<longleftrightarrow> False"
   unfolding first_printed_chari_def
-  by (clarsimp simp add: return_p_has_result)
+  by (clarsimp simp add: return_p_has_result)+
 
 
 
