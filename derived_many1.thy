@@ -150,6 +150,34 @@ lemma many1_does_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma many1_fpci_nil[fpci_simps]:
+  "first_printed_chari (print (many1 b)) [] c \<longleftrightarrow> False"
+  by (clarsimp simp add: many1_def fpci_simps)
+
+lemma many1_fpci_cons[fpci_simps]:
+  "first_printed_chari (print (many1 b)) (x#xs) c \<longleftrightarrow>(
+    if p_has_result (print b) x [] then
+      (first_printed_chari (print (many b)) xs c)
+    else
+      (first_printed_chari (print b) x c \<and> (\<exists>t. p_has_result (print (many b)) xs t))
+  )"
+  by (clarsimp simp add: many1_def fpci_simps)
+
+lemma many1_fpci:
+  "first_printed_chari (print (many1 b)) i c \<longleftrightarrow> (
+    case i of
+      [] \<Rightarrow> False
+      | (x#xs) \<Rightarrow> (
+        if p_has_result (print b) x [] then
+          (first_printed_chari (print (many b)) xs c)
+        else
+          (first_printed_chari (print b) x c \<and> (\<exists>t. p_has_result (print (many b)) xs t))
+  ))"
+  by (clarsimp simp add: many1_def fpci_simps split: list.splits)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma many1_well_formed:
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
