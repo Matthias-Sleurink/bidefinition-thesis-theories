@@ -71,6 +71,10 @@ lemma fail_p_has_result[fp_NER]:
   "p_has_result fail_pr      i r \<longleftrightarrow> False"
   by (simp add: fail_def p_has_result_def)+
 
+lemma fail_print_empty[print_empty, fp_NER]:
+  "p_has_result (print fail) i [] \<longleftrightarrow> False"
+  by (rule fail_p_has_result(1))
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

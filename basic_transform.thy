@@ -50,6 +50,10 @@ lemma transform_p_is_nonterm[fp_NER]:
   "p_is_nonterm (print (transform f f' b)) i \<longleftrightarrow> p_is_nonterm (print b) (f' i)"
   by (simp add: transform_def fp_NER)
 
+lemma transform_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (transform f f' b)) i [] \<longleftrightarrow> p_has_result (print b) (f' i) []"
+  by (rule transform_p_has_result)
+
 
 
 \<comment> \<open>Monotone\<close>

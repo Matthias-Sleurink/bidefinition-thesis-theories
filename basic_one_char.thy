@@ -65,6 +65,10 @@ lemma one_char_p_is_nonterm[fp_NER]:
   "p_is_nonterm one_char_printer i \<longleftrightarrow> False"
   by (simp add: one_char_def p_is_nonterm_def)+
 
+lemma one_char_print_empty[print_empty, fp_NER]:
+  "p_has_result (print one_char) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: fp_NER)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

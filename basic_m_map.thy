@@ -183,6 +183,21 @@ lemma m_map_pr_has_result_not_same_length:
      apply (auto simp add: fp_NER)
   by (metis length_Cons list.exhaust p_has_result_eq_not_is_error)
 
+lemma m_map_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (m_map a2A []    )) []     [] \<longleftrightarrow> True"
+  "p_has_result (print (m_map a2A (a#as))) (i#is) [] \<longleftrightarrow> p_has_result (print (a2A a)) i [] \<and> p_has_result (print (m_map a2A as)) is []"
+  by (clarsimp simp add: fp_NER)+
+
+lemma m_map_print_empty:
+  "p_has_result (print (m_map a2A as)) is [] \<longleftrightarrow>(
+    case as of
+      [] \<Rightarrow> is=[]
+    | (a#as') \<Rightarrow> (
+      case is of [] \<Rightarrow> False | (i#is') \<Rightarrow>
+        p_has_result (print (a2A a)) i [] \<and> p_has_result (print (m_map a2A as')) is' []
+      ))"
+  by (auto simp add: fp_NER split: list.splits)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

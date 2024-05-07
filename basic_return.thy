@@ -66,6 +66,10 @@ lemma return_fp_is_nonterm[fp_NER]:
   "p_is_nonterm (return_pr v) v' \<longleftrightarrow> False"
   by (simp add: p_is_nonterm_def return_def)+
 
+lemma return_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (return v)) i [] \<longleftrightarrow> i = v"
+  by (clarsimp simp add: fp_NER; fast)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

@@ -93,6 +93,10 @@ lemma ftransform_p_is_nonterm[fp_NER]:
   subgoal by (cases \<open>t' i\<close>) simp_all
   done
 
+lemma ftransform_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (ftransform t t' bi)) i [] \<longleftrightarrow> (\<exists>i'. Some i' = t' i \<and> p_has_result (print bi) i' [])"
+  by (rule ftransform_p_has_result(1))
+
 
 
 \<comment> \<open>Monotone\<close>

@@ -300,6 +300,19 @@ lemma if_then_else_p_is_nonterm[fp_NER]:
   "p_is_nonterm (ite_printer ap a2bp cp b2a) (Inr rr) \<longleftrightarrow> p_is_nonterm cp rr"
   by (auto simp add: if_then_else_def ite_printer_cases p_is_error_def p_is_nonterm_def Let_def split: option.splits)
 
+lemma if_then_else_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (if_then_else ab a2bb cb b2a)) (Inl li) [] \<longleftrightarrow> (let a = b2a li in (p_has_result (print ab) a [] \<and> p_has_result (print (a2bb a)) li []))"
+  "p_has_result (print (if_then_else ab a2bb cb b2a)) (Inr ri) [] \<longleftrightarrow> p_has_result (print cb) ri []"
+  by (clarsimp simp add: if_then_else_p_has_result)+
+
+lemma if_then_else_print_empty:
+  "p_has_result (print (if_then_else ab a2bb cb b2a)) i [] \<longleftrightarrow>(
+    case i of
+      (Inl li) \<Rightarrow> let a = b2a li in (p_has_result (print ab) a [] \<and> p_has_result (print (a2bb a)) li [])
+    | (Inr ri) \<Rightarrow> p_has_result (print cb) ri []
+  )"
+  by (simp add: print_empty split: sum.splits)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

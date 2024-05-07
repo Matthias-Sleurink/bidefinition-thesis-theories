@@ -98,6 +98,11 @@ lemma peek_p_is_nonterm[fp_NER]:
   "p_is_nonterm (peek_pr p) v \<longleftrightarrow> p_is_nonterm p v"
   by (auto simp add: peek_def p_is_nonterm_def split: option.splits)
 
+lemma peek_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (peek b)) i [] \<longleftrightarrow> (\<exists>t. p_has_result (print b) i t)"
+  by (clarsimp simp add: fp_NER)
+
+
 
 \<comment> \<open>PNGI, PASI\<close>
 lemma peek_PNGI:

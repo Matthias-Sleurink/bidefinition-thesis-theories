@@ -161,6 +161,7 @@ definition p_is_nonterm :: "'\<alpha> printer \<Rightarrow> '\<alpha> \<Rightarr
   "p_is_nonterm fp v \<longleftrightarrow> fp v = None"
 
 named_theorems fp_NER
+named_theorems print_empty \<comment> \<open>Used mainly for FPCI below\<close>
 
 lemma p_has_result_deterministic: \<comment> \<open>it might be worth it also doing these for the others.\<close>
   assumes "p_has_result pri i r"
