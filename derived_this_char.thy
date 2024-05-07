@@ -71,6 +71,13 @@ lemma this_char_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma this_char_fpci[fpci_simps]:
+  "first_printed_chari (print (this_char c)) i c' \<longleftrightarrow> i = c \<and> c' = c"
+  by (clarsimp simp add: this_char_def fpci_simps; fast)
+
+
+
 \<comment> \<open>Well Formed\<close>
 lemma this_char_well_formed[bi_well_formed_simps]:
   "bidef_well_formed (this_char c)"
