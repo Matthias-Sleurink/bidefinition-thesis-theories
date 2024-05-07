@@ -158,6 +158,22 @@ lemma separated_by_does_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma serparated_by_fpci[fpci_simps]:
+  "first_printed_chari (print (separated_by sep elem oracle)) i c \<longleftrightarrow>(
+    case i of
+      [] \<Rightarrow> False
+    | (x#xs) \<Rightarrow>(
+      if p_has_result (print elem) x [] then
+        (first_printed_chari (print (many (b_then sep elem))) (map (Pair oracle) xs) c)
+      else
+        (first_printed_chari (print elem) x c \<and>
+         (\<exists>t. p_has_result (print (many (b_then sep elem))) (map (Pair oracle) xs) t))
+      ))"
+  by (clarsimp simp add: separated_by_def separated_byBase_def fpci_simps split: list.splits)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma snd_comp_pair_id[simp]:
   "(snd \<circ> Pair a) = id"
