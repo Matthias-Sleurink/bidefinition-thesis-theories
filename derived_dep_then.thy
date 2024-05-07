@@ -173,7 +173,7 @@ lemma dep_then_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma dep_then_fpci:
+lemma dep_then_fpci[fpci_simps]:
   shows "first_printed_chari (print (dep_then A a2B b2a)) i c \<longleftrightarrow>
           (if (p_has_result (print A) (b2a i) []) then
             (first_printed_chari (print (a2B (b2a i))) i c)

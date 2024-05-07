@@ -164,7 +164,7 @@ lemma many1_fpci_cons[fpci_simps]:
   )"
   by (clarsimp simp add: many1_def fpci_simps)
 
-lemma many1_fpci:
+lemma many1_fpci[fpci_simps]:
   "first_printed_chari (print (many1 b)) i c \<longleftrightarrow> (
     case i of
       [] \<Rightarrow> False

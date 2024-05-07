@@ -75,7 +75,7 @@ lemma char_not_in_set_set_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma char_not_in_set_fpci:
+lemma char_not_in_set_fpci[fpci_simps]:
   shows "first_printed_chari (print (char_not_in_set S)) i c \<longleftrightarrow> (i \<notin> S \<and> c = i)"
   unfolding first_printed_chari_def
   by (clarsimp simp add: char_not_in_set_p_has_result; blast)

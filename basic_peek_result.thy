@@ -144,10 +144,11 @@ lemma peek_first_printed_char:
   unfolding first_printed_char_def
   by (clarsimp simp add: peek_p_has_result)
 
-lemma peek_fpci:
+lemma peek_fpci[fpci_simps]:
   shows "\<nexists>i c. first_printed_chari (print (peek B)) i c"
+        "first_printed_chari (print (peek B)) i c \<longleftrightarrow> False"
   unfolding first_printed_chari_def
-  by (clarsimp simp add: peek_p_has_result)
+  by (clarsimp simp add: peek_p_has_result)+
 
 
 

@@ -116,7 +116,7 @@ lemma peek_bool_PASI:
 
 
 \<comment> \<open>First printed char\<close>
-lemma peek_bool_fpci:
+lemma peek_bool_fpci[fpci_simps]:
   assumes "wf_peek_oracle a oracle"
   shows "first_printed_chari (print (peek_bool a oracle)) i c \<longleftrightarrow> False"
   using assms unfolding first_printed_chari_def

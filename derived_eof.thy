@@ -79,7 +79,7 @@ lemma eof_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma eof_fpci:
+lemma eof_fpci[fpci_simps]:
   shows "\<nexists> i c. first_printed_chari (print eof) i c"
         "first_printed_chari (print eof) i c \<longleftrightarrow> False"
   unfolding first_printed_chari_def

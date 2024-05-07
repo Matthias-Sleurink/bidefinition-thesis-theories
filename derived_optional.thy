@@ -136,12 +136,12 @@ lemma optional_does_not_peek_past_end_not_if_has_result_and_error:
 
 
 \<comment> \<open>First printed char\<close>
-lemma optional_fpci_none:
+lemma optional_fpci_none[fpci_simps]:
   "first_printed_chari (print (optional b)) None c \<longleftrightarrow> False"
   unfolding optional_def
   by (clarsimp simp add: transform_fpci2 if_then_else_fpci_ri_iff return_fpci)
 
-lemma optional_fpci_some:
+lemma optional_fpci_some[fpci_simps]:
   "first_printed_chari (print (optional b)) (Some i) c \<longleftrightarrow> first_printed_chari (print b) i c"
   unfolding optional_def
   by (auto simp add: transform_fpci2
@@ -150,7 +150,7 @@ lemma optional_fpci_some:
                      empty_result_means_no_first_char
                      return_p_has_result(1))
 
-lemma optional_fpci:
+lemma optional_fpci[fpci_simps]:
   "first_printed_chari (print (optional b)) i c \<longleftrightarrow>(
     case i of None \<Rightarrow> False
             | Some i' \<Rightarrow> first_printed_chari (print b) i' c)"
