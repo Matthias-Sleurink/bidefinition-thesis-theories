@@ -85,7 +85,7 @@ lemma alphanumeric_char_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma alphanumeric_char_fpci:
+lemma alphanumeric_char_fpci[fpci_simps]:
   shows "first_printed_chari (print alphanumeric_char) i c \<longleftrightarrow> (i \<in> alphanumeric_chars \<and> c = i)"
   unfolding first_printed_chari_def
   by (clarsimp simp add: alphanumeric_char_p_has_result; blast)

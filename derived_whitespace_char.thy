@@ -82,7 +82,7 @@ lemma whitespace_char_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma whitespace_char_fpci:
+lemma whitespace_char_fpci[fpci_simps]:
   shows "first_printed_chari (print whitespace_char) i c \<longleftrightarrow> (i \<in> whitespace_chars \<and> c = i)"
   unfolding first_printed_chari_def
   by (clarsimp simp add: whitespace_char_p_has_result; blast)

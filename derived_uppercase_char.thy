@@ -75,7 +75,7 @@ lemma uppercase_char_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma uppercase_char_fpci:
+lemma uppercase_char_fpci[fpci_simps]:
   shows "first_printed_chari (print uppercase_char) i c \<longleftrightarrow> (i \<in> uppercase_chars \<and> c = i)"
   unfolding first_printed_chari_def
   by (clarsimp simp add: uppercase_char_p_has_result; blast)
