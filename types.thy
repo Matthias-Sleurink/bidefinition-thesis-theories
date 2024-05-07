@@ -826,11 +826,11 @@ definition first_printed_char :: "'a printer \<Rightarrow> ('a \<Rightarrow> boo
     we should be able to make this into a does_not_eat_into variant that _can_ be grown to many.\<close>
 
 
-
+named_theorems fpci_simps
 definition first_printed_chari :: "'a printer \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
   "first_printed_chari p i c \<equiv> (\<exists>t. p_has_result p i t \<and> t\<noteq>[] \<and> (hd t) = c)"
 
-lemma empty_result_means_no_first_char:
+lemma empty_result_means_no_first_char[fpci_simps]:
   assumes "p_has_result p i []"
   shows "first_printed_chari p i c \<longleftrightarrow> False"
   using assms unfolding first_printed_chari_def
