@@ -76,6 +76,17 @@ lemma this_string_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma this_string_fpci[fpci_simps]:
+  "first_printed_chari (print (this_string s)) i c \<longleftrightarrow> s\<noteq>[] \<and> i = s \<and> c = (hd s)"
+  apply (cases s; auto simp add: this_string_def fpci_simps fp_NER)
+  subgoal by (metis first_printed_chari_def this_string_def this_string_p_has_result)
+  subgoal by (metis first_printed_chari_def this_string_def this_string_p_has_result list.sel(1))
+  subgoal using this_string_def this_string_p_has_result by presburger
+  done
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma this_string_wf:
   "bidef_well_formed (this_string s)"
