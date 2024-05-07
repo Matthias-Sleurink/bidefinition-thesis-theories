@@ -197,7 +197,7 @@ lemma ftransform_fpci:
   using assms unfolding first_printed_chari_def
   by (auto simp add: ftransform_p_has_result)
 
-lemma ftransform_fpci2:
+lemma ftransform_fpci2[fpci_simps]:
   shows "first_printed_chari (print (ftransform f f' A)) i c \<longleftrightarrow>
             first_printed_chari (print A) (the (f' i)) c \<and>
             (\<exists>i'. f' i = Some i')"
