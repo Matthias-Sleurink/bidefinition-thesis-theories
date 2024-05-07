@@ -291,6 +291,42 @@ lemma many_does_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma many_fpci_nil[fpci_simps]:
+  "first_printed_chari (print (many b)) [] c \<longleftrightarrow> False"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: fp_NER)
+
+lemma many_fpci_cons[fpci_simps]:
+  "first_printed_chari (print (many b)) (x#xs) c \<longleftrightarrow> (
+    if p_has_result (print b) x [] then
+      (first_printed_chari (print (many b)) xs c)
+    else
+      (first_printed_chari (print b) x c \<and> (\<exists>t. p_has_result (print (many b)) xs t))
+  )"
+  unfolding first_printed_chari_def
+  apply (auto simp add: fp_NER fpci_simps)
+  subgoal by (metis p_has_result_deterministic)
+  subgoal using p_has_result_deterministic by fastforce
+  subgoal by blast
+  subgoal by (metis hd_append)
+  subgoal by fastforce
+  done
+
+lemma many_fpci:
+  "first_printed_chari (print (many b)) i c \<longleftrightarrow> (
+    case i of
+      [] \<Rightarrow> False
+      | (x#xs) \<Rightarrow> (
+        if p_has_result (print b) x [] then
+          (first_printed_chari (print (many b)) xs c)
+        else
+          (first_printed_chari (print b) x c \<and> (\<exists>t. p_has_result (print (many b)) xs t))
+  ))"
+  by (clarsimp simp add: many_fpci_nil many_fpci_cons split: list.splits)
+
+
+
 \<comment> \<open>Has result for many for_predicate has some nice properties\<close>
 lemma many_char_for_predicate_has_result_forwards:
   shows "has_result (parse (many (char_for_predicate p))) i r l \<longrightarrow> r = takeWhile p i \<and> l = dropWhile p i"
