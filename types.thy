@@ -830,6 +830,12 @@ definition first_printed_char :: "'a printer \<Rightarrow> ('a \<Rightarrow> boo
 definition first_printed_chari :: "'a printer \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
   "first_printed_chari p i c \<equiv> (\<exists>t. p_has_result p i t \<and> t\<noteq>[] \<and> (hd t) = c)"
 
+lemma empty_result_means_no_first_char:
+  assumes "p_has_result p i []"
+  shows "first_printed_chari p i c \<longleftrightarrow> False"
+  using assms unfolding first_printed_chari_def
+  by (simp add: print_results_always_same)
+
 
 
 end
