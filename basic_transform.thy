@@ -139,7 +139,7 @@ lemma transform_fpci:
   using assms unfolding first_printed_chari_def
   by (auto simp add: transform_p_has_result)
 
-lemma transform_fpci2:
+lemma transform_fpci2[fpci_simps]:
   shows "first_printed_chari (print (transform f f' A)) i c \<longleftrightarrow> first_printed_chari (print A) (f' i) c"
   unfolding first_printed_chari_def
   by (auto simp add: transform_p_has_result)
