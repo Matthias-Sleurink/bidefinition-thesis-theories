@@ -191,6 +191,19 @@ lemma then_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma then_fpci[fpci_simps]:
+  "first_printed_chari (print (b_then A B)) i c \<longleftrightarrow> (
+    if p_has_result (print A) (fst i) [] then
+      (first_printed_chari (print B) (snd i) c)
+    else
+      (first_printed_chari (print A) (fst i) c \<and> (\<exists>t. p_has_result (print B) (snd i) t))
+  )"
+  unfolding b_then_def
+  by (auto simp add: dep_then_fpci transform_fpci2 fp_NER)
+
+
+
 \<comment> \<open>well formed\<close>
 
 definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
