@@ -111,6 +111,18 @@ lemma then_drop_second_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma then_drop_second_fpci[fpci_simps]:
+  "first_printed_chari (print (then_drop_second A B oracle)) i c \<longleftrightarrow>(
+    if p_has_result (print A) i [] then
+      (first_printed_chari (print B) oracle c)
+    else
+      (first_printed_chari (print A) i c \<and> (\<exists>t. p_has_result (print B) oracle t))
+  )"
+  by (clarsimp simp add: then_drop_second_def fpci_simps)
+
+
+
 \<comment> \<open>well formed\<close>
 
 lemma b_then_drop_second_wf_derived:
