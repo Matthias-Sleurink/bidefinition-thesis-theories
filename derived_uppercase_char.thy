@@ -51,6 +51,10 @@ lemma uppercase_char_p_has_result[fp_NER]:
   "p_has_result (print uppercase_char) i s \<longleftrightarrow> i \<in> uppercase_chars \<and> s = [i]"
   by (simp add: uppercase_char_def any_from_set_p_has_result)
 
+lemma uppercase_char_print_empty[print_empty, fp_NER]:
+  "p_has_result (print uppercase_char) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: uppercase_char_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>
