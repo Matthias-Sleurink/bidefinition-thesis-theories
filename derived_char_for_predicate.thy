@@ -46,6 +46,10 @@ lemma char_for_predicate_p_has_result[fp_NER]:
   "p_has_result (print (char_for_predicate p)) i r \<longleftrightarrow> r = [i] \<and> p i"
   by (auto simp add: char_for_predicate_def fp_NER)
 
+lemma char_for_predicate_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (char_for_predicate p)) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: char_for_predicate_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

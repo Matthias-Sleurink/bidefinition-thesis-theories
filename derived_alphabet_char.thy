@@ -61,6 +61,10 @@ lemma alphabet_char_p_has_result[fp_NER]:
   "p_has_result (print alphabet_char) i s \<longleftrightarrow> i \<in> alphabet_chars \<and> s = [i]"
   by (simp add: alphabet_char_def any_from_set_p_has_result)
 
+lemma alphabet_char_print_empty[print_empty, fp_NER]:
+  "p_has_result (print alphabet_char) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: alphabet_char_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

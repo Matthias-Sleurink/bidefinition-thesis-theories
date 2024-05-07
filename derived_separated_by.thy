@@ -131,6 +131,22 @@ lemma separated_by_p_has_result[fp_NER]:
   apply (clarsimp simp add: fp_NER)+
   by blast
 
+lemma separated_by_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (separated_by sep elem sep_oracle)) []     [] \<longleftrightarrow> True"
+  "p_has_result (print (separated_by sep elem sep_oracle)) [i]    [] \<longleftrightarrow> p_has_result (print elem) i []"
+  "p_has_result (print (separated_by sep elem sep_oracle)) (i#is) [] \<longleftrightarrow> (
+        p_has_result (print elem) i [] \<and>
+        p_has_result (print (many (b_then sep elem))) (map (Pair sep_oracle) is) [])"
+  by (clarsimp simp add: fp_NER)+
+
+lemma separated_by_print_empty:
+  "p_has_result (print (separated_by sep elem sep_oracle)) i' [] \<longleftrightarrow> (
+    case i' of [] \<Rightarrow> True
+    | (i#is) \<Rightarrow>
+        p_has_result (print elem) i [] \<and>
+        p_has_result (print (many (b_then sep elem))) (map (Pair sep_oracle) is) [])"
+  by (clarsimp simp add: print_empty split: list.splits)+
+
 
 
 \<comment> \<open>Does not peek past end\<close>

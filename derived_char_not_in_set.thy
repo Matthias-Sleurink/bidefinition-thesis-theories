@@ -51,6 +51,10 @@ lemma char_not_in_set_p_has_result[fp_NER]:
   unfolding char_not_in_set_def
   by (auto simp add: fp_NER)
 
+lemma char_not_in_set_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (char_not_in_set s)) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: char_not_in_set_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

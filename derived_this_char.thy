@@ -48,6 +48,10 @@ lemma this_char_p_has_result[fp_NER]:
   unfolding this_char_def
   by (auto simp add: fp_NER)
 
+lemma this_char_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (this_char c)) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: this_char_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

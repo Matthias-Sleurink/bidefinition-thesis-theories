@@ -88,6 +88,10 @@ lemma nat_p_has_result[fp_NER]:
   using print_nat_domain
   by auto
 
+lemma nat_print_empty[print_empty, fp_NER]:
+  "p_has_result (print nat_b) n [] \<longleftrightarrow> False"
+  by (clarsimp simp add: fp_NER)+
+
 
 
 \<comment> \<open>PASI, PNGI\<close>

@@ -78,6 +78,11 @@ lemma dep_then_p_has_result[fp_NER]:
       let a = b2a b in (\<exists> ra rb. ra@rb = t \<and> p_has_result (print ab) a ra \<and> p_has_result (print (a2bb a)) b rb))"
   by (auto simp add: dep_then_def fp_NER Let_def)
 
+lemma dep_then_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (dep_then ab a2bb b2a)) i [] \<longleftrightarrow> (
+    let a = b2a i in p_has_result (print ab) a [] \<and> p_has_result (print (a2bb a)) i [])"
+  by (clarsimp simp add: dep_then_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

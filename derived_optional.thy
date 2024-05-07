@@ -54,6 +54,19 @@ lemma optional_p_has_result[fp_NER]:
   "p_has_result (print (optional p)) r t \<longleftrightarrow> (case r of None \<Rightarrow> t=[] | Some rr \<Rightarrow> p_has_result (print p) rr t)"
   by (simp add: optional_def fp_NER split: option.splits)+
 
+lemma optional_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (optional b)) None     [] \<longleftrightarrow> True"
+  "p_has_result (print (optional b)) (Some i) [] \<longleftrightarrow> p_has_result (print b) i []"
+  by (clarsimp simp add: optional_def print_empty)+
+
+lemma optional_print_empty:
+  "p_has_result (print (optional b)) i [] \<longleftrightarrow>(
+    case i of
+      None \<Rightarrow> True
+    | Some i' \<Rightarrow> p_has_result (print b) i' []
+  )"
+  by (clarsimp simp add: optional_def print_empty split: option.splits)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

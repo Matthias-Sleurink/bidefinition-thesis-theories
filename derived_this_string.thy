@@ -55,6 +55,10 @@ lemma this_string_p_has_result[fp_NER]:
   apply (induction s arbitrary: i r)
   by (auto simp add: fp_NER)
 
+lemma this_string_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (this_string c)) i [] \<longleftrightarrow> c = [] \<and> i = []"
+  by (cases c; clarsimp simp add: this_string_def fp_NER)
+
 
 
 \<comment> \<open>PASI, PNGI\<close>

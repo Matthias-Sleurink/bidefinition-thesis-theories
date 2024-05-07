@@ -51,6 +51,10 @@ lemma any_from_set_p_has_result[fp_NER]:
   unfolding any_from_set_def
   by (auto simp add: fp_NER)
 
+lemma any_from_set_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (any_from_set s)) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: any_from_set_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

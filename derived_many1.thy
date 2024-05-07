@@ -59,7 +59,19 @@ lemma many1_p_has_result_eq_many_p_has_result:
   shows "p_has_result (print (many1 b)) i r \<longleftrightarrow> p_has_result (print (many b)) i r"
   using assms
   by auto (metis list.collapse many1_p_has_result many_p_has_result_safe(2))+
-  
+
+lemma many1_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (many1 b)) [] [] \<longleftrightarrow> False"
+  "p_has_result (print (many1 b)) (i#is) [] \<longleftrightarrow> p_has_result (print b) i [] \<and> p_has_result (print (many b)) is []"
+  by (clarsimp simp add: fp_NER)+
+
+lemma many1_print_empty:
+  "p_has_result (print (many1 b)) i [] \<longleftrightarrow> (
+    case i of
+      [] \<Rightarrow> False
+    | (i'#is) \<Rightarrow> p_has_result (print b) i' [] \<and> p_has_result (print (many b)) is [])"
+  by (clarsimp simp add: fp_NER split: list.splits)+
+
 
 lemma many1_p_has_result_only_if_nonempty:
   assumes "p_has_result (print (many1 a)) i r"

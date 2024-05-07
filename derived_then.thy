@@ -107,6 +107,14 @@ lemma b_then_p_has_result[fp_NER]:
   "p_has_result (print (b_then ab bb)) v t \<longleftrightarrow> (case v of (va, vb) \<Rightarrow> (\<exists>ta tb. ta@tb = t \<and> p_has_result (print ab) va ta \<and> p_has_result (print bb) vb tb))"
   by (simp add: b_then_def fp_NER split: prod.splits)+
 
+lemma b_then_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (b_then A B)) (ia, ib) [] \<longleftrightarrow> p_has_result (print A) ia [] \<and> p_has_result (print B) ib []"
+  by (clarsimp simp add: b_then_def print_empty)
+
+lemma b_then_print_empty:
+  "p_has_result (print (b_then A B)) i [] \<longleftrightarrow> p_has_result (print A) (fst i) [] \<and> p_has_result (print B) (snd i) []"
+  by (clarsimp simp add: b_then_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

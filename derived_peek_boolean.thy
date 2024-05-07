@@ -93,6 +93,15 @@ lemma peek_bool_p_has_result[fp_NER]:
   shows "p_has_result (print (peek_bool a v)) b t \<longleftrightarrow> t = []"
   by (auto simp add: fp_NER peek_bool_def assms[unfolded wf_peek_oracle_def])
 
+lemma peek_bool_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (peek_bool a oracle)) True  [] \<longleftrightarrow> wf_peek_oracle a oracle"
+  "p_has_result (print (peek_bool a oracle)) False [] \<longleftrightarrow> True"
+  by (clarsimp simp add: peek_bool_def wf_peek_oracle_def fp_NER)+
+
+lemma peek_bool_print_empty:
+  "p_has_result (print (peek_bool a oracle)) i  [] \<longleftrightarrow> (i \<longrightarrow> wf_peek_oracle a oracle)"
+  by (clarsimp simp add: peek_bool_def wf_peek_oracle_def fp_NER)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

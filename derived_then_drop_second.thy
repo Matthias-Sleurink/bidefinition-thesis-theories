@@ -54,6 +54,10 @@ lemma then_drop_second_p_has_result[fp_NER]:
   "p_has_result (print (then_drop_second ab bb b)) va t \<longleftrightarrow> (\<exists>ta tb.  t = ta@tb \<and> p_has_result (print ab) va ta \<and> p_has_result (print bb) b tb)"
   by (auto simp add: then_drop_second_def fp_NER split: prod.splits)+
 
+lemma then_drop_second_print_empty[print_empty, fp_NER]:
+  "p_has_result (print (then_drop_second A B oracle)) i [] \<longleftrightarrow> p_has_result (print A) i [] \<and> p_has_result (print B) oracle []"
+  by (clarsimp simp add: then_drop_second_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

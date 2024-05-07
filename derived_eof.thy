@@ -50,6 +50,10 @@ lemma eof_p_has_result[fp_NER]:
   "p_has_result (print eof) i t \<longleftrightarrow> t = []"
   by (simp add: eof_def fp_NER)
 
+lemma eof_print_empty[print_empty, fp_NER]:
+  "p_has_result (print eof) i [] \<longleftrightarrow> True"
+  by (clarsimp simp add: eof_def print_empty)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>

@@ -187,7 +187,17 @@ lemma many_p_is_not_error_in_list[fp_NER]:
   using assms apply (induction \<open>is\<close>)
   by (clarsimp simp add: fp_NER assms)+
 
+lemma many_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (many b)) [] [] \<longleftrightarrow> True"
+  "p_has_result (print (many b)) (i#is) [] \<longleftrightarrow> p_has_result (print b) i [] \<and> p_has_result (print (many b)) is []"
+  by (clarsimp simp add: fp_NER)+
 
+lemma many_print_empty:
+  "p_has_result (print (many b)) i [] \<longleftrightarrow>(
+    case i of
+      [] \<Rightarrow> True
+    | (i'#is) \<Rightarrow> p_has_result (print b) i' [] \<and> p_has_result (print (many b)) is [])"
+  by (clarsimp simp add: print_empty split: list.splits)
 
 
 

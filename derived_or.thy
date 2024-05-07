@@ -61,6 +61,19 @@ lemma or_p_is_nonterm[fp_NER]:
   "p_is_nonterm (print (or p1 p2)) (Inr rr) \<longleftrightarrow> p_is_nonterm (print p2) rr"
   by (simp add: or_def fp_NER)+
 
+lemma or_print_empty_safe[print_empty, fp_NER]:
+  "p_has_result (print (or A B)) (Inl li) [] \<longleftrightarrow> p_has_result (print A) li []"
+  "p_has_result (print (or A B)) (Inr ri) [] \<longleftrightarrow> p_has_result (print B) ri []"
+  by (clarsimp simp add: or_def print_empty)+
+
+lemma or_print_empty:
+  "p_has_result (print (or A B)) i [] \<longleftrightarrow>(
+    case i of
+      Inl li \<Rightarrow> p_has_result (print A) li []
+    | Inr ri \<Rightarrow> p_has_result (print B) ri []
+  )"
+  by (rule or_p_has_result_non_split)
+
 
 
 \<comment> \<open>PNGI, PASI\<close>
