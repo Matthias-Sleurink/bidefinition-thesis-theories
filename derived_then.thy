@@ -220,6 +220,16 @@ lemma does_not_peek_past_end_implies_does_not_eat_into:
         pa_does_not_eat_into_pb_nondep_def
   by blast
 
+lemma first_printed_does_not_eat_into:
+  assumes "bidef_well_formed A"
+  assumes "bidef_well_formed B"
+  assumes "\<forall>i c. first_printed_chari (print B) i c \<longrightarrow> does_not_consume_past_char2 (parse A) c"
+  shows "pa_does_not_eat_into_pb_nondep A B"
+  using assms
+  unfolding pa_does_not_eat_into_pb_nondep_def
+            first_printed_chari_def does_not_consume_past_char2_def
+            bidef_well_formed_def parser_can_parse_print_result_def
+  by (metis append.right_neutral)
 
 
 
