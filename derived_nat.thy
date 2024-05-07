@@ -122,6 +122,14 @@ lemma nat_does_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>First printed char\<close>
+lemma nat_fpci[fpci_simps]:
+  "first_printed_chari (print nat_b) n c \<longleftrightarrow> hd (print_nat n) = c"
+  unfolding first_printed_chari_def
+  by (clarsimp simp add: fp_NER)
+
+
+
 \<comment> \<open>WF\<close>
 lemma takeWhileAllTrue:
   assumes "\<forall>a \<in> set as. P a"
