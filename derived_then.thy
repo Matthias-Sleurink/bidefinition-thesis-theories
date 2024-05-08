@@ -198,6 +198,38 @@ lemma then_does_not_peek_past_end[peek_past_end_simps]:
   qed
 
 
+\<comment> \<open>Mainly for WF\<close>
+definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
+  "pa_does_not_eat_into_pb_nondep ba bb \<longleftrightarrow> (
+    \<forall> t1 pr1 t2 pr2. p_has_result (print ba) t1 pr1 \<and> p_has_result (print bb) t2 pr2
+        \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
+)"
+
+lemma then_does_not_consume_past_char:
+  assumes "bidef_well_formed A"
+  assumes "bidef_well_formed B"
+  assumes "pa_does_not_eat_into_pb_nondep A B"
+  assumes "does_not_consume_past_char2 (parse B) c"
+  shows "does_not_consume_past_char2 (parse (b_then A B)) c"
+  using assms
+  unfolding does_not_consume_past_char2_def pa_does_not_eat_into_pb_nondep_def bidef_well_formed_def
+            printer_can_print_parse_result_def parser_can_parse_print_result_def PNGI_def
+  apply (auto simp add: NER_simps)
+  subgoal
+    sorry
+  subgoal for c a b l l' l''
+    apply (rule exI[of _ \<open>drop (length (c@l) - length l') (c@l'')\<close>])
+    \<comment> \<open>This proof idea is sound I'm just not sure if we have the right preconditions here.\<close>
+    \<comment> \<open>This seems like it would be doable with the idea of charset and printables as well.\<close>
+    apply (auto) 
+    subgoal
+      sorry
+    subgoal
+      
+      sorry
+    sorry
+  
+
 
 \<comment> \<open>First printed char\<close>
 lemma then_fpci[fpci_simps]:
@@ -213,12 +245,6 @@ lemma then_fpci[fpci_simps]:
 
 
 \<comment> \<open>well formed\<close>
-
-definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
-  "pa_does_not_eat_into_pb_nondep ba bb \<longleftrightarrow> (
-    \<forall> t1 pr1 t2 pr2. p_has_result (print ba) t1 pr1 \<and> p_has_result (print bb) t2 pr2
-        \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
-)"
 
 lemma does_not_peek_past_end_implies_does_not_eat_into:
   assumes "does_not_peek_past_end (parse A)"
