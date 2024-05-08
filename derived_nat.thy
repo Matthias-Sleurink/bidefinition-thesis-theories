@@ -124,6 +124,29 @@ lemma nat_does_peek_past_end[peek_past_end_simps]:
   subgoal by (rule exI[of _ \<open>''1''\<close>]; clarsimp simp add: NER_simps char_in_digit_chars)
   done
 
+lemma dropWhile_takeWhile_same_predicate[simp]:
+  "dropWhile P (takeWhile P l) = []"
+  by (induction l) auto
+
+lemma nat_does_not_consume_past:
+  assumes "c \<notin> digit_chars"
+  shows "does_not_consume_past_char2 (parse nat_b) c"
+  using assms unfolding does_not_consume_past_char2_def
+  apply (auto simp add: NER_simps)
+  subgoal by (metis takeWhile_idem)
+  subgoal by (metis dropWhile_takeWhile_same_predicate)
+  subgoal by (metis (no_types, lifting) append_self_conv takeWhile_append1 takeWhile_append2 takeWhile_hd_no_match)
+  subgoal
+    by (metis \<open>\<And>l' l ca. \<lbrakk>hd l' \<notin> derived_digit_char.digit_chars; ca = takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l); l = dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l); ca \<noteq> []; c = hd l'\<rbrakk> \<Longrightarrow> ca = takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l')\<close>
+              same_append_eq takeWhile_dropWhile_id)
+  subgoal by (metis takeWhile_idem)
+  subgoal by (metis dropWhile_takeWhile_same_predicate)
+  subgoal using \<open>\<And>l' l ca. \<lbrakk>hd l' \<notin> derived_digit_char.digit_chars; ca = takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l); l = dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l); ca \<noteq> []; c = hd l'\<rbrakk> \<Longrightarrow> ca = takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l')\<close>
+    by blast
+  subgoal using \<open>\<And>l' l ca. \<lbrakk>hd l' \<notin> derived_digit_char.digit_chars; ca = takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l); l = dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l); ca \<noteq> []; c = hd l'\<rbrakk> \<Longrightarrow> l' = dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (ca @ l')\<close>
+    by blast
+  done
+
 
 
 \<comment> \<open>First printed char\<close>
