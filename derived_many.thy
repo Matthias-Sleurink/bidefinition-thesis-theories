@@ -393,6 +393,21 @@ lemma many_char_for_predicate_p_has_result3:
   using assms
   by (induction i arbitrary: r; clarsimp simp add: fp_NER)
 
+
+lemma many_char_for_predicate_fpci[fpci_simps]:
+  "first_printed_chari (print (many (char_for_predicate P))) i c \<longleftrightarrow>(
+    case i of
+      [] \<Rightarrow> False
+    | (i'#is) \<Rightarrow> (Ball (set i) P) \<and> c=i'
+  )"
+  apply (cases i; clarsimp simp add: fpci_simps print_empty many_char_for_predicate_p_has_result3)
+  subgoal
+    apply (auto simp add: many_char_for_predicate_p_has_result3)
+    by (auto simp add: many_char_for_predicate_p_has_result)
+  done
+
+
+
 \<comment> \<open>The second half of many holds for all applications of many.\<close>
 \<comment> \<open>Not really sure if this 'assumes A or B' is a good idea in general,
     but it makes it easier to apply if you do know the rhs\<close>
