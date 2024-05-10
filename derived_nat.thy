@@ -147,6 +147,21 @@ lemma nat_does_not_consume_past:
     by blast
   done
 
+lemma nat_does_not_consume_past3:
+  "does_not_consume_past_char3 (parse nat_b) c \<longleftrightarrow> c \<notin> digit_chars"
+  unfolding does_not_consume_past_char3_def
+  apply (auto simp add: NER_simps)
+  subgoal by (metis dropWhile_eq_Cons_conv self_append_conv2 takeWhile_dropWhile_id)
+  subgoal by (metis takeWhile_idem)
+  subgoal by (metis dropWhile_takeWhile_same_predicate)
+  subgoal by (metis dropWhile_dropWhile2 takeWhile_tail)
+  subgoal by (metis dropWhile.simps(2) dropWhile_append set_takeWhileD)
+  subgoal by (metis takeWhile_idem)
+  subgoal by (metis dropWhile_takeWhile_same_predicate)
+  subgoal by (metis dropWhile_dropWhile2 takeWhile_tail)
+  subgoal by (metis dropWhile.simps(2) dropWhile_append set_takeWhileD)
+  done
+
 
 
 \<comment> \<open>First printed char\<close>

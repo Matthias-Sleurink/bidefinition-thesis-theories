@@ -706,6 +706,40 @@ lemma well_formed_does_not_grow:
 definition parse_result_cannot_be_grown_by_printer :: "'a parser \<Rightarrow> 'b printer \<Rightarrow> bool" where
   "parse_result_cannot_be_grown_by_printer pa pr \<longleftrightarrow> (\<forall>i r l pri prt. has_result pa i r l \<and> p_has_result pr pri prt \<longrightarrow> has_result pa (i@prt) r (l@prt))"
 
+lemma cannot_be_grown_by_when_no_peek_past:
+  assumes "does_not_peek_past_end (parse A)"
+  assumes "bidef_well_formed A"
+  shows "parse_result_cannot_be_grown_by_printer (parse A) pB"
+  unfolding parse_result_cannot_be_grown_by_printer_def
+  using assms(1)[unfolded does_not_peek_past_end_def]
+        assms(2)[THEN get_pngi, unfolded PNGI_def]
+  by force
+
+\<comment> \<open>This is not viable, but parse_result_cannot_be_grown_by_printer may not be needed for these cases.\<close>
+\<comment> \<open>See \<^term>\<open>parser_can_parse_print_result_many\<close> below for more info. \<close>
+lemma cannot_be_grown_by_when_no_peek_past3:
+  assumes "\<forall>i c. first_printed_chari (print B) i c \<longrightarrow> does_not_consume_past_char3 (parse A) c"
+  assumes "bidef_well_formed A"
+  assumes "bidef_well_formed B"
+  shows "parse_result_cannot_be_grown_by_printer (parse A) (print B)"
+  unfolding parse_result_cannot_be_grown_by_printer_def
+  apply auto
+  subgoal for i r l pri prt
+    using assms(3)[THEN get_parser_can_parse,
+                   unfolded parser_can_parse_print_result_def,
+                   rule_format, of pri prt]
+    apply clarsimp
+    apply (cases prt; clarsimp)
+    subgoal for pr prs
+      using assms(2)[THEN get_pngi, unfolded PNGI_def, rule_format, of i r l]
+      apply clarsimp
+      subgoal for c
+        
+        using assms(1)[rule_format, of pri,
+                       unfolded first_printed_chari_def does_not_consume_past_char3_def]
+        
+
+  oops
 
 \<comment> \<open>This should be able to be done more easily?\<close>
 lemma parse_result_cannot_be_grown_by_printer_apply:
@@ -716,6 +750,10 @@ lemma parse_result_cannot_be_grown_by_printer_apply:
   using assms parse_result_cannot_be_grown_by_printer_def
   by fast
 
+\<comment> \<open>It seems reasonable to me that if a parser does not consume past it's own first char then we can get this?\<close>
+\<comment> \<open>Then, if we have that, we can get wf many from does not consume past char3 from fpcpi.\<close>
+\<comment> \<open>Which in turn will be usable to simplify the separated_by WF lemma.\<close>
+\<comment> \<open>Especially, since intuitively separator then value should indeed not eat into itself.\<close>
 lemma parser_can_parse_print_result_many:
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
   assumes "bidef_well_formed b"
@@ -757,16 +795,6 @@ lemma well_formed_does_not_grow_by_printer:
     apply (rule printer_can_print_parse_result_many)
     using assms(2) by blast
   done
-
-
-lemma cannot_be_grown_by_when_no_peek_past:
-  assumes "does_not_peek_past_end (parse A)"
-  assumes "bidef_well_formed A"
-  shows "parse_result_cannot_be_grown_by_printer (parse A) pB"
-  unfolding parse_result_cannot_be_grown_by_printer_def
-  using assms(1)[unfolded does_not_peek_past_end_def]
-        assms(2)[THEN get_pngi, unfolded PNGI_def]
-  by force
 
 lemma does_not_peek_past_well_formed_many:
   assumes "does_not_peek_past_end (parse A)"

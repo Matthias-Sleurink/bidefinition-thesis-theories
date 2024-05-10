@@ -228,7 +228,7 @@ lemma then_does_not_consume_past_char:
       
       sorry
     sorry
-  
+  oops
 
 
 \<comment> \<open>First printed char\<close>
@@ -264,6 +264,16 @@ lemma first_printed_does_not_eat_into:
             first_printed_chari_def does_not_consume_past_char2_def
             bidef_well_formed_def parser_can_parse_print_result_def
   by (metis append.right_neutral)
+
+lemma first_printed_does_not_eat_into3:
+  assumes "bidef_well_formed A"
+  assumes "\<forall>i c. first_printed_chari (print B) i c \<longrightarrow> does_not_consume_past_char3 (parse A) c"
+  shows "pa_does_not_eat_into_pb_nondep A B"
+  using assms(1)[THEN get_parser_can_parse, unfolded parser_can_parse_print_result_def]
+  using assms(2)[unfolded first_printed_chari_def]
+  unfolding pa_does_not_eat_into_pb_nondep_def
+  using no_consume_past3_wf_stronger[OF _ assms(1)]
+  by fastforce
 
 
 

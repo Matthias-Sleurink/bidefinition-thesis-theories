@@ -814,6 +814,37 @@ lemma does_not_consume_past_char2_implies_does_not_consume_past_char:
   by fastforce
 
 
+(*Attempt 3, hd being a partial function is biting us in the ass, so let's not use it.*)
+definition does_not_consume_past_char3 :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
+  "does_not_consume_past_char3 p ch \<longleftrightarrow> (\<forall>c r l l'.
+         has_result p (c@l) r l \<longrightarrow> (has_result p c r [] \<and> has_result p (c@(ch#l')) r (ch#l')))"
+
+lemma no_consume_past3_wf_stronger:
+  assumes "does_not_consume_past_char3 (parse A) ch"
+  assumes "bidef_well_formed A"
+  assumes "p_has_result (print A) i ipr"
+  shows "\<And>cs. cs=[] \<or> hd cs = ch \<longrightarrow> has_result (parse A) (ipr@cs) i cs"
+  subgoal for cs
+    using assms(1)[unfolded does_not_consume_past_char3_def, rule_format, of ipr \<open>[]\<close> i cs]
+          assms(2)[THEN get_parser_can_parse_unfold, rule_format, of i \<open>ipr@[]\<close>]
+          assms(3)
+    by (metis append.right_neutral assms(1) does_not_consume_past_char3_def list.collapse)
+  done
+
+
+lemma does_not_consume_past_any_char3_eq_not_peek_past_end:
+  shows "(\<forall>ch. does_not_consume_past_char3 A ch) \<longleftrightarrow> does_not_peek_past_end A"
+  unfolding does_not_consume_past_char3_def does_not_peek_past_end_def
+  by (metis neq_Nil_conv self_append_conv)
+
+lemma does_not_consume_past_char3_implies_does_not_consume_past_char:
+  assumes "does_not_consume_past_char3 p c"
+  shows "does_not_consume_past_char p c"
+  using assms
+  unfolding does_not_consume_past_char3_def does_not_consume_past_char_def
+  by fastforce
+
+
 
 \<comment> \<open>Which characters can be the first printed char?\<close>
 definition const :: "'a \<Rightarrow> 'b \<Rightarrow> 'a" where

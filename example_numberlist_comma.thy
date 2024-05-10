@@ -38,6 +38,12 @@ lemma separator_fpci[fpci_simps]:
     by (clarsimp split: list.splits)
   done
 
+lemma separator_print_empty[print_empty, fp_NER]:
+  "p_has_result (print separator) i [] \<longleftrightarrow> False"
+  unfolding separator_def
+  by (clarsimp simp add: fp_NER)
+
+
 \<comment> \<open>Note how the proof here would be easier if we had some specialised version for is_error P []\<close>
 lemma separator_empty_input:
   "is_error (parse (separator)) []"
@@ -54,12 +60,60 @@ lemma PASI_separator:
   subgoal by (clarsimp simp add: many_PNGI whitespace_char_PASI)
   done
 
-lemma separator_no_consume_past:
-  "does_not_consume_past_char2 (parse separator) c \<longleftrightarrow> c \<notin> ({CHR '',''} \<union> whitespace_chars)"
-  unfolding does_not_consume_past_char2_def
+lemma dropWhile_never_grows:
+  "dropWhile P l'a = c # l'a \<longleftrightarrow> False"
+  by (metis length_Cons length_dropWhile_le lessI linorder_not_less)
+
+lemma hd_in_set_cannot_create_from_dropWhile:
+  assumes "l \<noteq> []"
+  assumes "hd l \<in> s"
+  shows "\<nexists>l'. l = dropWhile (\<lambda>found. found \<in> s) l'"
+  using assms
+  apply (induction l; clarsimp)
+  by (metis hd_dropWhile list.discI list.sel(1))
+
+\<comment> \<open>We clearly need better combinators for dncpc\<close>
+lemma separator_no_consume_past3:
+  "does_not_consume_past_char3 (parse separator) c \<longleftrightarrow> c \<notin> whitespace_chars"
+  unfolding does_not_consume_past_char3_def
             separator_def
-  apply (clarsimp simp add: NER_simps)
-  
+  apply (auto simp add: NER_simps whitespace_char_def any_from_set_def)
+  subgoal
+    using hd_in_set_cannot_create_from_dropWhile[of _ whitespace_chars]
+    apply clarsimp
+    by (metis append.right_neutral comma_not_whitespace dropWhile_eq_self_iff dropWhile_never_grows list.sel(1) list.set_sel(1) set_append)
+  subgoal by (metis (no_types, lifting) Cons_eq_appendI append_Nil2 append_same_eq dropWhile_takeWhile_same_predicate takeWhile_dropWhile_id)
+  subgoal for cs x l l'
+    apply (rule exI[of _ \<open>tl (dropWhile (\<lambda>found. found \<in> whitespace_chars) cs @ c # l')\<close>])
+    apply auto
+    subgoal
+      by (metis (no_types, lifting) append_is_Nil_conv dropWhile_never_grows hd_append2 list.collapse list.sel(1) self_append_conv2)
+    subgoal
+      by (metis (no_types, lifting) append_same_eq dropWhile_never_grows list.sel(3) self_append_conv2 takeWhile_dropWhile_id takeWhile_idem takeWhile_tail tl_append2)
+    subgoal
+      by (metis (no_types, lifting) \<open>\<lbrakk>c \<notin> whitespace_chars; x \<notin> whitespace_chars; dropWhile (\<lambda>found. found \<in> whitespace_chars) cs @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l = CHR '','' # l; x \<in> set cs\<rbrakk> \<Longrightarrow> takeWhile (\<lambda>found. found \<in> whitespace_chars) l = takeWhile (\<lambda>found. found \<in> whitespace_chars) (tl (dropWhile (\<lambda>found. found \<in> whitespace_chars) cs @ c # l'))\<close>
+              append_same_eq dropWhile_never_grows list.sel(3) same_append_eq self_append_conv2 takeWhile_dropWhile_id tl_append2)
+    done
+  subgoal by (metis dropWhile_append2 dropWhile_idem dropWhile_never_grows takeWhile_append)
+  subgoal by (metis (no_types, lifting) dropWhile_append2 dropWhile_never_grows set_takeWhileD takeWhile_dropWhile_id)
+  subgoal by (metis (full_types, lifting) \<open>\<And>x l' ca. \<lbrakk>c \<notin> whitespace_chars; x \<notin> whitespace_chars; dropWhile (\<lambda>found. found \<in> whitespace_chars) (ca @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l') = CHR '','' # l'; x \<in> set (dropWhile (\<lambda>found. found \<in> whitespace_chars) l')\<rbrakk> \<Longrightarrow> \<exists>x\<in>set ca. x \<notin> whitespace_chars\<close> \<open>\<And>x l' ca. \<lbrakk>c \<notin> whitespace_chars; x \<notin> whitespace_chars; dropWhile (\<lambda>found. found \<in> whitespace_chars) ca @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l' = CHR '','' # l'; x \<in> set ca\<rbrakk> \<Longrightarrow> \<exists>l'a. dropWhile (\<lambda>found. found \<in> whitespace_chars) ca = CHR '','' # l'a \<and> takeWhile (\<lambda>found. found \<in> whitespace_chars) l' = takeWhile (\<lambda>found. found \<in> whitespace_chars) l'a \<and> [] = dropWhile (\<lambda>found. found \<in> whitespace_chars) l'a\<close>
+                                          dropWhile_append1)
+  subgoal by (simp add: \<open>\<And>x l' ca. \<lbrakk>c \<notin> whitespace_chars; x \<notin> whitespace_chars; dropWhile (\<lambda>found. found \<in> whitespace_chars) (ca @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l') = CHR '','' # l'; x \<in> set (dropWhile (\<lambda>found. found \<in> whitespace_chars) l')\<rbrakk> \<Longrightarrow> takeWhile (\<lambda>found. found \<in> whitespace_chars) (ca @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l') = takeWhile (\<lambda>found. found \<in> whitespace_chars) ca\<close>
+                        takeWhile_tail)
+  subgoal for cs x l l'
+    apply (rule exI[of _ \<open>tl (dropWhile (\<lambda>found. found \<in> whitespace_chars) (cs @ c # l'))\<close>])
+    apply auto
+    subgoal
+      by (metis \<open>\<And>x l' ca. \<lbrakk>c \<notin> whitespace_chars; x \<notin> whitespace_chars; dropWhile (\<lambda>found. found \<in> whitespace_chars) (ca @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l') = CHR '','' # l'; x \<in> set (dropWhile (\<lambda>found. found \<in> whitespace_chars) l')\<rbrakk> \<Longrightarrow> \<exists>l'a. dropWhile (\<lambda>found. found \<in> whitespace_chars) ca = CHR '','' # l'a \<and> takeWhile (\<lambda>found. found \<in> whitespace_chars) l' = takeWhile (\<lambda>found. found \<in> whitespace_chars) l'a \<and> [] = dropWhile (\<lambda>found. found \<in> whitespace_chars) l'a\<close>
+                Cons_eq_appendI dropWhile_append3 list.sel(3))
+    subgoal
+      by (metis \<open>\<And>x l' ca. \<lbrakk>c \<notin> whitespace_chars; x \<notin> whitespace_chars; dropWhile (\<lambda>found. found \<in> whitespace_chars) (ca @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l') = CHR '','' # l'; x \<in> set (dropWhile (\<lambda>found. found \<in> whitespace_chars) l')\<rbrakk> \<Longrightarrow> \<exists>l'a. dropWhile (\<lambda>found. found \<in> whitespace_chars) ca = CHR '','' # l'a \<and> takeWhile (\<lambda>found. found \<in> whitespace_chars) l' = takeWhile (\<lambda>found. found \<in> whitespace_chars) l'a \<and> [] = dropWhile (\<lambda>found. found \<in> whitespace_chars) l'a\<close>
+                Cons_eq_appendI dropWhile_append3 list.sel(3) takeWhile_tail)
+    subgoal
+      by (smt (verit, ccfv_threshold) \<open>\<And>x l' ca. \<lbrakk>c \<notin> whitespace_chars; x \<notin> whitespace_chars; dropWhile (\<lambda>found. found \<in> whitespace_chars) (ca @ dropWhile (\<lambda>found. found \<in> whitespace_chars) l') = CHR '','' # l'; x \<in> set (dropWhile (\<lambda>found. found \<in> whitespace_chars) l')\<rbrakk> \<Longrightarrow> \<exists>l'a. dropWhile (\<lambda>found. found \<in> whitespace_chars) ca = CHR '','' # l'a \<and> takeWhile (\<lambda>found. found \<in> whitespace_chars) l' = takeWhile (\<lambda>found. found \<in> whitespace_chars) l'a \<and> [] = dropWhile (\<lambda>found. found \<in> whitespace_chars) l'a\<close>
+              dropWhile_append dropWhile_eq_Nil_conv dropWhile_eq_self_iff dropWhile_never_grows list.sel(1) list.sel(3) tl_append2)
+    done
+  done
 
 
 definition numberlist :: "nat list bidef" where
@@ -89,7 +143,14 @@ lemma ws_not_digit:
   using assms
   unfolding whitespace_chars_def derived_digit_char.digit_chars_def
   by fast+
-  
+
+lemma comma_not_digit:
+  "CHR '','' \<notin> derived_digit_char.digit_chars"
+  "CHR '','' \<notin> meta_digit_to_nat_and_back.digit_chars"
+  unfolding derived_digit_char.digit_chars_def
+  by fastforce+
+
+
 lemma takeWhileAllNot:
   assumes "\<forall>a \<in> set as. \<not>P a"
   shows "takeWhile P as = []"
@@ -110,19 +171,24 @@ lemma many_ws_has_result:
   unfolding whitespace_char_def any_from_set_def
   by (rule many_char_for_predicate_has_result)
 
-
-
 lemma numberlist_well_formed:
   "bidef_well_formed numberlist"
   unfolding numberlist_def
-  apply (auto intro!: separated_by_well_formed2 first_printed_does_not_eat_into
+  apply (auto intro!: separated_by_well_formed2 first_printed_does_not_eat_into3
               simp add: good_oracle nat_b_well_formed separator_wf
                         nat_is_error
                         separator_empty_input
                         PASI_separator
 )
-  subgoal apply (rule first_printed_does_not_eat_into)
-    apply (clarsimp simp add: nat_b_well_formed  nat_does_not_consume_past)
+  subgoal using nat_fpci no_space_hd_nat separator_no_consume_past3 by auto
+  subgoal for i c
+    apply (cases i; clarsimp simp add: fpci_simps print_empty split: if_splits)
+    using nat_does_not_consume_past3[of c]
+          separator_fpci[of _ c]
+          ws_not_digit(2) comma_not_digit
+    by auto
+  \<comment> \<open>Remember that we're working on this on the many side. See:\<close>
+  thm parser_can_parse_print_result_many
   oops
 
 
