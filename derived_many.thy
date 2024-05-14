@@ -754,6 +754,75 @@ lemma parse_result_cannot_be_grown_by_printer_apply:
 \<comment> \<open>Then, if we have that, we can get wf many from does not consume past char3 from fpcpi.\<close>
 \<comment> \<open>Which in turn will be usable to simplify the separated_by WF lemma.\<close>
 \<comment> \<open>Especially, since intuitively separator then value should indeed not eat into itself.\<close>
+
+lemma wf_no_empty_parse_means_no_empty_print:
+  assumes "is_error (parse A) []"
+  assumes "bidef_well_formed A"
+  shows "\<not>p_has_result (print A) i []"
+  using assms(1)[THEN is_error_implies_not_has_result]
+        assms(2)[THEN get_parser_can_parse_unfold]
+  by blast
+
+lemma no_consume_past_own_first_char_parser_can_parse_print_result_many:
+  assumes "is_error (parse A) []" \<comment> \<open>This is needed so that many a stops at empty input.\<close>
+  assumes "bidef_well_formed A"
+  assumes "\<forall>i c. first_printed_chari (print A) i c \<longrightarrow> does_not_consume_past_char3 (parse A) c"
+  shows "parser_can_parse_print_result (parse (many A)) (print (many A))"
+  unfolding parser_can_parse_print_result_def
+  apply clarsimp
+  subgoal for ts pr
+    apply (induction ts arbitrary: pr)
+    subgoal by (clarsimp simp add: NER_simps fp_NER assms(1))
+    subgoal for t ts' pr'
+      unfolding many_p_has_result_safe(2) many_has_result_safe(2)
+      apply clarsimp
+      subgoal for t_pr ts'_pr
+        apply (rule exI[of _ ts'_pr])
+        apply clarsimp \<comment> \<open>many part is dispatched by induction premise\<close>
+        using assms(2)[THEN get_parser_can_parse,
+                       unfolded parser_can_parse_print_result_def,
+                       rule_format, of t t_pr]
+        apply clarsimp \<comment> \<open>Now have that t_pr can be parsed completely into t\<close>
+        apply (cases ts'_pr; clarsimp) \<comment> \<open>Case where tr'_pr =[] dispatched.\<close>
+        subgoal for hd_ts'_pr tl_ts'_pr
+          \<comment> \<open>Now we need to show that hd_ts'_pr is a char that parse A never eats into.\<close>
+          \<comment> \<open>Since we know from the assm that the fpci of print A is never eating into by parse A.\<close>
+          \<comment> \<open>We should be able to convert the fpci print A into fpci print many A and then we're done.\<close>
+          using assms(3)[rule_format, of _ hd_ts'_pr,
+                         unfolded does_not_consume_past_char3_def,
+                         rule_format, of _ t_pr \<open>[]\<close> t tl_ts'_pr,
+                         simplified]
+          apply clarsimp
+          \<comment> \<open>This metis does what we explain above.\<close>
+          \<comment> \<open>If we ever redo this proof we should do it via ISAR.\<close>
+          by (metis assms(1) assms(2)
+                    empty_result_means_no_first_char
+                    first_printed_chari_def
+                    list.distinct(1) list.exhaust list.sel(1)
+                    many_fpci_cons many_print_empty_safe(1)
+                    wf_no_empty_parse_means_no_empty_print)
+        done
+      done
+    done
+  done
+
+lemma no_consume_past_own_first_char_wf_many:
+  assumes "PASI (parse A)" \<comment> \<open>This is needed so that many a stops at empty input, and for PNGI many A.\<close>
+  assumes "is_error (parse A) [] \<or> \<not>is_nonterm (parse A) []" \<comment> \<open>Needed for many a stop at empty input.\<close>
+  assumes "bidef_well_formed A"
+  assumes "\<forall>i c. first_printed_chari (print A) i c \<longrightarrow> does_not_consume_past_char3 (parse A) c"
+  shows "bidef_well_formed (many A)"
+  apply wf_init
+  subgoal using many_PNGI[OF assms(1)] by fast
+  subgoal
+    apply (rule no_consume_past_own_first_char_parser_can_parse_print_result_many)
+    using assms(2,3,4) PASI_implies_error_from_empty[OF assms(1)]
+    by blast+
+  subgoal
+    apply (rule printer_can_print_parse_result_many)
+    using assms(3) by blast
+  done
+
 lemma parser_can_parse_print_result_many:
   assumes "parse_result_cannot_be_grown_by_printer (parse b) (print (many b))"
   assumes "bidef_well_formed b"
