@@ -2,6 +2,7 @@ theory example_numberlist_comma
   imports all_definitions
 begin
 
+\<comment> \<open>If this is unit bd, which proofs become easuer?\<close>
 definition separator where
   "separator = b_then (many whitespace_char) (b_then (this_char CHR '','') (many whitespace_char))"
 
