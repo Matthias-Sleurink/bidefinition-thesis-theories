@@ -599,6 +599,11 @@ lemma get_pngi:
   using assms[unfolded bidef_well_formed_def]
   by blast
 
+lemma test: \<comment> \<open>Shows that you can apply it in this way.\<close>
+  assumes "bidef_well_formed a"
+  shows "PNGI (parse a)"
+  by (rule get_pngi[OF assms(1)])
+
 lemma get_parser_can_parse:
   assumes "bidef_well_formed a"
   shows "parser_can_parse_print_result (parse a) (print a)"
@@ -611,10 +616,18 @@ lemma get_parser_can_parse_unfold:
   using assms[unfolded bidef_well_formed_def parser_can_parse_print_result_def]
   by blast
 
-lemma test:
+lemma get_printer_can_print:
   assumes "bidef_well_formed a"
-  shows "PNGI (parse a)"
-  by (rule get_pngi[OF assms(1)])
+  shows "printer_can_print_parse_result (parse a) (print a)"
+  using assms[unfolded bidef_well_formed_def]
+  by blast
+
+lemma get_printer_can_print_unfold:
+  assumes "bidef_well_formed a"
+  shows "(\<forall>(t :: '\<alpha>) i l. has_result (parse a) i t l \<longrightarrow> (\<exists>pr. p_has_result (print a) t pr))"
+  using assms[THEN get_printer_can_print, unfolded printer_can_print_parse_result_def]
+  by blast
+
 
 lemma conjI3:
   "A \<Longrightarrow> B \<Longrightarrow> C \<Longrightarrow> A \<and> B \<and> C"
