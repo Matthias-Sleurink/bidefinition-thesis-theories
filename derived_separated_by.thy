@@ -398,6 +398,142 @@ lemma separated_by_well_formed_does_not_peek_past:
   done
 
 
+lemma wf_many_then:
+  assumes wf_elem: "bidef_well_formed elem"
+  assumes wf_sep:  "bidef_well_formed sep"
+  assumes error_elem_empty: "is_error (parse elem) []"
+  assumes error_sep_empty: "is_error (parse sep) []"
+  assumes pasi_elem_or_sep: "PASI (parse elem) \<or> PASI (parse sep)"
+  assumes sep_no_consume_fpc_elem: "\<forall>i c. first_printed_chari (print elem) i c \<longrightarrow> does_not_consume_past_char3 (parse sep) c"
+  \<comment> \<open>We definitely want to remove everything below this at some point.\<close>
+  assumes sep_elem_no_consume_sep_elem: "\<forall>i c. first_printed_chari (print (b_then sep elem)) i c \<longrightarrow> does_not_consume_past_char3 (parse (b_then sep elem)) c"
+  shows "bidef_well_formed (many (b_then sep elem))"
+  apply (rule no_consume_past_own_first_char_wf_many)
+  subgoal
+    using pasi_elem_or_sep wf_elem[THEN get_pngi] wf_sep[THEN get_pngi]
+    by (auto simp add: then_PASI_from_pasi_pngi then_PASI_from_pngi_pasi)
+  subgoal
+    using \<open>PASI (parse (b_then sep elem))\<close> \<comment> \<open>Literal fact of previous subgoal\<close>
+          error_elem_empty error_sep_empty
+          wf_sep[THEN get_pngi, unfolded PNGI_def]
+    by (clarsimp simp add: NER_simps)
+  subgoal
+    apply (rule b_then_well_formed)
+    subgoal by (rule wf_sep)
+    subgoal by (rule wf_elem)
+    subgoal
+      apply (rule first_printed_does_not_eat_into3)
+      subgoal by (rule wf_sep)
+      subgoal by (rule sep_no_consume_fpc_elem)
+      done
+    done
+  subgoal by (rule sep_elem_no_consume_sep_elem)
+  done
+
+lemma separated_by_well_formed_no_consume_past_char_inner:
+  assumes good_sep_oracle: "good_separated_by_oracle sep sep_oracle"
+  assumes wf_elem: "bidef_well_formed elem"
+  assumes wf_sep:  "bidef_well_formed sep"
+  assumes error_elem_empty: "is_error (parse elem) []"
+  assumes error_sep_empty: "is_error (parse sep) []"
+  assumes pasi_elem_or_sep: "PASI (parse elem) \<or> PASI (parse sep)"
+  assumes sep_no_consume_fpc_elem: "\<forall>i c. first_printed_chari (print elem) i c \<longrightarrow> does_not_consume_past_char3 (parse sep) c"
+  assumes elem_no_consume_fpc_sep: "\<forall>i c. first_printed_chari (print sep) i c \<longrightarrow> does_not_consume_past_char3 (parse elem) c"
+  \<comment> \<open>We definitely want to remove everything below this at some point.\<close>
+  assumes sep_elem_no_consume_sep_elem: "\<forall>i c. first_printed_chari (print (b_then sep elem)) i c \<longrightarrow> does_not_consume_past_char3 (parse (b_then sep elem)) c"
+  shows "bidef_well_formed (separated_by sep elem sep_oracle)"
+  unfolding separated_by_def separated_byBase_def
+  apply (rule transform_well_formed3)
+  subgoal
+    apply (rule optional_well_formed)
+    subgoal by (clarsimp simp add: NER_simps error_elem_empty)
+    subgoal
+      apply (rule b_then_well_formed)
+      subgoal by (rule wf_elem)
+      subgoal by (clarsimp simp add: wf_many_then assms)
+      subgoal
+        apply (rule first_printed_does_not_eat_into3)
+        subgoal by (rule wf_elem)
+        subgoal
+          apply (subst many_fpci)
+          apply clarsimp
+          subgoal for i c
+            apply (cases i)
+            using wf_no_empty_parse_means_no_empty_print[OF error_sep_empty wf_sep]
+                  elem_no_consume_fpc_sep
+            by (clarsimp simp add: fpci_simps print_empty)+
+          done
+        done
+      done
+    done
+  subgoal
+    unfolding well_formed_transform_funcs3_def
+    \<comment> \<open>A lot of this is basically well formed over said change. Maybe this can be generalised?\<close>
+    apply (auto simp add: NER_simps fp_NER split: option.splits list.splits)
+    subgoal for i r rs l l'
+      unfolding optional_p_has_result
+      using wf_elem[THEN get_printer_can_print_unfold,
+                    rule_format, of i r l']
+      apply (clarsimp simp add: fp_NER)
+      apply (induction rs arbitrary: i r l l'; clarsimp simp add: fp_NER NER_simps)
+      subgoal for r_a r_b rs' r_pr l l'' l'''
+        unfolding many_p_has_result_safe(2)
+        apply (auto simp add: fp_NER)
+        subgoal by (rule good_sep_oracle[unfolded good_separated_by_oracle_def])
+        subgoal using wf_elem[THEN get_printer_can_print_unfold] by blast
+        subgoal using wf_elem[THEN get_printer_can_print_unfold] by blast
+        done
+      done
+    subgoal using error_elem_empty by blast
+    subgoal for i bs i_pr bs_map_pr
+      apply (rule exI[of _ \<open>[]\<close>])
+      apply (rule exI[of _ \<open>Some (i, map (Pair sep_oracle) bs)\<close>])
+      apply clarsimp
+      apply (rule exI[of _ bs_map_pr])
+      using wf_elem[THEN get_parser_can_parse_unfold, rule_format, of i i_pr]
+      apply auto
+      subgoal
+        apply (cases bs_map_pr; clarsimp) \<comment> \<open>[] case is easily dispatched\<close>
+        subgoal for hd_bs_map_pr tl_bs_map_pr
+          apply (cases \<open>map (Pair sep_oracle) bs\<close>)
+          subgoal by (clarsimp simp add: fp_NER) \<comment> \<open>Empty case dispatched because we know at least one char in print result\<close>
+          subgoal
+            apply (clarsimp simp add: fp_NER)
+            using elem_no_consume_fpc_sep[rule_format, of sep_oracle hd_bs_map_pr, unfolded first_printed_chari_def]
+                  no_consume_past3_wf_stronger[OF _ wf_elem, of hd_bs_map_pr]
+                  wf_no_empty_parse_means_no_empty_print[OF error_sep_empty wf_sep]
+            by (metis hd_append list.sel(1))
+          done
+        done
+      subgoal
+        using wf_many_then[OF wf_elem wf_sep error_elem_empty
+                              error_sep_empty pasi_elem_or_sep
+                              sep_no_consume_fpc_elem
+                              sep_elem_no_consume_sep_elem,
+                           THEN wf_parser_can_parse_print_result_apply]
+        by blast
+      done
+    done
+  done
+
+
+
+\<comment> \<open>This is just built up here to ensure that we can more easily remove that last assms when we can.\<close>
+lemma separated_by_well_formed_no_consume_past_char:
+  assumes good_sep_oracle: "good_separated_by_oracle sep sep_oracle"
+  assumes wf_elem: "bidef_well_formed elem"
+  assumes wf_sep:  "bidef_well_formed sep"
+  assumes error_elem_empty: "is_error (parse elem) []"
+  assumes error_sep_empty: "is_error (parse sep) []"
+  assumes pasi_elem_or_sep: "PASI (parse elem) \<or> PASI (parse sep)"
+  assumes sep_no_consume_fpc_elem: "\<forall>i c. first_printed_chari (print elem) i c \<longrightarrow> does_not_consume_past_char3 (parse sep) c"
+  assumes elem_no_consume_fpc_sep: "\<forall>i c. first_printed_chari (print sep) i c \<longrightarrow> does_not_consume_past_char3 (parse elem) c"
+  \<comment> \<open>We definitely want to remove everything below this at some point.\<close>
+  assumes sep_elem_no_consume_sep_elem: "\<forall>i c. first_printed_chari (print (b_then sep elem)) i c \<longrightarrow> does_not_consume_past_char3 (parse (b_then sep elem)) c"
+  shows "bidef_well_formed (separated_by sep elem sep_oracle)"
+  by (rule separated_by_well_formed_no_consume_past_char_inner[OF assms])
+
+
 
 lemma cannot_be_grown_to_many:
   assumes "parse_result_cannot_be_grown_by_printer (parse elem) (print sep)"
