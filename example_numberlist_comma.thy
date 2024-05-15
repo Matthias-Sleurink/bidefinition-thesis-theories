@@ -116,6 +116,24 @@ lemma separator_no_consume_past3:
     done
   done
 
+lemma many_ws_has_result:
+  "has_result (parse (many whitespace_char)) i r l \<longleftrightarrow> r = takeWhile (\<lambda>c. c\<in>whitespace_chars) i \<and> l = dropWhile (\<lambda>c. c\<in>whitespace_chars) i"
+  unfolding whitespace_char_def any_from_set_def
+  by (rule many_char_for_predicate_has_result)
+
+lemma separator_has_result[NER_simps]:
+  "has_result (parse separator) i (w1, s, w2) l \<longleftrightarrow> 
+    w1 = takeWhile (\<lambda>c. c\<in>whitespace_chars) i \<and>
+    dropWhile (\<lambda>c. c\<in>whitespace_chars) i = CHR '','' # (tl (dropWhile (\<lambda>c. c\<in>whitespace_chars) i)) \<and>
+    s  = CHR '','' \<and>
+    w2 = takeWhile (\<lambda>c. c\<in>whitespace_chars) (tl (dropWhile (\<lambda>c. c\<in>whitespace_chars) i)) \<and>
+    i \<noteq> [] \<and>
+    l = dropWhile (\<lambda>c. c\<in>whitespace_chars) (tl (dropWhile (\<lambda>c. c\<in>whitespace_chars) i))"
+  unfolding separator_def
+  apply (auto simp add: NER_simps many_ws_has_result)
+  using list.discI by fastforce
+
+
 
 definition numberlist :: "nat list bidef" where
   "numberlist = separated_by separator nat_b ([], CHR '','', [])"
@@ -167,31 +185,62 @@ lemma no_space_hd_nat:
   "hd (print_nat n) \<notin> whitespace_chars"
   using ws_not_digit(2) by fastforce
 
-lemma many_ws_has_result:
-  "has_result (parse (many whitespace_char)) i r l \<longleftrightarrow> r = takeWhile (\<lambda>c. c\<in>whitespace_chars) i \<and> l = dropWhile (\<lambda>c. c\<in>whitespace_chars) i"
-  unfolding whitespace_char_def any_from_set_def
-  by (rule many_char_for_predicate_has_result)
+lemma lst_eq_c_tl_lst:
+  "l = c#(tl l) \<Longrightarrow> hd l = c"
+  by (metis list.sel(1))
 
-lemma numberlist_well_formed:
+lemma takeWhile_not_empty:
+  assumes "takeWhile P l \<noteq> []"
+  shows "P (hd l)"
+  using assms
+  by (induction l; clarsimp split: if_splits)
+  
+  
+  
+
+lemma numberlist_comma_well_formed:
   "bidef_well_formed numberlist"
-  unfolding numberlist_def
-  apply (auto intro!: separated_by_well_formed2 first_printed_does_not_eat_into3
+  unfolding numberlist_def 
+  apply (auto intro!: separated_by_well_formed_no_consume_past_char
               simp add: good_oracle nat_b_well_formed separator_wf
-                        nat_is_error
-                        separator_empty_input
-                        PASI_separator
-)
-  subgoal using nat_fpci no_space_hd_nat separator_no_consume_past3 by auto
+                        nat_is_error separator_empty_input
+                        nat_b_PASI)
   subgoal for i c
-    apply (cases i; clarsimp simp add: fpci_simps print_empty split: if_splits)
-    using nat_does_not_consume_past3[of c]
-          separator_fpci[of _ c]
-          ws_not_digit(2) comma_not_digit
-    by auto
-  \<comment> \<open>Remember that we're working on this on the many side. See:\<close>
-  thm parser_can_parse_print_result_many
-  oops
+    using separator_no_consume_past3 nat_fpci ws_not_digit(1)
+    by force
+  subgoal for w1 s w2 c
+    using separator_fpci nat_does_not_consume_past3
+          comma_not_digit(1) ws_not_digit(1)
+    by fastforce
+  subgoal for w1 s w2 n c
+    \<comment> \<open>Why does this not unfold separator_fpci?\<close>
+    apply (clarsimp simp add: fpci_simps print_empty)
+    using separator_fpci[of \<open>(w1, s, w2)\<close> c]
+    apply clarsimp
+    unfolding does_not_consume_past_char3_def
+    apply (clarsimp simp add: NER_simps)
+    apply (auto simp add: lst_eq_c_tl_lst takeWhile_not_empty)
+    
+    subgoal for n_pr ca l
+      using lst_eq_c_tl_lst[of \<open>dropWhile (\<lambda>c. c \<in> whitespace_chars) (ca @ dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) l)\<close> \<open>CHR '',''\<close>]
+      apply clarsimp
+      using takeWhile_not_empty[of \<open>\<lambda>x. x \<in> derived_digit_char.digit_chars\<close> l]
+      apply clarsimp
+      apply (subgoal_tac \<open>\<exists>c \<in> set ca. c \<notin> whitespace_chars\<close>)
+      subgoal by (metis takeWhile_append1)
+      subgoal
+        using dropWhile_append[of \<open>\<lambda>c. c \<in> whitespace_chars\<close> ca \<open>dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) l\<close>]
+        apply (auto split: if_splits)
+        \<comment> \<open>What is going on here? How can we generalise this into the auto above?\<close>
+        by (metis (no_types, lifting) Cons_eq_appendI append_assoc list.distinct(1) self_append_conv2 takeWhile_dropWhile_id)
+        
+        
+        sorry
+      sorry
 
+    
+    sorry                       
+  oops
 
 
 end
