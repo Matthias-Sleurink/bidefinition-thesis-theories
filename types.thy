@@ -599,6 +599,12 @@ lemma get_pngi:
   using assms[unfolded bidef_well_formed_def]
   by blast
 
+lemma get_pngi_unfold:
+  assumes "bidef_well_formed a"
+  shows "\<forall> i r l. has_result (parse a) i r l \<longrightarrow> (\<exists> c. i = c @ l)"
+  using assms[unfolded bidef_well_formed_def] PNGI_def
+  by fast
+
 lemma test: \<comment> \<open>Shows that you can apply it in this way.\<close>
   assumes "bidef_well_formed a"
   shows "PNGI (parse a)"

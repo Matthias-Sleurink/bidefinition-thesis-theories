@@ -242,6 +242,66 @@ lemma then_fpci[fpci_simps]:
   unfolding b_then_def
   by (auto simp add: dep_then_fpci transform_fpci2 fp_NER)
 
+definition fpc :: "'a parser \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
+  "fpc p t c \<longleftrightarrow> (\<exists>i l. has_result p (c#i) t l)"
+
+
+\<comment> \<open>The last two assms can be replaced with does_not_peek_past_end.\<close>
+\<comment> \<open>Is there some nice way of having two alternative assms?\<close>
+lemma then_does_not_consume_past3:
+  assumes wf_A: "bidef_well_formed A"
+  assumes wf_B: "bidef_well_formed B"
+  assumes dncpc_B_c: "does_not_consume_past_char3 (parse B) c"
+  assumes fpc_B_dncpc_A: "\<And>i c. fpc (parse B) i c \<longrightarrow> does_not_consume_past_char3 (parse A) c"
+  assumes no_empty_res_B: "\<nexists>r l. has_result (parse B) [] r l"
+  shows "does_not_consume_past_char3 (parse (b_then A B)) c"
+  unfolding does_not_consume_past_char3_def
+  apply auto
+  subgoal for c'' a b l
+    apply (clarsimp simp add: NER_simps)
+    subgoal for l'
+      using wf_B[THEN get_pngi_unfold, rule_format, of l' b l]
+      apply clarsimp
+      subgoal for c'
+        using wf_A[THEN get_pngi_unfold, rule_format, of \<open>c''@l\<close> a \<open>c'@l\<close>]
+        apply clarsimp
+        subgoal for c
+          apply (rule exI[of _ c'])
+          apply (rule conjI)
+          subgoal
+            \<comment> \<open>\<^term>\<open>does_not_peek_past_end (parse A)\<close> would solve it.\<close>
+            using dncpc_B_c[unfolded does_not_consume_past_char3_def]
+            apply (cases c')
+            subgoal using no_empty_res_B by blast
+            subgoal using fpc_B_dncpc_A[unfolded does_not_consume_past_char3_def fpc_def] by blast
+            done
+          subgoal
+            using dncpc_B_c[unfolded does_not_consume_past_char3_def] by fastforce
+          done
+        done
+      done
+    done
+  subgoal for cs a b l l'
+    apply (clarsimp simp add: NER_simps)
+    subgoal for l''
+      using wf_A[THEN get_pngi_unfold, rule_format, of \<open>cs@l\<close> a l'']
+      using wf_B[THEN get_pngi_unfold, rule_format, of l'' b l]
+      apply clarsimp
+      subgoal for c' c''
+        apply (rule exI[of _ \<open>c'' @ c # l'\<close>])
+        apply (rule conjI)
+        subgoal
+          \<comment> \<open>\<^term>\<open>does_not_peek_past_end (parse A)\<close> would solve it.\<close>
+          using dncpc_B_c[unfolded does_not_consume_past_char3_def]
+          apply (cases c'')
+          subgoal using no_empty_res_B by blast
+          subgoal using fpc_B_dncpc_A[unfolded does_not_consume_past_char3_def fpc_def] by fastforce
+          done
+        subgoal using dncpc_B_c[unfolded does_not_consume_past_char3_def] by fastforce
+        done
+      done
+    done
+  done
 
 
 \<comment> \<open>well formed\<close>
