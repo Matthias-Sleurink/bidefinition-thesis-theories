@@ -116,6 +116,7 @@ lemma separator_no_consume_past3:
     done
   done
 
+
 lemma many_ws_has_result:
   "has_result (parse (many whitespace_char)) i r l \<longleftrightarrow> r = takeWhile (\<lambda>c. c\<in>whitespace_chars) i \<and> l = dropWhile (\<lambda>c. c\<in>whitespace_chars) i"
   unfolding whitespace_char_def any_from_set_def

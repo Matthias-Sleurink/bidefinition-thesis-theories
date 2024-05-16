@@ -242,10 +242,6 @@ lemma then_fpci[fpci_simps]:
   unfolding b_then_def
   by (auto simp add: dep_then_fpci transform_fpci2 fp_NER)
 
-definition fpc :: "'a parser \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
-  "fpc p t c \<longleftrightarrow> (\<exists>i l. has_result p (c#i) t l)"
-
-
 \<comment> \<open>The last two assms can be replaced with does_not_peek_past_end.\<close>
 \<comment> \<open>Is there some nice way of having two alternative assms?\<close>
 lemma then_does_not_consume_past3:

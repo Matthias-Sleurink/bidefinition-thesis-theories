@@ -864,7 +864,7 @@ lemma does_not_consume_past_char3_implies_does_not_consume_past_char:
   by fastforce
 
 
-
+section \<open>First printed character\<close>
 \<comment> \<open>Which characters can be the first printed char?\<close>
 definition const :: "'a \<Rightarrow> 'b \<Rightarrow> 'a" where
   "const a _ = a"
@@ -887,6 +887,15 @@ lemma empty_result_means_no_first_char[fpci_simps]:
   using assms unfolding first_printed_chari_def
   by (simp add: print_results_always_same)
 
+
+section \<open>First parsed character\<close>
+text \<open>The problem with fpci above is that more than just the printed text can be parsed.
+      So, in some cases we only know that some text can be parsed, and then we know nothing applicable to fpci.
+      Thus, we need to capture this info on the other side.\<close>
+definition fpc :: "'a parser \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
+  "fpc p t c \<longleftrightarrow> (\<exists>i l. has_result p (c#i) t l)"
+
+named_theorems fpc_simps
 
 
 end
