@@ -194,9 +194,9 @@ lemma takeWhile_not_empty:
   shows "P (hd l)"
   using assms
   by (induction l; clarsimp split: if_splits)
-  
-  
-  
+
+
+
 
 lemma numberlist_comma_well_formed:
   "bidef_well_formed numberlist"
@@ -216,31 +216,14 @@ lemma numberlist_comma_well_formed:
     \<comment> \<open>Why does this not unfold separator_fpci?\<close>
     apply (clarsimp simp add: fpci_simps print_empty)
     using separator_fpci[of \<open>(w1, s, w2)\<close> c]
-    apply clarsimp
-    unfolding does_not_consume_past_char3_def
-    apply (clarsimp simp add: NER_simps)
-    apply (auto simp add: lst_eq_c_tl_lst takeWhile_not_empty)
-    
-    subgoal for n_pr ca l
-      using lst_eq_c_tl_lst[of \<open>dropWhile (\<lambda>c. c \<in> whitespace_chars) (ca @ dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) l)\<close> \<open>CHR '',''\<close>]
-      apply clarsimp
-      using takeWhile_not_empty[of \<open>\<lambda>x. x \<in> derived_digit_char.digit_chars\<close> l]
-      apply clarsimp
-      apply (subgoal_tac \<open>\<exists>c \<in> set ca. c \<notin> whitespace_chars\<close>)
-      subgoal by (metis takeWhile_append1)
-      subgoal
-        using dropWhile_append[of \<open>\<lambda>c. c \<in> whitespace_chars\<close> ca \<open>dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) l\<close>]
-        apply (auto split: if_splits)
-        \<comment> \<open>What is going on here? How can we generalise this into the auto above?\<close>
-        by (metis (no_types, lifting) Cons_eq_appendI append_assoc list.distinct(1) self_append_conv2 takeWhile_dropWhile_id)
-        
-        
-        sorry
-      sorry
-
-    
-    sorry                       
-  oops
+    apply (auto intro!: then_does_not_consume_past3
+                simp add: separator_wf nat_b_well_formed
+                          nat_does_not_consume_past3
+                          comma_not_digit(1) ws_not_digit(1)
+                          separator_no_consume_past3
+                          fpc_def NER_simps)
+    done
+  done
 
 
 end
