@@ -873,7 +873,7 @@ lemma does_not_consume_past_char3_implies_does_not_consume_past_char:
 
 section \<open>First printed character\<close>
 \<comment> \<open>Which characters can be the first printed char?\<close>
-definition const :: "'a \<Rightarrow> 'b \<Rightarrow> 'a" where
+fun const :: "'a \<Rightarrow> 'b \<Rightarrow> 'a" where
   "const a _ = a"
 
 \<comment> \<open>I don't feel entirely happy about the predicate here, but it's required to make this work with transform.\<close>
