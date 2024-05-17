@@ -897,5 +897,13 @@ definition fpc :: "'a parser \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> b
 
 named_theorems fpc_simps
 
+lemma fpci_implies_fpc:
+  assumes "bidef_well_formed A"
+  assumes "\<exists>i. first_printed_chari (print A) i c"
+  shows "\<exists>i. fpc (parse A) i c"
+  unfolding fpc_def
+  using assms(1)[THEN get_parser_can_parse_unfold]
+        assms(2)[unfolded first_printed_chari_def]
+  by (metis list.exhaust_sel)
 
 end
