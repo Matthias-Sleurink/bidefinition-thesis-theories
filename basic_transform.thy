@@ -148,6 +148,11 @@ lemma transform_fpci2[fpci_simps]:
   unfolding first_printed_chari_def
   by (auto simp add: transform_p_has_result)
 
+lemma transform_fpc[fpc_simps]:
+  shows "fpc (parse (transform f f' A)) i c \<longleftrightarrow> (\<exists>i'. fpc (parse A) i' c \<and> f i' = i)"
+  unfolding fpc_def transform_has_result
+  by blast
+
 
 
 \<comment> \<open>I believe that the f \<circ> f' = id requirement can be relaxed.\<close>

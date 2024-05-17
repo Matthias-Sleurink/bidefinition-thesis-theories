@@ -128,6 +128,11 @@ lemma return_fpci[fpci_simps]:
   unfolding first_printed_chari_def
   by (clarsimp simp add: return_p_has_result)+
 
+lemma return_fpc[fpc_simps]:
+  shows "fpc (parse (return t)) i c \<longleftrightarrow> False"
+  unfolding fpc_def return_has_result
+  by clarsimp
+
 
 
 \<comment> \<open>Well Formed\<close>

@@ -210,6 +210,15 @@ lemma PNGI_m_map:
   apply (auto simp add: NER_simps)
   by fastforce
 
+lemma PNGI_m_map_all:
+  assumes "\<And>e. PNGI (parse (b e))"
+  shows "PNGI (parse (m_map b l))"
+  using assms
+  apply (induction l)
+  unfolding PNGI_def
+  apply (auto simp add: NER_simps)
+  by fastforce
+
 lemma PASI_m_map:
   assumes "\<forall>e\<in>set l. PASI (parse (b e))"
   assumes "l \<noteq> []"
@@ -376,6 +385,38 @@ lemma m_map_fpci_cons_iff[fpci_simps]:
   subgoal by fastforce
   done
 
+lemma m_map_fpc_nil[fpc_simps]:
+  shows "fpc (parse (m_map a2B [])) i c \<longleftrightarrow> False"
+  unfolding fpc_def m_map_has_result
+  by clarsimp
+
+lemma m_map_fpc_cons[fpc_simps]:
+  assumes "\<And>i. PNGI (parse (a2B i))"
+  shows "fpc (parse (m_map a2B (a#as))) (i#is) c \<longleftrightarrow>(
+      if (\<exists>l. has_result (parse (a2B a)) (c#l) i (c#l)) then
+        (fpc (parse (m_map a2B as)) is c)
+      else
+        (fpc (parse (a2B a)) i c)
+)"
+  unfolding fpc_def m_map_has_result PNGI_def
+  apply auto
+  subgoal for l cs l' l''
+    apply (rule exI[of _ cs])
+    apply (rule exI[of _ l'])
+    using PNGI_m_map_all[OF assms(1), of id as, simplified, unfolded PNGI_def]
+    
+    sorry
+  subgoal  sorry
+  subgoal  sorry
+  subgoal  sorry
+  oops
+
+
+lemma m_map_fpc_cons[fpc_simps]:
+  assumes "\<And>i. PNGI (parse (a2B i))"
+  shows "fpc (parse (m_map a2B (a#as))) (i#is) c \<longleftrightarrow> test"
+  unfolding fpc_def m_map_has_result(2)
+  oops
 
 
 \<comment> \<open>For the B', also require that the m_map printer has a result with t#ts!\<close>

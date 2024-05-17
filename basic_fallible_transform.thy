@@ -211,6 +211,12 @@ lemma ftransform_fpci2[fpci_simps]:
   subgoal by (cases \<open>f' i\<close>; auto)
   done
 
+lemma ftransform_fpc[fpc_simps]:
+  shows "fpc (parse (ftransform f f' A)) i c \<longleftrightarrow> (\<exists>i'. fpc (parse A) i' c \<and> f i' = Some i)"
+  unfolding fpc_def ftransform_has_result
+  by blast
+
+
 
 \<comment> \<open>Well Formed\<close>
 

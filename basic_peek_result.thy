@@ -155,6 +155,11 @@ lemma peek_fpci[fpci_simps]:
   unfolding first_printed_chari_def
   by (clarsimp simp add: peek_p_has_result)+
 
+lemma peek_fpc[fpc_simps]:
+  shows "fpc (parse (peek A)) i c \<longleftrightarrow> False"
+  unfolding fpc_def peek_has_result
+  by clarsimp
+
 
 
 \<comment> \<open>Well Formed\<close>

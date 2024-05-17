@@ -132,6 +132,12 @@ lemma fail_fpci[fpci_simps]:
   unfolding first_printed_chari_def
   by (clarsimp simp add: fail_p_has_result)+
 
+lemma fail_fpc[fpc_simps]:
+  shows "\<nexists>i c. fpc (parse fail) i c"
+        "fpc (parse fail) i c \<longleftrightarrow> False"
+  unfolding fpc_def
+  by (clarsimp simp add: fail_has_result)+
+
 
 
 \<comment> \<open>Well Formed\<close>

@@ -51,6 +51,13 @@ definition has_result_c :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> 
 definition has_result_ci :: "'\<alpha> parser \<Rightarrow> string \<Rightarrow> string \<Rightarrow> '\<alpha> \<Rightarrow> string \<Rightarrow> bool" where
   "has_result_ci p i c r l \<longleftrightarrow> has_result_c p c r l \<and> i = c@l"
 
+lemma leftover_determ:
+  assumes "has_result p i r l"
+  assumes "has_result p i r l'"
+  shows "l = l'"
+  using assms unfolding has_result_def
+  by clarsimp
+
 
 
 \<comment> \<open>list_upto is important for instantiating the existentials in has_result_c proofs\<close>
@@ -913,5 +920,24 @@ lemma fpci_implies_fpc:
     by clarsimp
   done
 
+
+definition fpc2 :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
+  "fpc2 p c \<longleftrightarrow> (\<exists>i r l. has_result p (c#i) r l)"
+
+lemma fpci_implies_fpc2:
+  assumes "bidef_well_formed A"
+  assumes "\<exists>i. first_printed_chari (print A) i c"
+  shows "fpc2 (parse A) c"
+  unfolding fpc2_def
+  using assms(2)[unfolded first_printed_chari_def]
+  apply clarsimp
+  subgoal for i t
+    using assms(1)[THEN get_parser_can_parse_unfold, rule_format, of i t]
+    apply clarsimp
+    apply (rule exI[of _ \<open>tl t\<close>])
+    apply (rule exI[of _ i])
+    apply (rule exI[of _ \<open>[]\<close>])
+    by clarsimp
+  done
 
 end

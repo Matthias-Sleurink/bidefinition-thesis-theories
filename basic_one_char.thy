@@ -126,6 +126,11 @@ lemma one_char_fpci[fpci_simps]:
   unfolding first_printed_chari_def
   by (clarsimp simp add: one_char_p_has_result)
 
+lemma one_char_fpc[fpc_simps]:
+  shows "fpc (parse one_char) i c \<longleftrightarrow> c = i"
+  unfolding fpc_def one_char_has_result
+  by clarsimp
+
 
 
 \<comment> \<open>Well Formed\<close>
