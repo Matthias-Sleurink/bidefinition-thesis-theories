@@ -269,7 +269,7 @@ lemma then_does_not_consume_past3:
             using dncpc_B_c[unfolded does_not_consume_past_char3_def]
             apply (cases c')
             subgoal using no_empty_res_B by blast
-            subgoal using fpc_B_dncpc_A[unfolded does_not_consume_past_char3_def fpc_def] by blast
+            subgoal using fpc_B_dncpc_A[unfolded does_not_consume_past_char3_def fpc_def] by fastforce
             done
           subgoal
             using dncpc_B_c[unfolded does_not_consume_past_char3_def] by fastforce
