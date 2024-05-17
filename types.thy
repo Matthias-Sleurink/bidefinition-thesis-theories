@@ -893,7 +893,7 @@ text \<open>The problem with fpci above is that more than just the printed text 
       So, in some cases we only know that some text can be parsed, and then we know nothing applicable to fpci.
       Thus, we need to capture this info on the other side.\<close>
 definition fpc :: "'a parser \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
-  "fpc p t c \<longleftrightarrow> (\<exists>i l. has_result p (c#i) t l)"
+  "fpc p t c \<longleftrightarrow> (\<exists>cs l. has_result p (c#cs@l) t l)"
 
 named_theorems fpc_simps
 
@@ -902,8 +902,16 @@ lemma fpci_implies_fpc:
   assumes "\<exists>i. first_printed_chari (print A) i c"
   shows "\<exists>i. fpc (parse A) i c"
   unfolding fpc_def
-  using assms(1)[THEN get_parser_can_parse_unfold]
-        assms(2)[unfolded first_printed_chari_def]
-  by (metis list.exhaust_sel)
+  using assms(2)[unfolded first_printed_chari_def]
+  apply clarsimp
+  subgoal for i t
+    using assms(1)[THEN get_parser_can_parse_unfold, rule_format, of i t]
+    apply clarsimp
+    apply (rule exI[of _ i])
+    apply (rule exI[of _ \<open>tl t\<close>])
+    apply (rule exI[of _ \<open>[]\<close>])
+    by clarsimp
+  done
+
 
 end
