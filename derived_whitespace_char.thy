@@ -15,6 +15,11 @@ lemma whitespace_chars_elements[simp]:
   "CHR 0x0D  \<in> whitespace_chars"
   unfolding whitespace_chars_def
   by simp_all
+lemma chars_that_are_not_whitespace[simp]:
+  "CHR '','' \<notin> whitespace_chars"
+  unfolding whitespace_chars_def
+  by simp_all
+
 
 
 definition whitespace_char :: "char bidef" where
