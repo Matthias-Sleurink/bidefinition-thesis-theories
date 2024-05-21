@@ -469,6 +469,7 @@ lemma many_char_for_predicate_well_formed:
     by simp
   done
 
+
 lemma does_not_eat_into_conseq_parser:
   assumes "pa_does_not_eat_into_pb_nondep b b'"
   assumes "p_has_result (print b) i i_t"

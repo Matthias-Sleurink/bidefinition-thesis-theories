@@ -109,6 +109,7 @@ lemma drop_fpc[fpc_simps]:
 
 
 section well_formed
+\<comment> \<open>TODO: This could maybe be simpler since we need to parse less prints?\<close>
 lemma drop_well_formed:
   assumes wf_A: "bidef_well_formed A"
   assumes good_oracle: "\<exists>t. p_has_result (print A) oracle t"

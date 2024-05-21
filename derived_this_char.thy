@@ -77,6 +77,10 @@ lemma this_char_does_not_consume_past_char2:
   "does_not_consume_past_char2 (parse (this_char c)) c'"
   by (clarsimp simp add: does_not_consume_past_char2_def NER_simps)
 
+lemma this_char_does_not_consume_past_char3:
+  "does_not_consume_past_char3 (parse (this_char c)) c'"
+  by (clarsimp simp add: does_not_consume_past_char3_def NER_simps)
+
 
 
 \<comment> \<open>First printed char\<close>
