@@ -22,6 +22,8 @@ theory all_definitions
           derived_nat
           derived_whitespace_char
           derived_separated_by
+          derived_drop
+          derived_ws_comma_ws
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
