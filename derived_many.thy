@@ -418,6 +418,17 @@ lemma many_char_for_predicate_does_not_consume_past_char:
   subgoal by (metis dropWhile_append dropWhile_hd_no_match self_append_conv2)
   done
 
+lemma many_char_for_predicate_does_not_consume_past_char3:
+  "does_not_consume_past_char3 (parse (many (char_for_predicate P))) c \<longleftrightarrow> \<not>P c"
+  unfolding does_not_consume_past_char3_def
+  apply (auto simp add: NER_simps)
+  subgoal by (metis append_Nil dropWhile.simps(1) dropWhile_eq_Cons_conv)
+  subgoal by (metis append_same_eq takeWhile_dropWhile_id takeWhile_idem)
+  subgoal by (metis append_self_conv2 dropWhile_append1 dropWhile_eq_Nil_conv)
+  subgoal by (clarsimp simp add: takeWhile_tail \<open>\<And>l ca. \<lbrakk>\<not> P c; l = dropWhile P (ca @ l)\<rbrakk> \<Longrightarrow> takeWhile P (ca @ l) = takeWhile P ca\<close>)
+  subgoal by (clarsimp simp add: dropWhile_append3 \<open>\<And>l ca. \<lbrakk>\<not> P c; l = dropWhile P (ca @ l)\<rbrakk> \<Longrightarrow> [] = dropWhile P ca\<close>)
+  done
+
 
 
 \<comment> \<open>The second half of many holds for all applications of many.\<close>
