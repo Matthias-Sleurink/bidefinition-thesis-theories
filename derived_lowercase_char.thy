@@ -54,12 +54,12 @@ lemma lowercase_char_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma lowercase_char_PNGI:
+lemma lowercase_char_PNGI[PASI_PNGI]:
   "PNGI (parse lowercase_char)"
   unfolding lowercase_char_def
   by (rule any_from_set_PNGI)
 
-lemma lowercase_char_PASI:
+lemma lowercase_char_PASI[PASI_PNGI]:
   "PASI (parse lowercase_char)"
   unfolding lowercase_char_def
   by (rule any_from_set_PASI)

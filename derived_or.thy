@@ -77,7 +77,7 @@ lemma or_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma or_PNGI:
+lemma or_PNGI[PASI_PNGI]:
   assumes "PNGI (parse a)"
   assumes "PNGI (parse b)"
   shows "PNGI (parse (or a b))"
@@ -85,7 +85,7 @@ lemma or_PNGI:
   apply (simp add: PNGI_def NER_simps split: sum.splits)
   by fast
 
-lemma or_PASI:
+lemma or_PASI[PASI_PNGI]:
   assumes "PASI (parse a)"
   assumes "PASI (parse b)"
   shows "PASI (parse (or a b))"

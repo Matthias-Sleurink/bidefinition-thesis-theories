@@ -68,15 +68,18 @@ lemma mono_transform[partial_function_mono]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma transform_PASI[PASI_PNGI]:
+lemma transform_PASI:
   shows "PASI (parse b) \<longleftrightarrow> PASI (parse (transform f f' b))"
   apply (simp add: PASI_def NER_simps)
   by blast
+lemmas transform_PASI_rev[PASI_PNGI] = transform_PASI[symmetric]
 
-lemma transform_PNGI[PASI_PNGI]:
+lemma transform_PNGI:
   shows "PNGI (parse b) \<longleftrightarrow> PNGI (parse (transform f f' b))"
   apply (simp add: PNGI_def NER_simps)
   by blast
+
+lemmas transform_PNGI_rev[PASI_PNGI] = transform_PNGI[symmetric]
 
 
 
