@@ -115,12 +115,6 @@ lemma one_char_does_not_consume_past_char2:
 
 
 \<comment> \<open>First printed char\<close>
-lemma one_char_first_printed_char:
-  assumes "B c"
-  shows "first_printed_char (print one_char) B c"
-  unfolding first_printed_char_def
-  by (clarsimp simp add: one_char_p_has_result assms)
-
 lemma one_char_fpci[fpci_simps]:
   shows "first_printed_chari (print one_char) i c \<longleftrightarrow> i = c"
   unfolding first_printed_chari_def

@@ -144,11 +144,6 @@ lemma peek_result_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma peek_first_printed_char:
-  shows "(\<nexists>c. first_printed_char (print (peek A)) B c)"
-  unfolding first_printed_char_def
-  by (clarsimp simp add: peek_p_has_result)
-
 lemma peek_fpci[fpci_simps]:
   shows "\<nexists>i c. first_printed_chari (print (peek B)) i c"
         "first_printed_chari (print (peek B)) i c \<longleftrightarrow> False"

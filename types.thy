@@ -877,14 +877,6 @@ section \<open>First printed character\<close>
 fun const :: "'a \<Rightarrow> 'b \<Rightarrow> 'a" where
   "const a _ = a"
 
-\<comment> \<open>I don't feel entirely happy about the predicate here, but it's required to make this work with transform.\<close>
-definition first_printed_char :: "'a printer \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> char \<Rightarrow> bool" where
-  "first_printed_char p b c = (\<exists>e t. b e \<and> p_has_result p e t \<and> t\<noteq>[] \<and> (hd t) = c)"
-
-\<comment> \<open>The idea being that if we can combine this with combinator rules and does_not_consume_past_char2,
-    we should be able to make this into a does_not_eat_into variant that _can_ be grown to many.\<close>
-
-
 named_theorems fpci_simps
 definition first_printed_chari :: "'a printer \<Rightarrow> 'a \<Rightarrow> char \<Rightarrow> bool" where
   "first_printed_chari p i c \<equiv> (\<exists>t. p_has_result p i t \<and> t\<noteq>[] \<and> (hd t) = c)"

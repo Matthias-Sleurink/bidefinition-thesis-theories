@@ -187,13 +187,6 @@ lemma ftrans_does_not_consume_past_char2:
 
 
 \<comment> \<open>First printed char\<close>
-lemma ftransform_first_printed_char:
-  assumes "first_printed_char (print A) (\<lambda>a. (\<exists>b. f' b = Some a \<and> B b)) c"
-  shows "first_printed_char (print (ftransform f f' A)) B c"
-  using assms unfolding first_printed_char_def
-  apply (clarsimp simp add: ftransform_p_has_result)
-  by force
-
 lemma ftransform_fpci:
   assumes "first_printed_chari (print A) (the (f' i)) c"
   assumes "\<exists>i'. f' i = Some i'"

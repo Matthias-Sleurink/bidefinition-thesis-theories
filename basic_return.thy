@@ -117,11 +117,6 @@ lemma return_does_not_consume_past_char2:
 
 
 \<comment> \<open>First printed char\<close>
-lemma return_first_printed_char:
-  shows "(\<nexists>c. first_printed_char (print (return e)) B c)"
-  unfolding first_printed_char_def
-  by (clarsimp simp add: return_p_has_result)
-
 lemma return_fpci[fpci_simps]:
   shows "\<nexists>v i c. first_printed_chari (print (return v)) i c"
         "first_printed_chari (print (return v)) i c \<longleftrightarrow> False"

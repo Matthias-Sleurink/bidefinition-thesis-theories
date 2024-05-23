@@ -131,12 +131,6 @@ lemma transform_does_not_consume_past_char2:
 
 
 \<comment> \<open>First printed char\<close>
-lemma transform_first_printed_char:
-  assumes "first_printed_char (print A) (\<lambda>a. (\<exists>b. f' b = a \<and> B b)) c"
-  shows "first_printed_char (print (transform f f' A)) B c"
-  using assms unfolding first_printed_char_def
-  by (auto simp add: transform_p_has_result)
-
 lemma transform_fpci:
   assumes "first_printed_chari (print A) (f' i) c"
   shows "first_printed_chari (print (transform f f' A)) i c"

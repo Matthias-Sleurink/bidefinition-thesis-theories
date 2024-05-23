@@ -312,41 +312,6 @@ lemma m_map_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>First printed char\<close>
-lemma m_map_first_printed_char_empty:
-  shows "\<nexists>c. first_printed_char (print (m_map e2A [])) B c"
-  unfolding first_printed_char_def
-  by (auto simp add: m_map_p_has_result)
-
-lemma m_map_first_printed_char_from_first_printer:
-  assumes "first_printed_char (print (e2A e)) (\<lambda>t. (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr'))) c"
-  shows "first_printed_char (print (m_map e2A (e#es))) B c"
-  using assms(1) unfolding first_printed_char_def
-  apply (clarsimp simp add: m_map_p_has_result)
-  by fastforce
-
-lemma m_map_first_printed_char_from_first_printer_nonempty:
-  assumes "\<not>(\<exists>i. p_has_result (print (a2A e)) i [])"
-  shows "first_printed_char (print (e2A e)) (\<lambda>t. (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr'))) c
-         \<longleftrightarrow>
-         first_printed_char (print (m_map e2A (e#es))) B c"
-  unfolding first_printed_char_def
-  apply (auto simp add: m_map_p_has_result assms)
-  subgoal for e_i_pr i "is" e_i_pr' es_is_pr
-    apply (rule exI[of _ \<open>i # is\<close>])
-    apply clarsimp 
-    apply (rule exI[of _ \<open>e_i_pr @ es_is_pr\<close>])
-    apply clarsimp
-    apply (rule exI[of _ \<open>i\<close>])
-    apply (rule exI[of _ \<open>is\<close>])
-    apply (rule exI[of _ \<open>e_i_pr\<close>])
-    by clarsimp
-  subgoal for i "is" e_i_pr es_is_pr by (metis hd_append2) \<comment> \<open>False in premises\<close>
-  subgoal for i "is" e_i_pr es_is_pr
-    
-    sorry
-  oops
-
-
 lemma m_map_fpci_empty[fpci_simps]:
   shows "\<not>first_printed_chari (print (m_map e2A [])) i c"
   unfolding first_printed_chari_def
@@ -418,43 +383,6 @@ lemma m_map_fpc_cons[fpc_simps]:
   unfolding fpc_def m_map_has_result(2)
   oops
 
-
-\<comment> \<open>For the B', also require that the m_map printer has a result with t#ts!\<close>
-lemma m_map_first_printed_char_cons:
-  assumes "if (\<exists>t. p_has_result (print (e2A e)) t [] \<and> (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr')))
-            then (first_printed_char (print (e2A e)) (\<lambda>t. (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr'))) c \<or>
-                  first_printed_char (print (m_map e2A es)) B c)
-            else (first_printed_char (print (e2A e)) (\<lambda>t. (\<exists>ts. B (t#ts) \<and> (\<exists>pr'. p_has_result (print (m_map e2A (e#es))) (t#ts) pr'))) c)"
-  shows "first_printed_char (print (m_map e2A (e#es))) B c"
-  using assms
-  unfolding first_printed_char_def
-  apply (auto simp add: m_map_p_has_result split: if_splits)
-  subgoal for x xs e_x_pr es_xs_pr e_y_pr y ys e_y_pr' es_ys_pr
-    apply (rule exI[of _ \<open>y#ys\<close>])
-    by fastforce
-  subgoal for x xs e_x_pr es_xs_pr ys es_ys_pr
-    apply (rule exI[of _ \<open>ys\<close>])
-    apply clarsimp
-    apply (rule exI[of _ \<open>e_x_pr@es_ys_pr\<close>])
-    apply (cases \<open>e_x_pr=[]\<close>; clarsimp simp add: p_has_result_deterministic)
-    \<comment> \<open>now we know it is indeed empty.\<close>
-    apply (rule exI[of _ \<open>x\<close>])
-    apply (rule exI[of _ \<open>tl ys\<close>])
-    apply (rule exI[of _ \<open>[]\<close>])
-    apply auto
-    \<comment> \<open>still something wrong here. Precondition wrong?\<close>
-    
-    sorry
-  subgoal by fastforce
-  oops
-
-
-lemma test:
-  shows "first_printed_char (print (m_map e2A (e#es))) B c \<longleftrightarrow> test"
-  unfolding first_printed_char_def p_has_result_def m_map_def
-  apply clarsimp
-  using m_map_pr.simps
-  oops
 
 
 \<comment> \<open>well formed\<close>
