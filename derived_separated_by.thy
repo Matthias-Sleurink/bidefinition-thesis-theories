@@ -153,6 +153,16 @@ lemma separated_by_print_empty:
         p_has_result (print (many (b_then sep elem))) (map (Pair sep_oracle) is) [])"
   by (clarsimp simp add: print_empty split: list.splits)+
 
+\<comment> \<open>PASI, PNGI\<close>
+lemma separated_by_PNGI:
+  assumes PNGI_elem: "PNGI (parse elem)"
+  assumes PASI_then: "PASI (parse (b_then sep elem))"
+  shows "PNGI (parse (separated_by sep elem sep_oracle))"
+  unfolding separated_by_def separated_byBase_def
+  by (auto intro!: optional_PNGI then_PNGI
+      intro: many_PNGI
+      simp add: PNGI_elem PASI_then transform_PNGI[symmetric])
+
 
 
 \<comment> \<open>Does not peek past end\<close>
