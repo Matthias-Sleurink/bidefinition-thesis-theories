@@ -67,13 +67,19 @@ lemma separated_by_has_result_safe_Nil[NER_simps]:
   
 lemma separated_by_has_result_safe_Cons[NER_simps]:
   "has_result (parse (separated_by sep elem sep_oracle)) i (a#as) l \<longleftrightarrow> (
-      \<exists>l'. has_result (parse elem) i a l' \<and>
-            ((is_error (parse sep) l' \<and> as = []) \<or>
-             (\<exists>l''. has_result (parse sep) l' s l'' \<and> has_result (parse (separated_by sep elem sep_oracle)) l'' as l)
-))"
+      \<exists>l'. has_result (parse elem) i a l' \<and> (\<exists>ss. length ss = length as \<and> has_result (parse (many (b_then sep elem))) l' (zip ss as) l))"
   apply (subst separated_by_def)
   apply (subst separated_byBase_def)
-  oops
+  apply (auto simp add: NER_simps split: option.splits)
+  subgoal for rs l'
+    apply (rule exI[of _ l'])
+    apply clarsimp
+    apply (rule exI[of _ \<open>map fst rs\<close>])
+    by (clarsimp simp add: zip_map_fst_snd)
+  subgoal for l' seps
+    apply (rule exI[of _ \<open>Some (a, zip seps as)\<close>])
+    by fastforce
+  done
 
 lemma separated_by_has_result_safe_one[NER_simps]:
   "has_result (parse (separated_by sep elem sep_oracle)) i [r] l \<longleftrightarrow> (
