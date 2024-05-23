@@ -6,10 +6,6 @@ begin
 definition separator where
   "separator = b_then (many whitespace_char) (b_then (this_char CHR '','') (many whitespace_char))"
 
-lemma comma_not_whitespace[simp]:
-  "CHR '','' \<notin> whitespace_chars"
-  by (simp add: whitespace_chars_def)
-
 lemma many_ws_wf:
   "bidef_well_formed (many whitespace_char)"
   by (clarsimp simp add: whitespace_char_def any_from_set_def many_char_for_predicate_well_formed)
@@ -82,7 +78,7 @@ lemma separator_no_consume_past3:
   subgoal
     using hd_in_set_cannot_create_from_dropWhile[of _ whitespace_chars]
     apply clarsimp
-    by (metis append.right_neutral comma_not_whitespace dropWhile_eq_self_iff dropWhile_never_grows list.sel(1) list.set_sel(1) set_append)
+    by (metis append.right_neutral chars_that_are_not_whitespace dropWhile_eq_self_iff dropWhile_never_grows list.sel(1) list.set_sel(1) set_append)
   subgoal by (metis (no_types, lifting) Cons_eq_appendI append_Nil2 append_same_eq dropWhile_takeWhile_same_predicate takeWhile_dropWhile_id)
   subgoal for cs x l l'
     apply (rule exI[of _ \<open>tl (dropWhile (\<lambda>found. found \<in> whitespace_chars) cs @ c # l')\<close>])
