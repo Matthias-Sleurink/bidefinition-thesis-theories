@@ -7,7 +7,7 @@ definition digit_chars :: "char set" where
   "digit_chars = {CHR ''0'', CHR ''1'', CHR ''2'', CHR ''3'', CHR ''4'',
                   CHR ''5'', CHR ''6'', CHR ''7'', CHR ''8'', CHR ''9''}"
 
-lemma char_in_digit_chars:
+lemma char_in_digit_chars[simp]:
   "CHR ''0'' \<in> digit_chars"
   "CHR ''1'' \<in> digit_chars"
   "CHR ''2'' \<in> digit_chars"

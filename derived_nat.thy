@@ -120,8 +120,8 @@ lemma nat_does_peek_past_end[peek_past_end_simps]:
   apply (rule exI[of _ \<open>''1''\<close>])
   apply (rule exI[of _ 1])
   apply (rule conjI)
-  subgoal by (rule exI[of _ \<open>''''\<close>]; clarsimp simp add: NER_simps char_in_digit_chars)
-  subgoal by (rule exI[of _ \<open>''1''\<close>]; clarsimp simp add: NER_simps char_in_digit_chars)
+  subgoal by (rule exI[of _ \<open>''''\<close>]; clarsimp simp add: NER_simps)
+  subgoal by (rule exI[of _ \<open>''1''\<close>]; clarsimp simp add: NER_simps)
   done
 
 lemma dropWhile_takeWhile_same_predicate[simp]:
