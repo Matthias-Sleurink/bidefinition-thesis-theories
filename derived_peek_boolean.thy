@@ -105,11 +105,11 @@ lemma peek_bool_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma peek_bool_PNGI:
+lemma peek_bool_PNGI[PASI_PNGI]:
   shows "PNGI (parse (peek_bool a oracle))"
   by (metis peek_PNGI peek_bool_def transform_PNGI)
 
-lemma peek_bool_PASI:
+lemma peek_bool_PASI[PASI_PNGI]:
   assumes "\<exists> i r l. has_result (parse a) i r l"
   shows "PASI (parse (peek_bool a oracle)) \<longleftrightarrow> False"
   unfolding peek_bool_def

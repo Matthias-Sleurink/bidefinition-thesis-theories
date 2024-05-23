@@ -78,11 +78,11 @@ lemma fail_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma fail_PNGI:
+lemma fail_PNGI[PASI_PNGI]:
   "PNGI (parse fail)"
   by (simp add: PNGI_def NER_simps)
 
-lemma fail_PASI:
+lemma fail_PASI[PASI_PNGI]:
   "PASI (parse fail)"
   by (simp add: PASI_def NER_simps)
 

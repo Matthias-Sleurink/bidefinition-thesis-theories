@@ -443,6 +443,7 @@ type_synonym '\<alpha> bidef = "'\<alpha> bd"
 
 
 section \<open>PASI, PNGI\<close>
+named_theorems PASI_PNGI
 \<comment> \<open>PASI, Parser Always Shrinks Input (Including it being a tail of the input)\<close>
 definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
   "PASI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. (i = c @ l \<and> c \<noteq> [])))"
@@ -491,26 +492,26 @@ lemma PASI_implies_error_from_empty:
         has_result_exhaust(3)
   by blast
 
-lemma if_PNGI:
+lemma if_PNGI[PASI_PNGI]:
   assumes "PNGI (parse T)"
   assumes "PNGI (parse F)"
   shows "PNGI (parse (if P then T else F))"
   by (simp add: assms)
 
-lemma if_PNGI_p:
+lemma if_PNGI_p[PASI_PNGI]:
   assumes "PNGI (parse (T p))"
   assumes "PNGI (parse (F p))"
   shows "PNGI (parse (if P p then T p else F p))"
   using assms
   by (rule if_PNGI)
 
-lemma if_PASI:
+lemma if_PASI[PASI_PNGI]:
   assumes "PASI (parse T)"
   assumes "PASI (parse F)"
   shows "PASI (parse (if P then T else F))"
   by (simp add: assms)
 
-lemma if_PASI_p:
+lemma if_PASI_p[PASI_PNGI]:
   assumes "PASI (parse (T p))"
   assumes "PASI (parse (F p))"
   shows "PASI (parse (if P p then T p else F p))"

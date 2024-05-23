@@ -118,7 +118,7 @@ lemma b_then_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma then_PNGI:
+lemma then_PNGI[PASI_PNGI]:
   assumes "PNGI (parse ab)"
   assumes "PNGI (parse bb)"
   shows "PNGI (parse (b_then ab bb))"

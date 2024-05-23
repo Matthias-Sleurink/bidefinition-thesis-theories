@@ -53,7 +53,7 @@ lemma char_for_predicate_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma char_for_predicate_PNGI:
+lemma char_for_predicate_PNGI[PASI_PNGI]:
   "PNGI (parse (char_for_predicate p))"
   unfolding char_for_predicate_def
   apply (rule dep_then_PNGI)
@@ -61,7 +61,7 @@ lemma char_for_predicate_PNGI:
   by (auto simp add: return_PNGI fail_PNGI)
 
 
-lemma char_for_predicate_PASI:
+lemma char_for_predicate_PASI[PASI_PNGI]:
   "PASI (parse (char_for_predicate p))"
   unfolding char_for_predicate_def
   apply (rule dep_then_PASI_PASI_PNGI)

@@ -57,7 +57,7 @@ lemma eof_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma eof_PNGI:
+lemma eof_PNGI[PASI_PNGI]:
   "PNGI (parse eof)"
   unfolding eof_def
   unfolding transform_PNGI[symmetric]
@@ -67,7 +67,7 @@ lemma eof_PNGI:
   subgoal by (rule return_PNGI)
   done
 
-lemma eof_PASI:
+lemma eof_PASI[PASI_PNGI]:
   "PASI (parse eof) \<longleftrightarrow> False"
   unfolding PASI_def
   by (simp add: NER_simps)

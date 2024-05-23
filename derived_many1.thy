@@ -96,7 +96,7 @@ lemma many1_PNGI_from_PNGI:
   apply (rule many_PNGI)
   oops
 
-lemma many1_PNGI:
+lemma many1_PNGI[PASI_PNGI]:
   assumes "PASI (parse p)"
   shows "PNGI (parse (many1 p))"
   unfolding many1_def
@@ -106,7 +106,7 @@ lemma many1_PNGI:
   apply (rule many_PNGI)
   by (rule assms)
 
-lemma many1_PASI:
+lemma many1_PASI[PASI_PNGI]:
   assumes "PASI (parse p)"
   shows "PASI (parse (many1 p))"
   unfolding many1_def

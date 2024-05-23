@@ -98,7 +98,7 @@ lemma dep_then_PNGI:
   subgoal by (rule fail_PNGI)
   done
 
-lemma dep_then_PNGI_for_ab_results:
+lemma dep_then_PNGI_for_ab_results[PASI_PNGI]:
   assumes "PNGI (parse ab)"
   assumes "\<forall>i r l. has_result (parse ab) i r l \<longrightarrow> PNGI (parse (a2bb r))"
   shows "PNGI (parse (dep_then ab a2bb b2a))"

@@ -95,14 +95,14 @@ lemma nat_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PASI, PNGI\<close>
-lemma nat_b_PNGI:
+lemma nat_b_PNGI[PASI_PNGI]:
   "PNGI (parse nat_b)"
   unfolding nat_b_def
   using transform_PNGI
         many1_PNGI[OF digit_char_PASI]
   by blast
 
-lemma nat_b_PASI:
+lemma nat_b_PASI[PASI_PNGI]:
   "PASI (parse nat_b)"
   unfolding nat_b_def
   using transform_PASI

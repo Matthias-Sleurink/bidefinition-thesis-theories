@@ -120,13 +120,13 @@ lemma mono_ftransform[partial_function_mono]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma ftransform_PASI:
+lemma ftransform_PASI[PASI_PNGI]:
   assumes "PASI (parse bi)"
   shows "PASI (parse (ftransform t t' bi))"
   using assms
   by (auto simp add: PASI_def NER_simps fp_NER)
 
-lemma ftransform_PNGI:
+lemma ftransform_PNGI[PASI_PNGI]:
   assumes "PNGI (parse bi)"
   shows "PNGI (parse (ftransform t t' bi))"
   using assms

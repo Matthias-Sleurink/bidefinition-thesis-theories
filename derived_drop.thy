@@ -54,12 +54,12 @@ lemma drop_print_empty[print_empty, fp_NER]:
 
 
 section \<open>PNGI, PASI\<close>
-lemma drop_PNGI:
+lemma drop_PNGI[PASI_PNGI]:
   "PNGI (parse (drop A oracle)) \<longleftrightarrow> PNGI (parse A)"
   by (clarsimp simp add: drop_def transform_PNGI[symmetric])
 
 
-lemma drop_PASI:
+lemma drop_PASI[PASI_PNGI]:
   "PASI (parse (drop A oracle)) \<longleftrightarrow> PASI (parse A)"
   by (clarsimp simp add: drop_def transform_PASI[symmetric])
 

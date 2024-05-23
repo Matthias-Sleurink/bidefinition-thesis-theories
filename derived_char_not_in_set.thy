@@ -58,12 +58,12 @@ lemma char_not_in_set_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma char_not_in_set_PNGI:
+lemma char_not_in_set_PNGI[PASI_PNGI]:
   "PNGI (parse (char_not_in_set s))"
   unfolding char_not_in_set_def
   by (rule char_for_predicate_PNGI)
 
-lemma char_not_in_set_PASI:
+lemma char_not_in_set_PASI[PASI_PNGI]:
   "PASI (parse (char_not_in_set s))"
   unfolding char_not_in_set_def
   by (rule char_for_predicate_PASI)

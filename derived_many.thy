@@ -234,7 +234,7 @@ lemma many0_induct:
 
 
 
-\<comment> \<open>PNGI, PASI\<close>
+subsection \<open>PNGI PASI\<close>
 lemma many_PNGI_from_PNGI:
   assumes "PNGI (parse bd)"
   shows "PNGI (parse (many bd))"
@@ -244,7 +244,7 @@ lemma many_PNGI_from_PNGI:
   apply (auto split: list.splits)
   oops
 
-lemma many_PNGI:
+lemma many_PNGI[PASI_PNGI]:
   assumes "PASI (parse p)"
   shows "PNGI (parse (many p))"
   (*Should really figure out some way of exposing the input so that we can say is PASI when at least one success*)

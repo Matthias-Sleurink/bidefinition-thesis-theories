@@ -61,7 +61,7 @@ lemma then_drop_second_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma then_drop_second_PNGI:
+lemma then_drop_second_PNGI[PASI_PNGI]:
   assumes "PNGI (parse ab)"
   assumes "PNGI (parse bb)"
   shows "PNGI (parse (then_drop_second ab bb b))"

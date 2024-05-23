@@ -316,7 +316,7 @@ lemma if_then_else_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma PNGI_dep_if_then_else:
+lemma PNGI_dep_if_then_else[PASI_PNGI]:
   assumes "PNGI (parse ab)"
   assumes "\<forall> i r l. has_result (parse ab) i r l \<longrightarrow> PNGI (parse (a2bb r))"
   assumes "PNGI (parse cb)"
