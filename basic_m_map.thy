@@ -201,7 +201,7 @@ lemma m_map_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma PNGI_m_map:
+lemma PNGI_m_map[PASI_PNGI]:
   assumes "\<forall>e\<in>set l. PNGI (parse (b e))"
   shows "PNGI (parse (m_map b l))"
   using assms
@@ -210,7 +210,7 @@ lemma PNGI_m_map:
   apply (auto simp add: NER_simps)
   by fastforce
 
-lemma PNGI_m_map_all:
+lemma PNGI_m_map_all[PASI_PNGI]:
   assumes "\<And>e. PNGI (parse (b e))"
   shows "PNGI (parse (m_map b l))"
   using assms
@@ -219,7 +219,7 @@ lemma PNGI_m_map_all:
   apply (auto simp add: NER_simps)
   by fastforce
 
-lemma PASI_m_map:
+lemma PASI_m_map[PASI_PNGI]:
   assumes "\<forall>e\<in>set l. PASI (parse (b e))"
   assumes "l \<noteq> []"
   shows "PASI (parse (m_map b l))"
