@@ -27,7 +27,7 @@ lemma [code_unfold]: "fail = fail' ()"
   
 
 
-\<comment> \<open>NER\<close>
+section NER
 lemma fail_is_nonterm[NER_simps]:
   "is_nonterm (parse fail) i \<longleftrightarrow> False"
   "is_nonterm fail_p       i \<longleftrightarrow> False"
@@ -55,7 +55,7 @@ lemma fail_has_result_ci[NER_simps]:
 
 
 
-\<comment> \<open>FP NER\<close>
+section \<open>FP NER\<close>
 lemma fail_p_is_nonterm[fp_NER]:
   "p_is_nonterm (print fail) i \<longleftrightarrow> False"
   "p_is_nonterm fail_pr i \<longleftrightarrow> False"
@@ -77,7 +77,7 @@ lemma fail_print_empty[print_empty, fp_NER]:
 
 
 
-\<comment> \<open>PNGI, PASI\<close>
+section \<open>PASI PNGI\<close>
 lemma fail_PNGI[PASI_PNGI]:
   "PNGI (parse fail)"
   by (simp add: PNGI_def NER_simps)
@@ -88,7 +88,7 @@ lemma fail_PASI[PASI_PNGI]:
 
 
 
-\<comment> \<open>Charset\<close>
+section Charset
 lemma charset_fail:
   "charset (parse fail) = {}"
   unfolding charset_def
@@ -101,14 +101,15 @@ lemma first_chars_fail:
 
 
 
-\<comment> \<open>Does not peek past end\<close>
+section \<open>Does not peek past end\<close>
 lemma fail_does_not_peek_past_end[peek_past_end_simps]:
   shows "does_not_peek_past_end (parse fail)"
   unfolding does_not_peek_past_end_def
   by (clarsimp simp add: fail_has_result)
 
 
-\<comment> \<open>Does not consume past char.\<close>
+
+section \<open>Does not consume past char\<close>
 lemma fail_does_not_consume_past_char:
   shows "does_not_consume_past_char (parse fail) ch"
   unfolding does_not_consume_past_char_def
@@ -119,8 +120,14 @@ lemma fail_does_not_consume_past_char2:
   unfolding does_not_consume_past_char2_def
   by (clarsimp simp add: fail_has_result)
 
+lemma fail_does_not_consume_past_char3:
+  shows "does_not_consume_past_char3 (parse fail) ch"
+  unfolding does_not_consume_past_char3_def
+  by (clarsimp simp add: fail_has_result)
 
-\<comment> \<open>First printed char\<close>
+
+
+section \<open>First Printed/Parsed char\<close>
 lemma fail_fpci[fpci_simps]:
   shows "\<nexists>i c. first_printed_chari (print fail) i c"
         "first_printed_chari (print fail) i c \<longleftrightarrow> False"
@@ -135,7 +142,7 @@ lemma fail_fpc[fpc_simps]:
 
 
 
-\<comment> \<open>Well Formed\<close>
+section \<open>Well Formed\<close>
 lemma fail_well_formed:
   "bidef_well_formed fail"
   apply wf_init
