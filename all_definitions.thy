@@ -25,6 +25,7 @@ theory all_definitions
           derived_drop
           derived_ws_comma_ws
           derived_ws_char_ws
+          derived_separated_by1
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
