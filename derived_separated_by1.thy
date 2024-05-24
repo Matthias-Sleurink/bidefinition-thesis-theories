@@ -142,10 +142,23 @@ lemma separated_by1_fpc[fpc_simps]:
 
 section \<open>Well Formed\<close>
 lemma separated_by1_well_formed:
-  assumes "\<exists>t. p_has_result (print sep) oracle t"
+  assumes good_oracle: "\<exists>t. p_has_result (print sep) oracle t"
+  assumes wf_elem: "bidef_well_formed elem"
   shows "bidef_well_formed (separated_by1 elem sep oracle)"
   unfolding separated_by1_def
   apply (auto intro!: ftransform_well_formed)
+  subgoal sorry
+  subgoal
+    unfolding ftrans_wf_funcs_printer_can_print_def
+    apply (auto simp add: NER_simps fp_NER wf_elem[THEN get_printer_can_print_unfold])
+    subgoal for i l e1 ses l'
+      apply (induction ses arbitrary: i l e1 l'; clarsimp simp add: fp_NER) \<comment> \<open>Empty case dispatched\<close>
+      unfolding many_p_has_result_safe(2) many_has_result_safe(2) b_then_has_result(1) b_then_p_has_result(1)
+      apply (auto simp add: good_oracle)
+      using wf_elem[THEN get_printer_can_print_unfold]
+      by blast
+    done
+  subgoal sorry
   oops
 
 
