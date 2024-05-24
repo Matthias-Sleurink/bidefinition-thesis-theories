@@ -96,54 +96,57 @@ lemma separated_by1_PASI[PASI_PNGI]:
 
 
 section \<open>Does not peek past end\<close>
-lemma fail_does_not_peek_past_end[peek_past_end_simps]:
-  shows "does_not_peek_past_end (parse fail)"
-  unfolding does_not_peek_past_end_def
-  by (clarsimp simp add: fail_has_result)
+\<comment> \<open>TODO: We should be able to do something similar to then here.\<close>
+lemma separated_by1_does_not_peek_past_end[peek_past_end_simps]:
+  shows "does_not_peek_past_end (parse (separated_by1 elem sep oracle))"
+  unfolding separated_by1_def
+  apply (clarsimp intro!: peek_past_end_simps)
+  oops
 
 
 
 section \<open>Does not consume past char\<close>
-lemma fail_does_not_consume_past_char:
-  shows "does_not_consume_past_char (parse fail) ch"
-  unfolding does_not_consume_past_char_def
-  by (clarsimp simp add: fail_has_result)
-
-lemma fail_does_not_consume_past_char2:
-  shows "does_not_consume_past_char2 (parse fail) ch"
-  unfolding does_not_consume_past_char2_def
-  by (clarsimp simp add: fail_has_result)
-
-lemma fail_does_not_consume_past_char3:
-  shows "does_not_consume_past_char3 (parse fail) ch"
-  unfolding does_not_consume_past_char3_def
-  by (clarsimp simp add: fail_has_result)
+\<comment> \<open>TODO: We should be able to do something similar to then here.\<close>
+lemma separated_by1_does_not_consume_past_char3:
+  shows "does_not_consume_past_char3 (parse (separated_by1 elem sep oracle)) c"
+  unfolding separated_by1_def
+  oops
 
 
 
 section \<open>First Printed/Parsed char\<close>
-lemma fail_fpci[fpci_simps]:
-  shows "\<nexists>i c. first_printed_chari (print fail) i c"
-        "first_printed_chari (print fail) i c \<longleftrightarrow> False"
-  unfolding first_printed_chari_def
-  by (clarsimp simp add: fail_p_has_result)+
+lemma separated_by1_fpci[fpci_simps]:
+  "first_printed_chari (print (separated_by1 elem sep oracle)) [] c \<longleftrightarrow> False"
+  "first_printed_chari (print (separated_by1 elem sep oracle)) [i] c \<longleftrightarrow> first_printed_chari (print elem) i c"
+  "first_printed_chari (print (separated_by1 elem sep oracle)) (i#is) c \<longleftrightarrow>(
+      if p_has_result (print elem) i [] then
+        (first_printed_chari (print (many (b_then sep elem))) (map (Pair oracle) is) c)
+      else
+        (first_printed_chari (print elem) i c \<and> (\<exists>t. p_has_result (print (many (b_then sep elem))) (map (Pair oracle) is) t))
+)"
+  unfolding separated_by1_def
+  subgoal by (clarsimp simp add: fpci_simps)
+  subgoal by (auto simp add: fpci_simps ex_many_p_has_result)
+  subgoal by (auto simp add: fpci_simps)
+  done
 
-lemma fail_fpc[fpc_simps]:
-  shows "\<nexists>i c. fpc (parse fail) i c"
-        "fpc (parse fail) i c \<longleftrightarrow> False"
-  unfolding fpc_def
-  by (clarsimp simp add: fail_has_result)+
+
+
+lemma separated_by1_fpc[fpc_simps]:
+  \<comment> \<open>TODO: the other cases?\<close>
+  "fpc (parse (separated_by1 elem sep oracle)) [] c \<longleftrightarrow> False"
+  unfolding separated_by1_def
+  by (clarsimp simp add: fpc_simps)
 
 
 
 section \<open>Well Formed\<close>
-lemma fail_well_formed:
-  "bidef_well_formed fail"
-  apply wf_init
-  subgoal by (rule fail_PNGI)
-  subgoal by (simp add: parser_can_parse_print_result_def fp_NER)
-  subgoal by (simp add: printer_can_print_parse_result_def NER_simps)
-  done
+lemma separated_by1_well_formed:
+  assumes "\<exists>t. p_has_result (print sep) oracle t"
+  shows "bidef_well_formed (separated_by1 elem sep oracle)"
+  unfolding separated_by1_def
+  apply (auto intro!: ftransform_well_formed)
+  oops
 
 
 
