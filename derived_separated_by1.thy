@@ -141,13 +141,27 @@ lemma separated_by1_fpc[fpc_simps]:
 
 
 section \<open>Well Formed\<close>
+lemma snd_Pair[simp]:
+  "snd \<circ> Pair x = id"
+  by fastforce
+
 lemma separated_by1_well_formed:
   assumes good_oracle: "\<exists>t. p_has_result (print sep) oracle t"
   assumes wf_elem: "bidef_well_formed elem"
+  \<comment> \<open>Allow the user to choose does not peek past char, does not eat into, etc as method for collision.\<close>
+  assumes wf_whole: "bidef_well_formed (b_then elem (many (b_then sep elem)))"
   shows "bidef_well_formed (separated_by1 elem sep oracle)"
   unfolding separated_by1_def
   apply (auto intro!: ftransform_well_formed)
-  subgoal sorry
+  subgoal
+    unfolding ftrans_wf_funcs_parser_can_parse_def
+    apply (auto simp add: wf_whole[THEN get_parser_can_parse_unfold] split: list.splits)
+    subgoal for pr e1 elems
+      apply (rule exI[of _ \<open>[]\<close>])
+      apply (rule exI[of _ \<open>map (Pair oracle) elems\<close>])
+      using wf_whole[THEN get_parser_can_parse_unfold]
+      by clarsimp
+    done
   subgoal
     unfolding ftrans_wf_funcs_printer_can_print_def
     apply (auto simp add: NER_simps fp_NER wf_elem[THEN get_printer_can_print_unfold])
@@ -158,8 +172,8 @@ lemma separated_by1_well_formed:
       using wf_elem[THEN get_printer_can_print_unfold]
       by blast
     done
-  subgoal sorry
-  oops
+  subgoal by (rule wf_whole)
+  done
 
 
 
