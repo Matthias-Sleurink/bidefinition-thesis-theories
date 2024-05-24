@@ -212,7 +212,35 @@ lemma ftransform_fpc[fpc_simps]:
 
 
 \<comment> \<open>Well Formed\<close>
+\<comment> \<open>This is for sure not great, as this is basically the wf requirements but not worded in terms of wf.
+    So the user cannot use any existing combinators for it. How do we solve this?\<close>
+definition ftrans_wf_funcs_parser_can_parse :: "('\<alpha> \<Rightarrow> '\<beta> option) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha> option) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
+  "ftrans_wf_funcs_parser_can_parse f f' b \<longleftrightarrow>
+    (\<forall> pr t. (\<exists>t'. Some t' = f' t \<and> p_has_result (print b) t' pr) \<longrightarrow> (\<exists>l r'. has_result (parse b) pr r' l \<and> Some t = f r'))"
 
+definition ftrans_wf_funcs_printer_can_print :: "('\<alpha> \<Rightarrow> '\<beta> option) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha> option) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
+  "ftrans_wf_funcs_printer_can_print f f' b \<longleftrightarrow>
+    (\<forall> i r l. (\<exists>r'. has_result (parse b) i r' l \<and> f r' = Some r) \<longrightarrow> (\<exists>r' t. f' r = Some r' \<and> p_has_result (print b) r' t))"
+
+lemma ftransform_well_formed:
+  assumes "ftrans_wf_funcs_parser_can_parse f f' b"
+  assumes "ftrans_wf_funcs_printer_can_print f f' b"
+  assumes b_wf: "bidef_well_formed b"
+  shows "bidef_well_formed (ftransform f f' b)"
+  apply wf_init
+  subgoal by (rule b_wf[THEN get_pngi, THEN ftransform_PNGI])
+  subgoal
+    using b_wf[THEN get_parser_can_parse]
+          assms(1)[unfolded ftrans_wf_funcs_parser_can_parse_def]
+    apply (auto simp add: parser_can_parse_print_result_def fp_NER NER_simps)
+    unfolding has_result_def by fastforce \<comment> \<open>Why does unfolding has_result here help?\<close>
+  subgoal
+    using b_wf[THEN get_printer_can_print]
+          assms(2)[unfolded ftrans_wf_funcs_printer_can_print_def]
+    apply (auto simp add: printer_can_print_parse_result_def fp_NER NER_simps)
+    unfolding has_result_def by fastforce
+    \<comment> \<open>Again, fastforce is consistently slower when has_result is unfolded.\<close>
+  done
 
 
 end
