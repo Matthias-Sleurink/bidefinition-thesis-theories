@@ -3,6 +3,7 @@ theory all_examples
           example_numberlist
           example_numberlist_comma
           example_numberlist_comma_unit
+          example_expression_parser
 begin
 
 
