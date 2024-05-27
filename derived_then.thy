@@ -12,6 +12,13 @@ definition b_then2 :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow
 definition b_then :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> ('\<alpha> \<times> '\<beta>) bidef" where
   "b_then ab bb = dep_then ab (\<lambda>a. transform (Pair a) snd bb) fst"
 
+lemma mono_then[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  shows "mono_bd (\<lambda>f. b_then (A f) (B f))"
+  unfolding b_then_def using assms
+  by (clarsimp simp add: partial_function_mono)
+
 
 
 \<comment> \<open>NER\<close>
