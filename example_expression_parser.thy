@@ -4,13 +4,18 @@ begin
 
 text \<open>
 A recursive expression parser.
+The intended grammar is basically this:
+E : M ['+'M]*
+M : B ['*'B]*
+B : nat
+  | '(' E ')'
 \<close>
 datatype Ex
   = Additive (getList: "Ex list")
   | Subtract (getList: "Ex list")
   | Multiply (getList: "Ex list")
   | Literal (getNat: nat)
-  | Braced Ex
+  | Braced (getE: Ex)
 
 fun val :: "Ex \<Rightarrow> nat" where
   "val (Additive []) = 0"
@@ -60,8 +65,57 @@ lemma chars_not_in_whitespace[simp]:
 \<comment> \<open>Is there way some way of saying that this is just the Literal branch of the type?\<close>
 definition Number :: "Ex bidef" where
   "Number = transform Literal getNat nat_b"
-\<comment> \<open>This is where we'd want to take a parameter of Exp bidef to create the (Expr) case.\<close>
 
+\<comment> \<open>Number or expression.\<close>
+definition NOE :: "Ex bidef \<Rightarrow> Ex bidef" where
+  "NOE E = transform
+              sum_take
+              (\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e)
+              (derived_or.or Number E)"
+
+lemma mono_NOE[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. NOE (A f))"
+  unfolding NOE_def using ma
+  by (clarsimp simp add: partial_function_mono)
+
+\<comment> \<open>Some quick tests to see how this 'else' case in case expressions works.\<close>
+value "(\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Literal 4)"
+value "(\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
+value "(\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
+
+
+definition MultE :: "Ex bidef \<Rightarrow> Ex bidef" where
+  "MultE E = transform
+               Multiply
+               getList
+               (separated_by1 (NOE E) star ())"
+lemma mono_MultE[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. MultE (A f))"
+  unfolding MultE_def using ma
+  by (clarsimp simp add: partial_function_mono)
+
+definition AddE :: "Ex bidef \<Rightarrow> Ex bidef" where
+  "AddE E = transform
+              Additive
+              getList
+              (separated_by1 (MultE E) plus ())"
+
+\<comment> \<open>Need to take the unit param to make partial function work.\<close>
+partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where
+  "expressionR u = transform
+                    (id)
+                    (\<lambda>e. case e of
+                           Additive a \<Rightarrow> Additive a
+                         | Multiply a \<Rightarrow> Additive [Multiply a]
+                         | Literal n \<Rightarrow> Additive [Multiply[Literal n]]
+                         | Braced a \<Rightarrow> Additive [Multiply[Braced a]] \<comment> \<open>Not sure if this is needed.\<close>
+                    ) \<comment> \<open>Expr \<Rightarrow> Addl\<close>
+                    (AddE (expressionR ()))"
+
+definition Expression :: "Ex bidef" where
+  "Expression = expressionR ()"
 
 definition Mult :: "Ex bidef" where
   "Mult = transform
