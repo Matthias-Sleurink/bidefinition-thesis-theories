@@ -91,12 +91,17 @@ definition expression :: "Ex bidef" where
 lemma "has_result (parse expression) ''123'' (Additive [Multiply [Literal 123]]) []"
   apply (clarsimp simp add: NER_simps expression_def Add_def Mult_def Number_def star_def plus_def)
   by (clarsimp simp add: nat_from.simps(2))
-
+lemma "p_has_result (print expression) (Additive [Multiply [Literal 123]]) ''123''"
+  apply (clarsimp simp add: fp_NER expression_def Add_def Mult_def Number_def star_def plus_def print_nat_def)
+  by (clarsimp simp add: numeral_2_eq_2 numeral_3_eq_3)
 
 lemma "has_result (parse expression) ''1+2'' (Additive [Multiply [Literal 1], Multiply [Literal 2]]) []"
   apply (clarsimp simp add: NER_simps expression_def Add_def Mult_def Number_def star_def plus_def)
   apply (rule exI[of _ \<open>[()]\<close>])
   by (clarsimp simp add: NER_simps)
+lemma "p_has_result (print expression) (Additive [Multiply [Literal 1], Multiply [Literal 2]]) ''1+2''"
+  apply (clarsimp simp add: fp_NER expression_def Add_def Mult_def Number_def star_def plus_def print_nat_def)
+  by (clarsimp simp add: numeral_2_eq_2)
 
 lemma "has_result (parse expression) ''1+2*3'' (Additive [Multiply [Literal 1], Multiply [Literal 2, Literal 3]]) []"
   apply (clarsimp simp add: NER_simps expression_def Add_def Mult_def Number_def star_def plus_def)
@@ -104,6 +109,11 @@ lemma "has_result (parse expression) ''1+2*3'' (Additive [Multiply [Literal 1], 
   apply (clarsimp simp add: NER_simps)
   apply (rule exI[of _ \<open>[()]\<close>])
   by (clarsimp simp add: NER_simps)
+lemma "p_has_result (print expression) (Additive [Multiply [Literal 1], Multiply [Literal 2, Literal 3]]) ''1+2*3''"
+  apply (clarsimp simp add: fp_NER expression_def Add_def Mult_def Number_def star_def plus_def print_nat_def)
+  by (clarsimp simp add: numeral_2_eq_2 numeral_3_eq_3)
+
+
 
 \<comment> \<open>NER\<close>
 \<comment> \<open>Kinda seems like we need this for the underlying as well.\<close>
