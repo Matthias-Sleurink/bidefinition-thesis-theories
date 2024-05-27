@@ -9,6 +9,13 @@ Try the first bidef, if it fails, use the second, if the second also fails, fail
 definition or :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> ('\<alpha> + '\<beta>) bidef" where
   "or a b = if_then_else a return b (id :: '\<alpha> \<Rightarrow> '\<alpha>)"
 
+lemma mono_or[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  shows "mono_bd (\<lambda>f. or (A f) (B f))"
+  unfolding or_def using assms
+  by (clarsimp simp add: partial_function_mono)
+
 
 
 \<comment> \<open>NER\<close>
