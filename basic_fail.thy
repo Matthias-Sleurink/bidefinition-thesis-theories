@@ -24,7 +24,11 @@ fun fail' :: "unit \<Rightarrow> 'a bd" where
 
 lemma [code_unfold]: "fail = fail' ()"
   by (auto simp add: fail_def bdc_eq_iff)
-  
+
+lemma mono_fail[partial_function_mono]:
+  shows "mono_bd (\<lambda>f. fail)"
+  by (rule bd.const_mono)
+
 
 
 section NER
