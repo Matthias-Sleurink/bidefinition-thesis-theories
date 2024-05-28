@@ -36,10 +36,10 @@ lemma val_tests:
   "7 = val (Additive [Literal 1, Multiply [Literal 2, Braced (Literal 3)]])"
   by simp_all
 
-definition star :: "unit bidef" where
-  "star = ws_char_ws CHR ''*''"
-definition plus :: "unit bidef" where
-  "plus = ws_char_ws CHR ''+''"
+abbreviation star :: "unit bidef" where
+  "star \<equiv> ws_char_ws CHR ''*''"
+abbreviation plus :: "unit bidef" where
+  "plus \<equiv> ws_char_ws CHR ''+''"
 lemma expression_punctuation_charsets[simp]:
   "CHR ''*'' \<notin> digit_chars"
   "CHR ''+'' \<notin> digit_chars"
