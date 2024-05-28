@@ -129,61 +129,11 @@ partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where
 definition Expression :: "Ex bidef" where
   "Expression = expressionR ()"
 
-definition Mult :: "Ex bidef" where
-  "Mult = transform
-            Multiply
-            getList
-            (separated_by1 Number star ())"
-
-definition Add :: "Ex bidef" where
-  "Add = transform
-          Additive
-          getList
-          (separated_by1 Mult plus ())"
-
-
-definition expression :: "Ex bidef" where
-  "expression = transform
-                  (id)
-                  \<comment> \<open>Is there something like lambdacase in haskell?\<close>
-                  \<comment> \<open>This would not be needed if we could do the 'This branch of type' thing above.\<close>
-                  (\<lambda> Additive a \<Rightarrow> Additive a
-                   | Multiply a \<Rightarrow> Additive [Multiply a]
-                   | Literal n \<Rightarrow> Additive [Multiply[Literal n]]
-                  ) \<comment> \<open>Expr \<Rightarrow> Addl\<close>
-                  Add"
-
-lemma "has_result (parse expression) ''123'' (Additive [Multiply [Literal 123]]) []"
-  apply (clarsimp simp add: NER_simps expression_def Add_def Mult_def Number_def star_def plus_def)
-  by (clarsimp simp add: nat_from.simps(2))
-lemma "p_has_result (print expression) (Additive [Multiply [Literal 123]]) ''123''"
-  apply (clarsimp simp add: fp_NER expression_def Add_def Mult_def Number_def star_def plus_def print_nat_def)
-  by (clarsimp simp add: numeral_2_eq_2 numeral_3_eq_3)
-
-lemma "has_result (parse expression) ''1+2'' (Additive [Multiply [Literal 1], Multiply [Literal 2]]) []"
-  apply (clarsimp simp add: NER_simps expression_def Add_def Mult_def Number_def star_def plus_def)
-  apply (rule exI[of _ \<open>[()]\<close>])
-  by (clarsimp simp add: NER_simps)
-lemma "p_has_result (print expression) (Additive [Multiply [Literal 1], Multiply [Literal 2]]) ''1+2''"
-  apply (clarsimp simp add: fp_NER expression_def Add_def Mult_def Number_def star_def plus_def print_nat_def)
-  by (clarsimp simp add: numeral_2_eq_2)
-
-lemma "has_result (parse expression) ''1+2*3'' (Additive [Multiply [Literal 1], Multiply [Literal 2, Literal 3]]) []"
-  apply (clarsimp simp add: NER_simps expression_def Add_def Mult_def Number_def star_def plus_def)
-  apply (rule exI[of _ \<open>[()]\<close>])
-  apply (clarsimp simp add: NER_simps)
-  apply (rule exI[of _ \<open>[()]\<close>])
-  by (clarsimp simp add: NER_simps)
-lemma "p_has_result (print expression) (Additive [Multiply [Literal 1], Multiply [Literal 2, Literal 3]]) ''1+2*3''"
-  apply (clarsimp simp add: fp_NER expression_def Add_def Mult_def Number_def star_def plus_def print_nat_def)
-  by (clarsimp simp add: numeral_2_eq_2 numeral_3_eq_3)
-
-
 
 \<comment> \<open>NER\<close>
 \<comment> \<open>This needs to be done not for expression but for expressionR\<close>
 lemma expression_is_nonterm[NER_simps]:
-  "is_nonterm (parse expression) i \<longleftrightarrow> False"
+  "is_nonterm (parse Expression) i \<longleftrightarrow> False"
   oops
 
 lemma fail_is_error[NER_simps]:
