@@ -6,7 +6,7 @@ text \<open>
 Drop the result, takes an oracle for printing
 \<close>
 
-definition drop :: "'\<alpha> bidef \<Rightarrow> '\<alpha> \<Rightarrow> unit bidef" where [code del]:
+definition drop :: "'\<alpha> bidef \<Rightarrow> '\<alpha> \<Rightarrow> unit bidef" where
   "drop A oracle = transform (const ()) (const oracle) A"
  
 
