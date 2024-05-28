@@ -16,6 +16,8 @@ datatype Ex
   | Multiply (getList: "Ex list")
   | Literal (getNat: nat)
   | Braced (getE: Ex)
+\<comment> \<open>Braced should probably not be in the AST.\<close>
+
 
 fun val :: "Ex \<Rightarrow> nat" where
   "val (Additive []) = 0"
@@ -72,7 +74,7 @@ definition NOE :: "Ex bidef \<Rightarrow> Ex bidef" where
               sum_take
               (\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e)
               (derived_or.or Number E)"
-
+\<comment> \<open>This should have parenthesis around the E?\<close>
 lemma mono_NOE[partial_function_mono]:
   assumes ma: "mono_bd A"
   shows "mono_bd (\<lambda>f. NOE (A f))"
@@ -90,17 +92,25 @@ definition MultE :: "Ex bidef \<Rightarrow> Ex bidef" where
                Multiply
                getList
                (separated_by1 (NOE E) star ())"
+
 lemma mono_MultE[partial_function_mono]:
   assumes ma: "mono_bd A"
   shows "mono_bd (\<lambda>f. MultE (A f))"
   unfolding MultE_def using ma
-  by (clarsimp simp add: partial_function_mono)
+  by pf_mono_prover
 
 definition AddE :: "Ex bidef \<Rightarrow> Ex bidef" where
   "AddE E = transform
               Additive
               getList
               (separated_by1 (MultE E) plus ())"
+
+lemma mono_AddE[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. AddE (A f))"
+  unfolding AddE_def using ma
+  by pf_mono_prover
+
 
 \<comment> \<open>Need to take the unit param to make partial function work.\<close>
 partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where
@@ -135,10 +145,9 @@ definition expression :: "Ex bidef" where
                   (id)
                   \<comment> \<open>Is there something like lambdacase in haskell?\<close>
                   \<comment> \<open>This would not be needed if we could do the 'This branch of type' thing above.\<close>
-                  (\<lambda>e. case e of
-                         Additive a \<Rightarrow> Additive a
-                       | Multiply a \<Rightarrow> Additive [Multiply a]
-                       | Literal n \<Rightarrow> Additive [Multiply[Literal n]]
+                  (\<lambda> Additive a \<Rightarrow> Additive a
+                   | Multiply a \<Rightarrow> Additive [Multiply a]
+                   | Literal n \<Rightarrow> Additive [Multiply[Literal n]]
                   ) \<comment> \<open>Expr \<Rightarrow> Addl\<close>
                   Add"
 
@@ -170,23 +179,10 @@ lemma "p_has_result (print expression) (Additive [Multiply [Literal 1], Multiply
 
 
 \<comment> \<open>NER\<close>
-\<comment> \<open>Kinda seems like we need this for the underlying as well.\<close>
+\<comment> \<open>This needs to be done not for expression but for expressionR\<close>
 lemma expression_is_nonterm[NER_simps]:
   "is_nonterm (parse expression) i \<longleftrightarrow> False"
-  apply (auto simp add: expression_def Add_def Mult_def Number_def star_def plus_def NER_simps)
-  subgoal by (smt (verit) b_then_is_nonterm many_not_nonterm_when_base_not_nonterm nat_b_PASI nat_is_nonterm then_PASI transform_PASI transform_is_nonterm ws_char_ws_PASI ws_char_ws_is_nonterm)
-  subgoal
-    using many_not_nonterm_when_base_not_nonterm[of \<open>(b_then (ws_char_ws CHR ''+'') (transform Multl getNList (separated_by (ws_char_ws CHR ''*'') (transform Num getNumber nat_b) ())))\<close>]
-    using then_PASI_from_pasi_pngi[of \<open>ws_char_ws CHR ''+''\<close> \<open>transform Multl getNList (separated_by (ws_char_ws CHR ''*'') (transform Num getNumber nat_b) ())\<close>, OF ws_char_ws_PASI]
-    using separated_by_PNGI[of \<open>transform Num getNumber nat_b\<close> \<open>ws_char_ws CHR ''*''\<close>,
-                            OF transform_PNGI[THEN iffD1, OF nat_b_PNGI]
-                               then_PASI[OF ws_char_ws_PASI transform_PASI[THEN iffD1, OF nat_b_PASI]]]
-    apply (auto simp add: PASI_PNGI)
-    unfolding b_then_is_nonterm
-    apply (clarsimp simp add: ws_char_ws_is_nonterm transform_is_nonterm separated_by_is_nonterm nat_is_nonterm transform_has_result)
-    using many_not_nonterm_when_base_not_nonterm[of \<open>b_then (ws_char_ws CHR ''*'') (transform Num getNumber nat_b)\<close>]
-    by (auto simp add: PASI_PNGI then_PASI b_then_is_nonterm ws_char_ws_is_nonterm transform_is_nonterm nat_is_nonterm)
-  done
+  oops
 
 lemma fail_is_error[NER_simps]:
   "is_error (parse fail) i \<longleftrightarrow> True"
