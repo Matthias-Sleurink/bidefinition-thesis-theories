@@ -27,10 +27,8 @@ partial_function (bd) many' :: "'a bd \<Rightarrow> 'a list bd" where [code]:
                 (hd) \<comment> \<open>'a list \<Rightarrow> 'a (transform result of then back into result for test)\<close>
                )
 "
-print_theorems
 
-
-
+declare [[function_internals]] \<comment> \<open>Need this to get many_def.\<close>
 partial_function (bd) many :: "'a bd \<Rightarrow> 'a list bd" where [code]:
   "many a = transform
               sum_take
@@ -43,6 +41,26 @@ partial_function (bd) many :: "'a bd \<Rightarrow> 'a list bd" where [code]:
                )
 "
 print_theorems
+
+lemma ord_to_fun_ord:
+  shows "monotone ordA ordB F \<longleftrightarrow> monotone (fun_ord ordA) ordB (\<lambda>a. F (a ()))"
+  unfolding monotone_def fun_ord_def
+  by fast
+
+lemma mono_many[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. many (A f))"
+proof -
+  have "monotone bd_ord bd_ord many"
+  apply (unfold many_def)
+  apply (rule bd.fixp_preserves_mono1[OF many.mono reflexive])
+  thm ord_to_fun_ord[THEN iffD2]
+  apply (rule ord_to_fun_ord[THEN iffD2])
+  apply (intro partial_function_mono)
+  by (rule ord_to_fun_ord[THEN iffD1])
+  thus ?thesis using ma bd.mono2mono by fastforce
+qed
+
 
 
 subsection \<open>NER\<close>
