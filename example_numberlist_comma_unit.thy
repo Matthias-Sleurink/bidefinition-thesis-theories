@@ -5,6 +5,7 @@ begin
 definition numberlist_comma_unit :: "nat list bidef" where
   "numberlist_comma_unit = separated_by ws_comma_ws nat_b ()"
 
+
 lemma numberlist_comma_unit_results:
   "has_result (parse numberlist_comma_unit) ''''       []       ''''"
   "has_result (parse numberlist_comma_unit) '' ''      []       '' ''"
@@ -15,8 +16,7 @@ lemma numberlist_comma_unit_results:
   "has_result (parse numberlist_comma_unit) ''1 , 2''  [1, 2]   ''''"
   "has_result (parse numberlist_comma_unit) ''1, 12''  [1, 12]  ''''"
   "has_result (parse numberlist_comma_unit) ''13, 12'' [13, 12] ''''"
-  oops
-  \<comment> \<open>codegen issues here when using eval\<close>
+  by eval+
 
 lemma good_oracle:
   "good_separated_by_oracle ws_comma_ws ()"
