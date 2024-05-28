@@ -42,6 +42,40 @@ definition m_map :: "('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> '\<a
     (m_map_pr (\<lambda>a. print (a2b_tri a)) as)
 "
 
+lemma mono_m_map[partial_function_mono]:
+  assumes ma: "\<And>p. mono_bd (A p)"
+  shows "mono_bd (\<lambda>f. m_map (\<lambda>p. A p f) ps)"
+  apply (rule monotoneI)
+  using ma
+  apply (induction ps)
+  subgoal unfolding m_map_def
+    unfolding bd_ord_def fun_ord_def flat_ord_def monotone_def
+    apply auto
+    by (metis list.exhaust_sel m_map_pr.simps(1) m_map_pr.simps(2))
+  subgoal for e es x y unfolding m_map_def
+    unfolding bd_ord_def fun_ord_def flat_ord_def monotone_def
+    apply (auto split: option.splits)
+    subgoal by (smt (verit, ccfv_threshold) option.distinct(1))
+    subgoal by (smt (verit, ccfv_threshold) option.sel option.simps(3))
+    subgoal by (smt (verit, del_insts) option.distinct(1) option.inject)
+    subgoal by (smt (verit, del_insts) option.distinct(1) option.inject)
+    subgoal
+      \<comment> \<open>Sledgehammer generates a few proofs here that always time out.\<close>
+      sorry
+    subgoal
+      \<comment> \<open>Sledgehammer generates one proof here that always times out.\<close>
+      sorry
+    subgoal  sorry
+    subgoal  sorry
+    subgoal  sorry
+    subgoal  sorry
+    subgoal  sorry
+    subgoal  sorry
+    subgoal  sorry
+    subgoal  sorry
+    done
+  oops
+
 
 
 lemma m_map_is_nonterm[NER_simps]:
