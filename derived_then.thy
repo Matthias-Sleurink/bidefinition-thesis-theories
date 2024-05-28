@@ -16,8 +16,8 @@ lemma mono_then[partial_function_mono]:
   assumes ma: "mono_bd A"
   assumes mb: "mono_bd B"
   shows "mono_bd (\<lambda>f. b_then (A f) (B f))"
-  unfolding b_then_def using assms
-  by (clarsimp simp add: partial_function_mono)
+  unfolding b_then_def using ma mb
+  by pf_mono_prover
 
 
 

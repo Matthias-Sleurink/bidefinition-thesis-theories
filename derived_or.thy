@@ -13,8 +13,8 @@ lemma mono_or[partial_function_mono]:
   assumes ma: "mono_bd A"
   assumes mb: "mono_bd B"
   shows "mono_bd (\<lambda>f. or (A f) (B f))"
-  unfolding or_def using assms
-  by (clarsimp simp add: partial_function_mono)
+  unfolding or_def using ma mb
+  by pf_mono_prover
 
 
 

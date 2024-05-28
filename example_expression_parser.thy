@@ -75,11 +75,13 @@ definition NOE :: "Ex bidef \<Rightarrow> Ex bidef" where
               (\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e)
               (derived_or.or Number E)"
 \<comment> \<open>This should have parenthesis around the E?\<close>
+
+
 lemma mono_NOE[partial_function_mono]:
   assumes ma: "mono_bd A"
   shows "mono_bd (\<lambda>f. NOE (A f))"
   unfolding NOE_def using ma
-  by (clarsimp simp add: partial_function_mono)
+  by pf_mono_prover
 
 \<comment> \<open>Some quick tests to see how this 'else' case in case expressions works.\<close>
 value "(\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Literal 4)"

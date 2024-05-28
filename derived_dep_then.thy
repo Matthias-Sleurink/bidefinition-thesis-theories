@@ -13,7 +13,9 @@ lemma mono_dep_then[partial_function_mono]:
   assumes ma: "mono_bd A"
   assumes mb: "\<And>y. mono_bd (\<lambda>f. B y f)"
   shows "mono_bd (\<lambda>f. dep_then (A f) (\<lambda>y. B y f) transf)"
-  by (simp add: dep_then_def mono_transform mono_if_then_else ma mb bd.const_mono)+
+  unfolding dep_then_def
+  using ma mb
+  by pf_mono_prover
 
 
 
