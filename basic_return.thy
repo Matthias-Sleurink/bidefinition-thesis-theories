@@ -10,6 +10,10 @@ fun return_pr :: "'\<alpha> \<Rightarrow> '\<alpha> printer" where
 definition return :: "'\<alpha> \<Rightarrow> '\<alpha> bidef" where
   "return d = bdc (return_p d) (return_pr d)"
 
+lemma mono_return[partial_function_mono]:
+  shows "mono_bd (\<lambda>f. return i)"
+  by pf_mono_prover
+
 
 
 \<comment> \<open>NER\<close>

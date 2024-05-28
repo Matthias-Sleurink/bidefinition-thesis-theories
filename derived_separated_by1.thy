@@ -15,6 +15,13 @@ definition separated_by1 :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Righ
         (\<lambda>i. case i of [] \<Rightarrow> None | x#xs \<Rightarrow> Some (x, map (Pair oracle) xs))
         (b_then elem (many (b_then sep elem)))"
 
+lemma mono_separated_by1[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  shows "mono_bd (\<lambda>f. separated_by1 (A f) (B f) oracle)"
+  unfolding separated_by1_def using assms
+  by pf_mono_prover
+
 
 
 section NER
