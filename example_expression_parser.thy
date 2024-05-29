@@ -12,28 +12,25 @@ B : nat
 \<close>
 datatype Ex
   = Additive (getList: "Ex list")
-  | Subtract (getList: "Ex list")
   | Multiply (getList: "Ex list")
   | Literal (getNat: nat)
-  | Braced (getE: Ex)
-\<comment> \<open>Braced should probably not be in the AST.\<close>
+  | Parenthesised (getE: Ex)
+\<comment> \<open>Parenthesised should probably not be in the AST.\<close>
 
 
 fun val :: "Ex \<Rightarrow> nat" where
   "val (Additive []) = 0"
 | "val (Additive (x#xs)) = (val x) + (val (Additive xs))"
-| "val (Subtract []) = 0"
-| "val (Subtract (x#xs)) = (val x) - (val (Subtract xs))"
 | "val (Multiply []) = 1"
 | "val (Multiply (x#xs)) = (val x) * (val (Multiply xs))"
 | "val (Literal v) = v"
-| "val (Braced e) = val e"
+| "val (Parenthesised e) = val e"
 
 lemma val_tests:
   "0 = val (Additive [])"
   "1 = val (Additive [Literal 1])"
   "3 = val (Additive [Literal 1, Multiply [Literal 2]])"
-  "7 = val (Additive [Literal 1, Multiply [Literal 2, Braced (Literal 3)]])"
+  "7 = val (Additive [Literal 1, Multiply [Literal 2, Parenthesised (Literal 3)]])"
   by simp_all
 
 abbreviation star :: "unit bidef" where
@@ -63,6 +60,21 @@ lemma chars_not_in_whitespace[simp]:
   unfolding derived_digit_char.digit_chars_def whitespace_chars_def
   by blast+
 
+abbreviation triple :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> 'c bidef \<Rightarrow> ('a \<times> 'b \<times> 'c) bidef" where
+  "triple A B C \<equiv> b_then A (b_then B C)"
+
+definition ws_parenthesised :: "'a bidef \<Rightarrow> 'a bidef" where
+  "ws_parenthesised A = transform
+                      (fst o snd)
+                      (\<lambda>a. ((), a, ())) \<comment> \<open>ws_char_ws is a unit bidef\<close>
+                      (triple (ws_char_ws CHR ''('') A (ws_char_ws CHR '')''))"
+
+lemma mono_ws_parenthesised[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. ws_parenthesised (A f))"
+  unfolding ws_parenthesised_def using ma
+  by pf_mono_prover
+
 
 \<comment> \<open>Is there way some way of saying that this is just the Literal branch of the type?\<close>
 definition Number :: "Ex bidef" where
@@ -71,10 +83,11 @@ definition Number :: "Ex bidef" where
 \<comment> \<open>Number or expression.\<close>
 definition NOE :: "Ex bidef \<Rightarrow> Ex bidef" where
   "NOE E = transform
-              sum_take
-              (\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e)
-              (derived_or.or Number E)"
-\<comment> \<open>This should have parenthesis around the E?\<close>
+              (\<lambda>Inl l \<Rightarrow> l
+               | Inr r \<Rightarrow> Parenthesised r)
+              (\<lambda>Literal n \<Rightarrow> Inl (Literal n)
+               | Parenthesised e \<Rightarrow> Inr e)
+              (derived_or.or Number (ws_parenthesised E))"
 
 
 lemma mono_NOE[partial_function_mono]:
@@ -84,9 +97,11 @@ lemma mono_NOE[partial_function_mono]:
   by pf_mono_prover
 
 \<comment> \<open>Some quick tests to see how this 'else' case in case expressions works.\<close>
-value "(\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Literal 4)"
-value "(\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
-value "(\<lambda>e. case e of Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
+value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Literal 4)"
+value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
+value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
+
+
 
 
 definition MultE :: "Ex bidef \<Rightarrow> Ex bidef" where
@@ -113,21 +128,130 @@ lemma mono_AddE[partial_function_mono]:
   unfolding AddE_def using ma
   by pf_mono_prover
 
-
 \<comment> \<open>Need to take the unit param to make partial function work.\<close>
 partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where
   "expressionR u = transform
                     (id)
-                    (\<lambda>e. case e of
-                           Additive a \<Rightarrow> Additive a
-                         | Multiply a \<Rightarrow> Additive [Multiply a]
-                         | Literal n \<Rightarrow> Additive [Multiply[Literal n]]
-                         | Braced a \<Rightarrow> Additive [Multiply[Braced a]] \<comment> \<open>Not sure if this is needed.\<close>
+                    (\<lambda> Additive a \<Rightarrow> Additive a
+                     | Multiply a \<Rightarrow> Additive [Multiply a]
+                     | Literal n \<Rightarrow> Additive [Multiply[Literal n]]
+                     | Parenthesised a \<Rightarrow> Additive [Multiply [Parenthesised a]] \<comment> \<open>Not sure if this is needed.\<close>
                     ) \<comment> \<open>Expr \<Rightarrow> Addl\<close>
                     (AddE (expressionR ()))"
 
-definition Expression :: "Ex bidef" where
-  "Expression = expressionR ()"
+abbreviation Expression :: "Ex bidef" where
+  "Expression \<equiv> expressionR ()"
+
+subsection \<open>Some parsing examples\<close>
+
+\<comment> \<open>Would these be good in simp?\<close>
+lemma exInr:
+  "\<exists>r'. (\<forall>x1. r' \<noteq> Inl x1) \<and> (\<forall>x2. r' = Inr x2 \<longrightarrow> P x2) \<equiv> (\<exists>x2. P x2)"
+  "\<exists>r'. (\<forall>x2. r' = Inr x2 \<longrightarrow> P x2) \<and> (\<forall>x1. r' \<noteq> Inl x1) \<equiv> (\<exists>x2. P x2)"
+  by (smt (verit) Inl_Inr_False Inr_inject obj_sumE)+
+lemma exInl:
+  "\<exists>r'. (\<forall>x1. r' \<noteq> Inr x1) \<and> (\<forall>x2. r' = Inl x2 \<longrightarrow> P x2) \<equiv> (\<exists>x2. P x2)"
+  "\<exists>r'. (\<forall>x2. r' = Inl x2 \<longrightarrow> P x2) \<and> (\<forall>x1. r' \<noteq> Inr x1) \<equiv> (\<exists>x2. P x2)"
+  by (smt (verit) Inl_Inr_False Inl_inject obj_sumE)+
+lemma exUnitList:
+  "(\<exists>l:: unit list. length l = n \<and> P l) \<equiv> (P (replicate n ()))"
+  by (smt (verit) length_replicate old.unit.exhaust replicate_length_same)
+lemma exEq:
+  "(\<exists>v. v = a \<and> P v) \<equiv> P a"
+  by simp
+lemma exId:
+  "(\<exists>v. P v \<and> v = id a) \<equiv> P a"
+  "(\<exists>v. P v \<and> id a = v) \<equiv> P a"
+  "(\<exists>v. v = id a \<and> P v) \<equiv> P a"
+  "(\<exists>v. id a = v \<and> P v) \<equiv> P a"
+  by simp_all
+
+lemmas ex_simps[simp] = exInr exInl exUnitList exEq exId
+
+
+lemma "is_error (parse Expression) ''''"
+  apply (subst expressionR.simps)
+  by (clarsimp simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+lemma "has_result (parse Expression) [] r l \<longleftrightarrow> False"
+  apply (subst expressionR.simps)
+  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  unfolding separated_by1_has_result
+  apply (split list.splits; clarsimp simp add: NER_simps)
+  unfolding separated_by1_has_result
+  apply (split list.splits; clarsimp simp add: NER_simps)
+  by (split sum.splits; clarsimp simp add: NER_simps)
+
+lemma "has_result (parse Expression) ''1'' (Additive [Multiply [Literal 1]]) []"
+  apply (subst expressionR.simps)
+  by (clarsimp simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def split: sum.splits)
+
+lemma "has_result (parse Expression) ''1*2'' (Additive [Multiply [Literal 1, Literal 2]]) []"
+  apply (subst expressionR.simps)
+  apply (auto simp add: NER_simps AddE_def MultE_def split: sum.splits)
+  apply (rule exI[of _ \<open>''*2''\<close>]; rule conjI)
+  subgoal by (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+  by (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+
+
+lemma "has_result (parse Expression) ''1*2+3''   (Additive [Multiply [Literal 1, Literal 2], Multiply [Literal 3]]) []"
+  apply (subst expressionR.simps)
+  apply (auto simp add: NER_simps AddE_def MultE_def split: sum.splits)
+  apply (rule exI[of _ \<open>''+3''\<close>]; rule conjI)
+  subgoal
+    apply (rule exI[of _ \<open>''*2+3''\<close>]; rule conjI)
+    subgoal by (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+    subgoal
+      apply (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+      done
+    done
+  by (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+
+lemma "has_result (parse Expression) ''1*(2+3)'' (Additive [Multiply [Literal 1, Parenthesised (Additive [Multiply [Literal 2], Multiply [Literal 3]])]]) []"
+  apply (subst expressionR.simps)
+  apply (auto simp add: NER_simps AddE_def MultE_def split: sum.splits)
+  apply (rule exI[of _ \<open>''*(2+3)''\<close>]; rule conjI)
+  subgoal by (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+  apply (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+  apply (auto simp add: NER_simps ws_parenthesised_def)
+  apply (rule exI[of _ \<open>'')''\<close>]; clarsimp)
+  apply (subst expressionR.simps)
+  apply (auto simp add: NER_simps AddE_def MultE_def split: sum.splits)
+  apply (rule exI[of _ \<open>''+3)''\<close>]; clarsimp; rule conjI)
+  subgoal by (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
+  by (clarsimp simp add: NER_simps NOE_def Number_def split: sum.splits)
+
+lemma "p_has_result (print Expression) (Additive [Multiply [Literal 1, Parenthesised (Additive [Multiply [Literal 2], Multiply [Literal 3]])]]) ''1*(2+3)'' "
+  apply (subst expressionR.simps)
+  apply (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  apply (subst expressionR.simps)
+  by (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def)
+
+lemma "p_has_result (print Expression) (Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])) ''(1+2)''"
+  apply (subst expressionR.simps)
+  apply (clarsimp simp add: fp_NER AddE_def MultE_def NOE_def ws_parenthesised_def)
+  apply (subst expressionR.simps)
+  by (clarsimp simp add: fp_NER AddE_def MultE_def NOE_def Number_def)
+\<comment> \<open>We may be able to do some automation here by making rules for Expression to unfold if there is a ( at the first char.\<close>
+  
+
+lemma "has_result (parse Expression) ''(1+2)'' (Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])) []"
+  apply (subst expressionR.simps)
+  apply (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  unfolding transform_has_result
+  unfolding separated_by1_has_result
+  apply clarsimp
+
+
+\<comment> \<open>Another test to do: what if parenthesises is at the outside?\<close>
+
+
+section \<open>Well formed\<close>
+lemma expression_well_formed:
+  "bidef_well_formed Expression"
+  unfolding Expression_def
+  apply (subst expressionR.simps)
+  oops
+
 
 
 \<comment> \<open>NER\<close>
