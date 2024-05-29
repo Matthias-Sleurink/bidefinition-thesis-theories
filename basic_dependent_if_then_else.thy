@@ -190,7 +190,9 @@ lemma mono_if_then_else[partial_function_mono]:
       subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
         by (smt (verit, del_insts) option.inject option.simps(3))
       subgoal using mb[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
-        by (metis option.inject option.simps(3))
+        by (smt (z3) option.discI option.sel)
+        \<comment> \<open>Above proof is a lot faster\<close>
+        (*by (metis option.inject option.simps(3))*)
       done
     subgoal using mc[unfolded monotone_def bd_ord_def flat_ord_def fun_ord_def]
       by blast
