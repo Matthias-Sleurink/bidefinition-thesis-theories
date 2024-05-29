@@ -180,4 +180,42 @@ lemma print_nat_nat_from[simp]:
   subgoal (* t=0 *) using print_nat_nat_from_0 by fast
   subgoal (* t\<noteq>0 *) using print_nat_nat_from_nonzero[of t] assms by fastforce
   done
+
+lemma numeral_4_through_9:
+  "4 = Suc (Suc (Suc (Suc 0)))"
+  "5 = Suc (Suc (Suc (Suc (Suc 0))))"
+  "6 = Suc (Suc (Suc (Suc (Suc (Suc 0)))))"
+  "7 = Suc (Suc (Suc (Suc (Suc (Suc (Suc 0))))))"
+  "8 = Suc (Suc (Suc (Suc (Suc (Suc (Suc (Suc 0)))))))"
+  "9 = Suc (Suc (Suc (Suc (Suc (Suc (Suc (Suc (Suc 0))))))))"
+  by simp_all
+
+lemma print_nat_one_chars[simp]:
+  "print_nat 0 = ''0''"
+  "print_nat (Suc 0) = ''1''"
+  "print_nat (Suc(Suc 0)) = ''2''"
+  "print_nat (Suc(Suc(Suc 0))) = ''3''"
+  "print_nat (Suc(Suc(Suc(Suc 0)))) = ''4''"
+  "print_nat (Suc(Suc(Suc(Suc(Suc 0))))) = ''5''"
+  "print_nat (Suc(Suc(Suc(Suc(Suc(Suc 0)))))) = ''6''"
+  "print_nat (Suc(Suc(Suc(Suc(Suc(Suc(Suc 0))))))) = ''7''"
+  "print_nat (Suc(Suc(Suc(Suc(Suc(Suc(Suc(Suc 0)))))))) = ''8''"
+  "print_nat (Suc(Suc(Suc(Suc(Suc(Suc(Suc(Suc(Suc 0))))))))) = ''9''"
+  unfolding print_nat_def
+  by (simp_all add: numeral_1_eq_Suc_0 numeral_2_eq_2 numeral_3_eq_3 numeral_4_through_9)
+
+lemma print_nat_one_chars_numerals[simp]:
+  "print_nat 1 = ''1''"
+  "print_nat 2 = ''2''"
+  "print_nat 3 = ''3''"
+  "print_nat 4 = ''4''"
+  "print_nat 5 = ''5''"
+  "print_nat 6 = ''6''"
+  "print_nat 7 = ''7''"
+  "print_nat 8 = ''8''"
+  "print_nat 9 = ''9''"
+  unfolding print_nat_def
+  by (simp_all add: numeral_2_eq_2 numeral_3_eq_3 numeral_4_through_9)
+
+
 end
