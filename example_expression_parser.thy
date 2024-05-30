@@ -87,10 +87,22 @@ definition Number :: "Ex bidef" where
 lemma Number_has_result[NER_simps]:
   "has_result (parse Number) i r l \<longleftrightarrow> (\<exists>n. has_result (parse nat_b) i n l \<and> r = Literal n)"
   by (auto simp add: Number_def NER_simps)
+lemma Number_is_error[NER_simps]:
+  "is_error (parse Number) i \<longleftrightarrow> is_error (parse nat_b) i"
+  by (clarsimp simp add: Number_def NER_simps)
+lemma Number_is_nonterm[NER_simps]:
+  "is_nonterm (parse Number) i \<longleftrightarrow> False"
+  by (clarsimp simp add: Number_def NER_simps)
 
 lemma Number_p_has_result[fp_NER]:
   "p_has_result (print Number) i r \<longleftrightarrow> (\<exists>n. i = Literal n \<and> p_has_result (print nat_b) n r)"
   by (clarsimp simp add: Number_def fp_NER split: Ex.splits)
+lemma Number_b_is_error[fp_NER]:
+  "p_is_error (print Number) i \<longleftrightarrow> (\<nexists>n. i = Literal n)"
+  by (clarsimp simp add: Number_def fp_NER split: Ex.splits)
+lemma Number_b_is_nonterm[fp_NER]:
+  "p_is_nonterm (print Number) i \<longleftrightarrow> False"
+  by (clarsimp simp add: Number_def fp_NER)
 
 
 \<comment> \<open>Number or expression.\<close>
