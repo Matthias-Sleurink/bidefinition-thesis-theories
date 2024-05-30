@@ -246,6 +246,10 @@ lemma "has_result (parse Expression) ''1+2'' (Additive [Multiply [Literal 1], Mu
   done
 
 
+lemma "p_has_result (print Expression) (Additive [Multiply [Literal 1], Multiply[ Literal 2]]) ''1+2''"
+  apply (subst Expression_def)
+  by (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def)
+
 lemma "has_result (parse Expression) ''(1+2)'' (Additive [Multiply [Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])]]) []"
   apply (subst expressionR.simps)
   apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
@@ -258,6 +262,14 @@ lemma "has_result (parse Expression) ''(1+2)'' (Additive [Multiply [Parenthesise
   subgoal by (rule exI[of _ \<open>Inl (Literal (Suc 0))\<close>]; clarsimp simp add: NER_simps)
   subgoal by (rule exI[of _ \<open>Inl (Literal 2)\<close>]; clarsimp simp add: NER_simps)
   done
+
+
+lemma "p_has_result (print Expression) (Additive [Multiply [Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])]]) ''(1+2)''"
+  apply (subst Expression_def)
+  apply (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  apply (subst Expression_def)
+  by (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def)
+
 
 
 section \<open>Well formed\<close>
