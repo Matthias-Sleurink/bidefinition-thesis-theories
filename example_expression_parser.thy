@@ -129,7 +129,7 @@ lemma mono_AddE[partial_function_mono]:
   by pf_mono_prover
 
 \<comment> \<open>Need to take the unit param to make partial function work.\<close>
-partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where
+partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where [code]:
   "expressionR u = transform
                     (id)
                     (\<lambda> Additive a \<Rightarrow> Additive a
@@ -141,6 +141,9 @@ partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where
 
 abbreviation Expression :: "Ex bidef" where
   "Expression \<equiv> expressionR ()"
+\<comment> \<open>We introduce this so that we can act like Expression is a real parser.\<close>
+lemmas Expression_def = expressionR.simps
+
 
 subsection \<open>Some parsing examples\<close>
 
@@ -165,6 +168,7 @@ lemma exId:
   "(\<exists>v. v = id a \<and> P v) \<equiv> P a"
   "(\<exists>v. id a = v \<and> P v) \<equiv> P a"
   by simp_all
+
 
 lemmas ex_simps[simp] = exInr exInl exUnitList exEq exId
 
@@ -232,23 +236,33 @@ lemma "p_has_result (print Expression) (Parenthesised (Additive [Multiply [Liter
   apply (subst expressionR.simps)
   by (clarsimp simp add: fp_NER AddE_def MultE_def NOE_def Number_def)
 \<comment> \<open>We may be able to do some automation here by making rules for Expression to unfold if there is a ( at the first char.\<close>
-  
 
-lemma "has_result (parse Expression) ''(1+2)'' (Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])) []"
+lemma "has_result (parse Expression) ''1+2'' (Additive [Multiply [Literal 1], Multiply[ Literal 2]]) []"
   apply (subst expressionR.simps)
-  apply (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
-  unfolding transform_has_result
-  unfolding separated_by1_has_result
-  apply clarsimp
+  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  apply (rule exI[of _ \<open>''+2''\<close>]; clarsimp; rule conjI)
+  subgoal by (rule exI[of _ \<open>Inl (Literal (Suc 0))\<close>]; clarsimp simp add: NER_simps)
+  subgoal by (rule exI[of _ \<open>Inl (Literal 2)\<close>]; clarsimp simp add: NER_simps)
+  done
 
 
-\<comment> \<open>Another test to do: what if parenthesises is at the outside?\<close>
+lemma "has_result (parse Expression) ''(1+2)'' (Additive [Multiply [Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])]]) []"
+  apply (subst expressionR.simps)
+  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  apply (rule exI[of _ \<open>Inr (Additive [Multiply [Literal (Suc 0)], Multiply [Literal 2]])\<close>]; clarsimp)
+  apply (clarsimp simp add: NER_simps)
+  apply (rule exI[of _ \<open>'')''\<close>]; clarsimp)
+  apply (subst expressionR.simps)
+  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def)
+  apply (rule exI[of _ \<open>''+2)''\<close>]; clarsimp; rule conjI)
+  subgoal by (rule exI[of _ \<open>Inl (Literal (Suc 0))\<close>]; clarsimp simp add: NER_simps)
+  subgoal by (rule exI[of _ \<open>Inl (Literal 2)\<close>]; clarsimp simp add: NER_simps)
+  done
 
 
 section \<open>Well formed\<close>
 lemma expression_well_formed:
   "bidef_well_formed Expression"
-  unfolding Expression_def
   apply (subst expressionR.simps)
   oops
 
