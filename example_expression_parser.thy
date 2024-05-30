@@ -171,11 +171,10 @@ lemma mono_AddE[partial_function_mono]:
 partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where [code]:
   "expressionR u = transform
                     (id)
-                    (\<lambda> Additive a \<Rightarrow> Additive a
-                     | Multiply a \<Rightarrow> Additive [Multiply a]
-                     | Literal n \<Rightarrow> Additive [Multiply[Literal n]]
-                     | Parenthesised a \<Rightarrow> Additive [Multiply [Parenthesised a]] \<comment> \<open>Not sure if this is needed.\<close>
-                    ) \<comment> \<open>Expr \<Rightarrow> Addl\<close>
+                    (\<lambda> Additive a      \<Rightarrow> Additive a \<comment> \<open>The idea here is that any Expression should be printable.\<close>
+                     | Multiply a      \<Rightarrow> Additive [Multiply a]
+                     | Literal n       \<Rightarrow> Additive [Multiply[Literal n]]
+                     | Parenthesised a \<Rightarrow> Additive [Multiply [Parenthesised a]])
                     (AddE (expressionR ()))"
 
 abbreviation Expression :: "Ex bidef" where
@@ -314,7 +313,8 @@ lemma "p_has_result (print Expression) (Additive [Multiply [Parenthesised (Addit
 section \<open>Well formed\<close>
 lemma expression_well_formed:
   "bidef_well_formed Expression"
-  apply (subst expressionR.simps)
+  apply (subst Expression_def)
+  
   oops
 
 
