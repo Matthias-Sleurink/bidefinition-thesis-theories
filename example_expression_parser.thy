@@ -169,6 +169,14 @@ lemma mono_AddE[partial_function_mono]:
 
 \<comment> \<open>Need to take the unit param to make partial function work.\<close>
 partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where [code]:
+  "expressionR u = ftransform
+                    (Some o id)
+                    (\<lambda> Additive a \<Rightarrow> Some (Additive a)
+                     | e          \<Rightarrow> None)
+                    (AddE (expressionR ()))"
+
+(*
+partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where [code]:
   "expressionR u = transform
                     (id)
                     (\<lambda> Additive a      \<Rightarrow> Additive a \<comment> \<open>The idea here is that any Expression should be printable.\<close>
@@ -176,7 +184,7 @@ partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where [code]:
                      | Literal n       \<Rightarrow> Additive [Multiply[Literal n]]
                      | Parenthesised a \<Rightarrow> Additive [Multiply [Parenthesised a]])
                     (AddE (expressionR ()))"
-
+*)
 abbreviation Expression :: "Ex bidef" where
   "Expression \<equiv> expressionR ()"
 \<comment> \<open>We introduce this so that we can act like Expression is a real parser.\<close>
@@ -268,7 +276,7 @@ lemma "p_has_result (print Expression) (Additive [Multiply [Literal 1, Parenthes
   apply (subst expressionR.simps)
   by (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def)
 
-lemma "p_has_result (print Expression) (Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])) ''(1+2)''"
+lemma "p_has_result (print Expression) (Additive [Multiply [Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])]]) ''(1+2)''"
   apply (subst expressionR.simps)
   apply (clarsimp simp add: fp_NER AddE_def MultE_def NOE_def ws_parenthesised_def)
   apply (subst expressionR.simps)
