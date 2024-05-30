@@ -104,6 +104,22 @@ lemma Number_b_is_nonterm[fp_NER]:
   "p_is_nonterm (print Number) i \<longleftrightarrow> False"
   by (clarsimp simp add: Number_def fp_NER)
 
+lemma Number_well_formed:
+  "bidef_well_formed Number"
+  unfolding Number_def
+  apply (rule ftransform_well_formed)
+  subgoal
+    unfolding ftrans_wf_funcs_parser_can_parse_def
+    apply (clarsimp split: Ex.splits)
+    using nat_b_wf_from_transform_many1[THEN get_parser_can_parse_unfold]
+    by fast
+  subgoal
+    unfolding ftrans_wf_funcs_printer_can_print_def
+    apply (clarsimp split: Ex.splits)
+    using nat_b_wf_from_transform_many1[THEN get_printer_can_print_unfold]
+    by fast
+  subgoal by (rule nat_b_well_formed)
+  done
 
 \<comment> \<open>Number or expression.\<close>
 definition NOE :: "Ex bidef \<Rightarrow> Ex bidef" where
