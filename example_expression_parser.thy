@@ -15,7 +15,8 @@ datatype Ex
   | Multiply (getList: "Ex list")
   | Literal (getNat: nat)
   | Parenthesised (getE: Ex)
-\<comment> \<open>Parenthesised should probably not be in the AST.\<close>
+\<comment> \<open>Note that this is not the AST, more like a parse tree, it's up to the user to create an AST.\<close>
+\<comment> \<open>Which should be a simple fold over the lists.\<close>
 
 
 fun val :: "Ex \<Rightarrow> nat" where
@@ -316,8 +317,33 @@ lemma "p_has_result (print Expression) (Additive [Multiply [Parenthesised (Addit
   apply (subst Expression_def)
   by (auto simp add: fp_NER AddE_def MultE_def NOE_def Number_def)
 
+\<comment> \<open>This should be generalisable to all constructors right?\<close>
+lemma not_both_lit_and_paren:
+  "x1 = Literal n \<and> x1 = Parenthesised e \<longleftrightarrow> False"
+  by blast
 
 
+lemma NOE_has_result_safe[NER_simps]:
+  "has_result (parse (NOE Expression)) i (Additive as) l \<longleftrightarrow> False"
+  "has_result (parse (NOE Expression)) i (Multiply ms) l \<longleftrightarrow> False"
+  "has_result (parse (NOE Expression)) i (Literal n) l \<longleftrightarrow> has_result (parse nat_b) i n l"
+  "has_result (parse (NOE Expression)) i (Parenthesised e) l \<longleftrightarrow> has_result (parse (ws_parenthesised Expression)) i e l"
+  unfolding NOE_def
+  subgoal by (clarsimp simp add: NER_simps split: sum.splits)
+  subgoal by (clarsimp simp add: NER_simps split: sum.splits)
+  subgoal by (clarsimp simp add: NER_simps split: sum.splits; argo)
+  subgoal
+    apply (auto simp add: NER_simps ws_parenthesised_def not_both_lit_and_paren split: sum.splits)
+    by (metis chars_not_in_whitespace(2) dropWhile_hd_no_match expression_punctuation_charsets(7))
+  done
+      
+
+(*
+  = Additive (getList: "Ex list")
+  | Multiply (getList: "Ex list")
+  | Literal (getNat: nat)
+  | Parenthesised (getE: Ex)
+*)
 section \<open>Well formed\<close>
 lemma Expression_no_eat_into_paren:
   "pa_does_not_eat_into_pb_nondep Expression (ws_char_ws CHR '')'')"
