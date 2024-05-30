@@ -107,11 +107,12 @@ lemma Number_b_is_nonterm[fp_NER]:
 
 \<comment> \<open>Number or expression.\<close>
 definition NOE :: "Ex bidef \<Rightarrow> Ex bidef" where
-  "NOE E = transform
-              (\<lambda>Inl l \<Rightarrow> l
-               | Inr r \<Rightarrow> Parenthesised r)
-              (\<lambda>Literal n \<Rightarrow> Inl (Literal n)
-               | Parenthesised e \<Rightarrow> Inr e)
+  "NOE E = ftransform
+              (\<lambda> Inl l \<Rightarrow> Some l \<comment> \<open>Result of Number stays the same.\<close>
+               | Inr r \<Rightarrow> Some (Parenthesised r)) \<comment> \<open>Result of parenthesised needs to get Parenthesised\<close>
+              (\<lambda> Literal n       \<Rightarrow> Some (Inl (Literal n)) \<comment> \<open>We can print Numbers as literals\<close>
+               | Parenthesised e \<Rightarrow> Some (Inr e)  \<comment> \<open>We can print Parenthesised with ws _parenthesised.\<close>
+               | e               \<Rightarrow> None ) \<comment> \<open>All other options are an error.\<close>
               (derived_or.or Number (ws_parenthesised E))"
 
 
