@@ -78,7 +78,20 @@ lemma mono_ws_parenthesised[partial_function_mono]:
 
 \<comment> \<open>Is there way some way of saying that this is just the Literal branch of the type?\<close>
 definition Number :: "Ex bidef" where
-  "Number = transform Literal getNat nat_b"
+  "Number = ftransform
+              (Some o Literal)
+              (\<lambda> Literal n \<Rightarrow> Some n
+               | e \<Rightarrow> None)
+              nat_b"
+
+lemma Number_has_result[NER_simps]:
+  "has_result (parse Number) i r l \<longleftrightarrow> (\<exists>n. has_result (parse nat_b) i n l \<and> r = Literal n)"
+  by (auto simp add: Number_def NER_simps)
+
+lemma Number_p_has_result[fp_NER]:
+  "p_has_result (print Number) i r \<longleftrightarrow> (\<exists>n. i = Literal n \<and> p_has_result (print nat_b) n r)"
+  by (clarsimp simp add: Number_def fp_NER split: Ex.splits)
+
 
 \<comment> \<open>Number or expression.\<close>
 definition NOE :: "Ex bidef \<Rightarrow> Ex bidef" where
@@ -100,9 +113,6 @@ lemma mono_NOE[partial_function_mono]:
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Literal 4)"
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
-
-
-
 
 definition MultE :: "Ex bidef \<Rightarrow> Ex bidef" where
   "MultE E = transform
