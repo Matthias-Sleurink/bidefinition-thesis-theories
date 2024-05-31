@@ -375,6 +375,33 @@ lemma Expression_has_result_safe[NER_simps]:
 lemma "has_result (parse Expression) ''1*(2+3)'' (Additive [Multiply [Literal 1, Parenthesised (Additive [Multiply [Literal 2], Multiply [Literal 3]])]]) []"
   by (clarsimp simp add: NER_simps)
 
+
+\<comment> \<open>This is done with the classic recursive method, which cannot work for us.\<close>
+lemma PNGI_Expression:
+  "PNGI (parse Expression)"
+  apply (subst Expression_def)
+  apply (auto intro!: ftransform_PNGI separated_by1_PNGI or_PNGI then_PNGI
+            simp add: AddE_def MultE_def NOE_def Number_def ws_parenthesised_def
+                      transform_PNGI_rev nat_b_PNGI ws_char_ws_PNGI)
+  \<comment> \<open>First subgoal is now again `PNGI parse Expression`\<close>
+  oops  
+\<comment> \<open>So maybe we can do an inductive option over all Exs?\<close>
+lemma PNGI_Expression:
+  "PNGI (parse Expression)"
+  apply (subst PNGI_def; subst Expression_def)
+  apply clarsimp
+  subgoal for i r l
+    apply (induction r; clarsimp simp add: NER_simps)
+    subgoal for as
+      apply (induction as arbitrary: i l rule: rev_induct; clarsimp simp add: NER_simps)
+      subgoal for a as i l
+        \<comment> \<open>There is no Ex that can go into an additive that can be parsed by AddE.\<close>
+        \<comment> \<open>This kinda seems to imply that this whole thing is not set up correctly.\<close>
+        \<comment> \<open>Maybe we want to change the setup so that we actually create a tree?\<close>
+        \<comment> \<open>Though we could also set this up so that the ftransforms create the needed buffering.\<close>
+        oops
+
+
 (*
   = Additive (getList: "Ex list")
   | Multiply (getList: "Ex list")
