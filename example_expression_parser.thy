@@ -76,6 +76,10 @@ lemma mono_ws_parenthesised[partial_function_mono]:
   unfolding ws_parenthesised_def using ma
   by pf_mono_prover
 
+\<comment> \<open>The two ideas for making small combinators have easier NER rules is to add the definition to NER simps.\<close>
+\<comment> \<open>This requires the rule to be "safe" to unfold, which ws_parenthesised is.\<close>
+lemmas ws_paren_def[NER_simps] = ws_parenthesised_def
+
 
 \<comment> \<open>Is there way some way of saying that this is just the Literal branch of the type?\<close>
 definition Number :: "Ex bidef" where
@@ -222,10 +226,10 @@ lemmas ex_simps[simp] = exInr exInl exUnitList exEq exId
 
 lemma "is_error (parse Expression) ''''"
   apply (subst expressionR.simps)
-  by (clarsimp simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  by (clarsimp simp add: NER_simps AddE_def MultE_def NOE_def Number_def)
 lemma "has_result (parse Expression) [] r l \<longleftrightarrow> False"
   apply (subst expressionR.simps)
-  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def)
   unfolding separated_by1_has_result
   apply (split list.splits; clarsimp simp add: NER_simps)
   unfolding separated_by1_has_result
@@ -234,7 +238,7 @@ lemma "has_result (parse Expression) [] r l \<longleftrightarrow> False"
 
 lemma "has_result (parse Expression) ''1'' (Additive [Multiply [Literal 1]]) []"
   apply (subst expressionR.simps)
-  by (clarsimp simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def split: sum.splits)
+  by (clarsimp simp add: NER_simps AddE_def MultE_def NOE_def Number_def split: sum.splits)
 
 lemma "has_result (parse Expression) ''1*2'' (Additive [Multiply [Literal 1, Literal 2]]) []"
   apply (subst expressionR.simps)
@@ -263,7 +267,6 @@ lemma "has_result (parse Expression) ''1*(2+3)'' (Additive [Multiply [Literal 1,
   apply (rule exI[of _ \<open>''*(2+3)''\<close>]; rule conjI)
   subgoal by (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
   apply (auto simp add: NER_simps NOE_def Number_def split: sum.splits)
-  apply (auto simp add: NER_simps ws_parenthesised_def)
   apply (rule exI[of _ \<open>'')''\<close>]; clarsimp)
   apply (subst expressionR.simps)
   apply (auto simp add: NER_simps AddE_def MultE_def split: sum.splits)
@@ -286,7 +289,7 @@ lemma "p_has_result (print Expression) (Additive [Multiply [Parenthesised (Addit
 
 lemma "has_result (parse Expression) ''1+2'' (Additive [Multiply [Literal 1], Multiply[ Literal 2]]) []"
   apply (subst expressionR.simps)
-  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def)
   apply (rule exI[of _ \<open>''+2''\<close>]; clarsimp; rule conjI)
   subgoal by (rule exI[of _ \<open>Inl (Literal (Suc 0))\<close>]; clarsimp simp add: NER_simps)
   subgoal by (rule exI[of _ \<open>Inl (Literal 2)\<close>]; clarsimp simp add: NER_simps)
@@ -299,7 +302,7 @@ lemma "p_has_result (print Expression) (Additive [Multiply [Literal 1], Multiply
 
 lemma "has_result (parse Expression) ''(1+2)'' (Additive [Multiply [Parenthesised (Additive [Multiply [Literal 1], Multiply [Literal 2]])]]) []"
   apply (subst expressionR.simps)
-  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def ws_parenthesised_def)
+  apply (auto simp add: NER_simps AddE_def MultE_def NOE_def Number_def)
   apply (rule exI[of _ \<open>Inr (Additive [Multiply [Literal (Suc 0)], Multiply [Literal 2]])\<close>]; clarsimp)
   apply (clarsimp simp add: NER_simps)
   apply (rule exI[of _ \<open>'')''\<close>]; clarsimp)
@@ -333,7 +336,7 @@ lemma NOE_has_result_safe[NER_simps]:
   subgoal by (clarsimp simp add: NER_simps split: sum.splits)
   subgoal by (clarsimp simp add: NER_simps split: sum.splits; argo)
   subgoal
-    apply (auto simp add: NER_simps ws_parenthesised_def not_both_lit_and_paren split: sum.splits)
+    apply (auto simp add: NER_simps not_both_lit_and_paren split: sum.splits)
     by (metis chars_not_in_whitespace(2) dropWhile_hd_no_match expression_punctuation_charsets(7))
   done
 
@@ -367,6 +370,10 @@ lemma Expression_has_result_safe[NER_simps]:
   "has_result (parse Expression) i (Additive (a#as)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (MultE Expression)) i a l' \<and> has_result (parse (many (b_then plus (MultE Expression)))) l' (zip (replicate (length as) ()) as) l)"
   by (subst Expression_def; clarsimp simp add: NER_simps)+
 
+\<comment> \<open>This is one of the most complex examples that we show above.
+    Note how with these safe NER rules any combination of the constructors can be unfolded by clarsimp.\<close>
+lemma "has_result (parse Expression) ''1*(2+3)'' (Additive [Multiply [Literal 1, Parenthesised (Additive [Multiply [Literal 2], Multiply [Literal 3]])]]) []"
+  by (clarsimp simp add: NER_simps)
 
 (*
   = Additive (getList: "Ex list")
