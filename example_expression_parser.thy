@@ -347,6 +347,18 @@ lemma MultE_has_result_safe[NER_simps]:
   unfolding MultE_def
   by (clarsimp simp add: NER_simps split: sum.splits)+
 
+lemma AddE_has_result_safe[NER_simps]:
+  "has_result (parse (AddE Expression)) i (Literal n) l \<longleftrightarrow> False"
+  "has_result (parse (AddE Expression)) i (Parenthesised e) l \<longleftrightarrow> False"
+  "has_result (parse (AddE Expression)) i (Multiply ms) l \<longleftrightarrow> False"
+  "has_result (parse (AddE Expression)) i (Additive []) l \<longleftrightarrow> False"
+  "has_result (parse (AddE Expression)) i (Additive [a]) l \<longleftrightarrow> has_result (parse (MultE Expression)) i a l \<and> (is_error (parse plus) l \<or> (\<exists>l'. has_result (parse plus) l () l' \<and> is_error (parse (AddE Expression)) l'))"
+  "has_result (parse (AddE Expression)) i (Additive (a#as)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (MultE Expression)) i a l' \<and> has_result (parse (many (b_then plus (MultE Expression)))) l' (zip (replicate (length as) ()) as) l)"
+  unfolding AddE_def
+  by (clarsimp simp add: NER_simps split: sum.splits)+
+
+
+
 
 (*
   = Additive (getList: "Ex list")
