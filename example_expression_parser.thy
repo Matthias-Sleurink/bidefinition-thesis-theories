@@ -336,7 +336,17 @@ lemma NOE_has_result_safe[NER_simps]:
     apply (auto simp add: NER_simps ws_parenthesised_def not_both_lit_and_paren split: sum.splits)
     by (metis chars_not_in_whitespace(2) dropWhile_hd_no_match expression_punctuation_charsets(7))
   done
-      
+
+lemma MultE_has_result_safe[NER_simps]:
+  "has_result (parse (MultE Expression)) i (Additive as) l \<longleftrightarrow> False"
+  "has_result (parse (MultE Expression)) i (Literal n) l \<longleftrightarrow> False"
+  "has_result (parse (MultE Expression)) i (Parenthesised e) l \<longleftrightarrow> False"
+  "has_result (parse (MultE Expression)) i (Multiply []) l \<longleftrightarrow> False"
+  "has_result (parse (MultE Expression)) i (Multiply [m]) l \<longleftrightarrow> has_result (parse (NOE Expression)) i m l \<and> (is_error (parse star) l \<or> (\<exists>l'. has_result (parse star) l () l' \<and> is_error (parse (NOE Expression)) l'))"
+  "has_result (parse (MultE Expression)) i (Multiply (m#ms)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (NOE Expression)) i m l' \<and> has_result (parse (many (b_then star (NOE Expression)))) l' (zip (replicate (length ms) ()) ms) l)"
+  unfolding MultE_def
+  by (clarsimp simp add: NER_simps split: sum.splits)+
+
 
 (*
   = Additive (getList: "Ex list")
