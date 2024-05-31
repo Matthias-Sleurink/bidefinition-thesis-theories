@@ -358,6 +358,14 @@ lemma AddE_has_result_safe[NER_simps]:
   by (clarsimp simp add: NER_simps split: sum.splits)+
 
 
+lemma Expression_has_result_safe[NER_simps]:
+  "has_result (parse Expression) i (Literal n) l \<longleftrightarrow> False"
+  "has_result (parse Expression) i (Parenthesised e) l \<longleftrightarrow> False"
+  "has_result (parse Expression) i (Multiply ms) l \<longleftrightarrow> False"
+  "has_result (parse Expression) i (Additive []) l \<longleftrightarrow> False"
+  "has_result (parse Expression) i (Additive [a]) l \<longleftrightarrow> has_result (parse (MultE Expression)) i a l \<and> (is_error (parse plus) l \<or> (\<exists>l'. has_result (parse plus) l () l' \<and> is_error (parse (MultE Expression)) l'))"
+  "has_result (parse Expression) i (Additive (a#as)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (MultE Expression)) i a l' \<and> has_result (parse (many (b_then plus (MultE Expression)))) l' (zip (replicate (length as) ()) as) l)"
+  by (subst Expression_def; clarsimp simp add: NER_simps)+
 
 
 (*
