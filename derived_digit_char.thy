@@ -21,6 +21,19 @@ lemma char_in_digit_chars[simp]:
   unfolding digit_chars_def
   by fast+
 
+lemma char_not_in_digit_chars[simp]:
+  "CHR '' '' \<notin> digit_chars"
+  "CHR '','' \<notin> digit_chars"
+  "CHR ''('' \<notin> digit_chars"
+  "CHR '')'' \<notin> digit_chars"
+  "CHR ''{'' \<notin> digit_chars"
+  "CHR ''}'' \<notin> digit_chars"
+  "CHR ''['' \<notin> digit_chars"
+  "CHR '']'' \<notin> digit_chars"
+  "CHR ''\<newline>'' \<notin> digit_chars"
+  unfolding digit_chars_def
+  by fast+
+
 definition digit_char :: "char bidef" where
   "digit_char = any_from_set digit_chars"
 
