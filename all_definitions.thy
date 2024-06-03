@@ -5,6 +5,7 @@ theory all_definitions
           derived_then
           derived_optional
           derived_peek_boolean
+          derived_then_drop_first
           derived_then_drop_second
           derived_many
           derived_many1
