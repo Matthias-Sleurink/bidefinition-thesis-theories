@@ -131,6 +131,13 @@ lemma transform_does_not_consume_past_char2:
   unfolding does_not_consume_past_char2_def
   by (auto simp add: transform_has_result)
 
+lemma transform_does_not_consume_past_char3:
+  assumes "does_not_consume_past_char3 (parse a) ch"
+  shows "does_not_consume_past_char3 (parse (transform f f' a)) ch"
+  using assms
+  unfolding does_not_consume_past_char3_def
+  by (auto simp add: transform_has_result)
+
 
 
 \<comment> \<open>First printed char\<close>
