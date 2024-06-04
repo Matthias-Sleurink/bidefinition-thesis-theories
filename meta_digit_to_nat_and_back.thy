@@ -167,6 +167,12 @@ lemma print_nat_nat_from_nonzero:
     done
   done
 
+lemma nat_from_cons_zero:
+  "nat_from (CHR ''0'' # t) = nat_from t"
+  apply (induction t rule: rev_induct; clarsimp)
+  subgoal by (subst nat_from.simps; clarsimp)
+  done
+
 lemma print_nat_nat_from_0:
   shows "print_nat (nat_from ''0'') = ''0''"
   by eval
