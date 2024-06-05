@@ -292,6 +292,18 @@ lemma int_b_well_formed:
     done
   done
 
+lemma int_does_not_eat_into_if_first_char_not_digit:
+  assumes "\<forall>d \<in> digit_chars. \<nexists>i. first_printed_chari (print A) i d"
+  shows "pa_does_not_eat_into_pb_nondep int_b A"
+  unfolding pa_does_not_eat_into_pb_nondep_def
+  using assms unfolding first_printed_chari_def
+  apply clarsimp
+  by (metis digit_chars_eq_digit_chars int_b_does_not_consume_past_char3
+            int_b_well_formed no_consume_past3_wf_stronger self_append_conv wf_parser_can_parse_print_result_apply)
+
+
+
+
 
 
 end
