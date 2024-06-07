@@ -149,6 +149,29 @@ lemma int_b_leftover_can_be_dropped:
     done
   done
 
+lemma int_b_leftover_no_start_with_digit:
+  "has_result (parse int_b) i r l \<longrightarrow> l = [] \<or> hd l \<notin> digit_chars"
+  apply (cases i; auto simp add: NER_simps)
+  by (meson dropWhile_eq_Nil_conv hd_dropWhile)+
+
+lemma int_b_nat_with_extra_non_digit_chars:
+  assumes "c \<notin> digit_chars"
+  assumes "x \<ge> 0"
+  shows "has_result (parse int_b) (print_nat (nat x) @ (c#cs)) x (c#cs)"
+  using assms
+  apply (cases \<open>print_nat (nat x)\<close>; clarsimp) \<comment> \<open>print_nat is never empty\<close>
+  apply (auto simp add: NER_simps takeWhile_tail)
+  subgoal by (metis nat_from_print_nat)
+  subgoal by (metis list.inject print_nat_takeWhile(1) takeWhile.simps(2))
+  subgoal by (metis dropWhile_append3 dropWhile_takeWhile_same_predicate self_append_conv2
+                    \<open>\<And>list a. \<lbrakk>c \<notin> derived_digit_char.digit_chars; print_nat (nat x) = a # list; 0 \<le> x; a \<in> derived_digit_char.digit_chars; x \<noteq> 0\<rbrakk> \<Longrightarrow> list = takeWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) list\<close>)
+  subgoal by (metis nat_from_print_nat)
+  subgoal by (metis list.inject print_nat_takeWhile(1) takeWhile.simps(2))
+  subgoal by (metis append_self_conv2 dropWhile.simps(1) dropWhile_append3 list.inject nat_zero_as_int print_nat_one_chars(1)
+                    \<open>\<And>list a. \<lbrakk>c \<notin> derived_digit_char.digit_chars; print_nat (nat x) = a # list; 0 \<le> x; a \<in> derived_digit_char.digit_chars; x \<noteq> 0\<rbrakk> \<Longrightarrow> c # cs = dropWhile (\<lambda>x. x \<in> derived_digit_char.digit_chars) (list @ c # cs)\<close>)
+  subgoal by (metis digit_chars_def list.sel(1) print_nat_hd)
+  subgoal by (metis digit_chars_def list.sel(1) print_nat_hd)
+  done
 
 
 section \<open>FP NER\<close>
