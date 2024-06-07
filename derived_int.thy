@@ -148,6 +148,7 @@ lemma int_b_leftover_can_be_dropped:
       by (metis dropWhile_takeWhile_same_predicate takeWhile_idem)+
     done
   done
+\<comment> \<open>This is generalised below with name int_b_leftover_can_be_dropped_gen\<close>
 
 lemma int_b_leftover_no_start_with_digit:
   "has_result (parse int_b) i r l \<longrightarrow> l = [] \<or> hd l \<notin> digit_chars"
@@ -201,6 +202,27 @@ lemma int_b_PNGI[PASI_PNGI]:
 lemma int_b_PASI[PASI_PNGI]:
   "PASI (parse int_b)"
   by (clarsimp simp add: PASI_PNGI int_b_def PASI_dep_if_then_else)
+
+
+
+section \<open>Some more has result that uses PNGI\<close>
+lemma int_b_leftover_can_be_dropped_gen:
+  "has_result (parse int_b) (c @ l2) r (l@l2) \<Longrightarrow> has_result (parse int_b) c r l"
+  apply (cases c; clarsimp)
+  subgoal by(insert int_b_PNGI[unfolded PNGI_def, rule_format, of l2 r \<open>l@l2\<close>]; clarsimp simp add: NER_simps)
+  subgoal for c' cs
+    apply (cases l; clarsimp simp add: int_b_leftover_can_be_dropped)
+    subgoal for l' ls
+      apply (cases \<open>l' \<in> digit_chars\<close>; clarsimp simp add: NER_simps split: if_splits)
+      subgoal by (metis dropWhile_eq_Cons_conv)
+      subgoal by (metis dropWhile_eq_Cons_conv)
+      subgoal by (metis dropWhile_eq_Cons_conv)
+      subgoal by (metis (no_types, lifting) append_is_Nil_conv dropWhile_eq_Cons_conv takeWhile_tail)
+      subgoal by (metis (no_types, lifting) dropWhile_eq_Cons_conv takeWhile_eq_Nil_iff takeWhile_tail)
+      subgoal by (metis dropWhile_eq_Cons_conv takeWhile_tail)
+      done
+    done
+  done
 
 
 
