@@ -70,6 +70,11 @@ fun dropLastN :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a list" where
 definition list_upto :: "'a list \<Rightarrow> 'a list \<Rightarrow> 'a list" where
   "list_upto longer shorter = dropLastN (length shorter) longer"
 
+lemma list_upto_simps[simp]:
+  "list_upto l l = []"
+  by (clarsimp simp add: list_upto_def)
+
+
 lemma list_upto_take_cons:
   assumes "\<exists>c. l = c@s"
   assumes "l' = list_upto l s"
@@ -86,7 +91,11 @@ lemma list_upto_cons_second:
   using list_upto_take_cons[OF assms, of \<open>list_upto l s\<close>]
   by fast
 
-
+lemma list_upto_self:
+  "list_upto (ca @ l) l = ca"
+  unfolding list_upto_def
+  by force
+  
 
 lemma has_result_implies_not_is_error:
   "has_result p i r l \<Longrightarrow> \<not> is_error p i"
