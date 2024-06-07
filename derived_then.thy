@@ -238,6 +238,30 @@ lemma then_does_not_consume_past_char:
   oops
 
 
+lemma then_does_not_consume_past_char_from_first_no_peek_past_end:
+  assumes dnppe: "does_not_peek_past_end (parse A)"
+  assumes pngiA: "PNGI (parse A)"
+  assumes dncpc: "does_not_consume_past_char3 (parse B) c"
+  assumes pgniB: "PNGI (parse B)"
+  shows "does_not_consume_past_char3 (parse (b_then A B)) c"
+  unfolding does_not_consume_past_char3_def
+  apply (clarsimp simp add: NER_simps)
+  subgoal for c ra rb l l'
+    apply (insert pngiA[unfolded PNGI_def, rule_format, of \<open>c@l\<close> ra l']; clarsimp)
+    subgoal for ca
+      apply (insert dnppe[unfolded does_not_peek_past_end_def, rule_format, of ca l' ra]; clarsimp; rule conjI)
+      subgoal
+        apply (insert pgniB[unfolded PNGI_def, rule_format, of l' rb l]; clarsimp)
+        using dncpc[unfolded does_not_consume_past_char3_def] by fast
+      subgoal
+        apply (insert pgniB[unfolded PNGI_def, rule_format, of l' rb l]; clarsimp)
+        using dncpc[unfolded does_not_consume_past_char3_def] by fast
+      done
+    done
+  done
+
+
+
 \<comment> \<open>First printed char\<close>
 lemma then_fpci[fpci_simps]:
   "first_printed_chari (print (b_then A B)) i c \<longleftrightarrow> (

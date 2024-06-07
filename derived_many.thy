@@ -780,6 +780,23 @@ lemma parse_result_cannot_be_grown_by_printer_apply:
   using assms parse_result_cannot_be_grown_by_printer_def
   by fast
 
+
+lemma cannot_be_grown_by_from_does_not_consume_and_fpci:
+  assumes "\<forall>t c. first_printed_chari printer t c \<longrightarrow> does_not_consume_past_char3 parser c"
+  shows "parse_result_cannot_be_grown_by_printer parser printer"
+  unfolding parse_result_cannot_be_grown_by_printer_def
+  apply clarsimp
+  subgoal for i r l pri prt
+    apply (cases prt; clarsimp) \<comment> \<open>If prt = [] then i@ptr = i and l@ptr = l, so we get it from assms.\<close>
+    subgoal for p ps
+      using assms[rule_format, of pri p, unfolded first_printed_chari_def, OF exI[of _ \<open>p#ps\<close>],
+                  simplified, unfolded does_not_consume_past_char3_def, rule_format, of _ l r ps]
+      \<comment> \<open>Note that this cannot work since cannot be grown by requires adding it to the end of the input
+           and does not consume past adds it to the end of the consumed section.\<close>
+      oops
+
+
+
 \<comment> \<open>It seems reasonable to me that if a parser does not consume past it's own first char then we can get this?\<close>
 \<comment> \<open>Then, if we have that, we can get wf many from does not consume past char3 from fpcpi.\<close>
 \<comment> \<open>Which in turn will be usable to simplify the separated_by WF lemma.\<close>
