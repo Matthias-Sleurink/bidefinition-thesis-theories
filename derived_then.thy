@@ -299,7 +299,14 @@ lemma then_does_not_consume_past3:
             \<comment> \<open>\<^term>\<open>does_not_peek_past_end (parse A)\<close> would solve it.\<close>
             using dncpc_B_c[unfolded does_not_consume_past_char3_def]
             apply (cases c')
-            subgoal using no_empty_res_B by blast
+            subgoal
+              using no_empty_res_B
+              apply clarsimp
+              \<comment> \<open>We have has_result A c@l a l.\<close>
+              \<comment> \<open>We need has_result A c   a []\<close>
+              \<comment> \<open>It seems like we can remove no empty res B by having this as a precondition?\<close>
+              
+              by force \<comment> \<open>Figure out if we can remove no_empty_res_B somehow?\<close>
             subgoal using fpc_B_dncpc_A[unfolded does_not_consume_past_char3_def fpc_def] by fastforce
             done
           subgoal
