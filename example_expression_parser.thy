@@ -394,22 +394,39 @@ lemma PNGI_Expression:
                       transform_PNGI_rev nat_b_PNGI ws_char_ws_PNGI)
   \<comment> \<open>First subgoal is now again `PNGI parse Expression`\<close>
   oops  
-\<comment> \<open>So maybe we can do an inductive option over all Exs?\<close>
+
+lemma mcont_parse[cont_intro]:
+  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. parse (x ()) i)"
+  apply (rule)
+  subgoal
+    apply (rule monotoneI)
+    by (simp add: bd_ord_def fun_ord_def)
+  apply (rule cont_intro)
+  unfolding bd_ord_def fun_ord_def
+  apply (rule contI)
+  unfolding bd_lub_def
+  apply clarsimp
+  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
+
+lemma admissible_PNGI[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. PNGI (parse (expressionR ())))"
+  unfolding PNGI_def
+  unfolding has_result_def
+  by simp
+
+lemma strict_PNGI:
+  "PNGI ((\<lambda>u. None))"
+  by (simp add: PNGI_def has_result_def)
+
 lemma PNGI_Expression:
   "PNGI (parse Expression)"
-  apply (subst PNGI_def; subst Expression_def)
-  apply clarsimp
-  subgoal for i r l
-    apply (induction r; clarsimp simp add: NER_simps)
-    subgoal for as
-      apply (induction as arbitrary: i l rule: rev_induct; clarsimp simp add: NER_simps)
-      subgoal for a as i l
-        \<comment> \<open>There is no Ex that can go into an additive that can be parsed by AddE.\<close>
-        \<comment> \<open>This kinda seems to imply that this whole thing is not set up correctly.\<close>
-        \<comment> \<open>Maybe we want to change the setup so that we actually create a tree?\<close>
-        \<comment> \<open>Though we could also set this up so that the ftransforms create the needed buffering.\<close>
-        oops
-
+  apply (induction rule: expressionR.fixp_induct)
+  subgoal by (rule admissible_PNGI)
+  subgoal by (simp add: strict_PNGI)
+  subgoal
+    unfolding AddE_def MultE_def NOE_def Number_def ws_parenthesised_def
+    by (intro ftransform_PNGI transform_PNGI_rev[THEN iffD2] separated_by1_PNGI or_PNGI PASI_PNGI  then_PASI then_PASI_from_pasi_pngi; assumption)
+  done
 
 (*
   = Additive (getList: "Ex list")

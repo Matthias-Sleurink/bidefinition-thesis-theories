@@ -431,12 +431,16 @@ lemma bd_partial_function_definitions:
     by (smt (verit) CollectD Rep_bd Rep_bd_inverse bd_aux_lub_def bd_lub_componentwise bdc.rep_eq chain_imageI imageE option.partial_function_definitions_axioms partial_function_definitions.lub_least partial_function_lift)
   done
 
+lemma bd_lub_bdc:
+  "bd_lub {} = bdc (\<lambda>_. None) (\<lambda>_. None)"
+  unfolding bd_lub_def flat_lub_def
+  by clarsimp
 
 interpretation bd:
   partial_function_definitions "bd_ord" "bd_lub"
-  (* rewrites "bd_lub {} \<equiv> bdc (\<lambda>_. None) (\<lambda>_. None)" *)
-  by (rule bd_partial_function_definitions)
-
+  rewrites "bd_lub {} \<equiv> bdc (\<lambda>_. None) (\<lambda>_. None)"
+  by (clarsimp simp add: bd_partial_function_definitions bd_lub_bdc)+
+print_theorems
 abbreviation "mono_bd \<equiv> monotone (fun_ord bd_ord) bd_ord"
 
 \<comment> \<open>TODO: We don't have a fixp_induct rule.\<close>
