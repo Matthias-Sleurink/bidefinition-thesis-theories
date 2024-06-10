@@ -115,8 +115,16 @@ lemma separated_by1_does_not_peek_past_end[peek_past_end_simps]:
 section \<open>Does not consume past char\<close>
 \<comment> \<open>TODO: We should be able to do something similar to then here.\<close>
 lemma separated_by1_does_not_consume_past_char3:
+  assumes "bidef_well_formed elem"
+  assumes "bidef_well_formed (many (b_then sep elem))"
+  assumes "does_not_consume_past_char3 (parse (many (b_then sep elem))) c"
+  assumes "\<And>i c. fpc (parse (many (b_then sep elem))) i c \<longrightarrow> does_not_consume_past_char3 (parse elem) c"
   shows "does_not_consume_past_char3 (parse (separated_by1 elem sep oracle)) c"
   unfolding separated_by1_def
+  apply (rule ftransform_does_not_consume_past_char3)
+  apply (rule then_does_not_consume_past3)
+      apply (simp_all add: assms)
+  
   oops
 
 
