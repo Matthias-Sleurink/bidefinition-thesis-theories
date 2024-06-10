@@ -156,9 +156,10 @@ value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
 
 definition MultE :: "Ex bidef \<Rightarrow> Ex bidef" where
-  "MultE E = transform
-               Multiply
-               getList
+  "MultE E = ftransform
+               (Some o Multiply)
+               (\<lambda>Multiply ms \<Rightarrow> Some ms
+                |_ \<Rightarrow> None)
                (separated_by1 (NOE E) star ())"
 
 lemma mono_MultE[partial_function_mono]:
@@ -168,10 +169,11 @@ lemma mono_MultE[partial_function_mono]:
   by pf_mono_prover
 
 definition AddE :: "Ex bidef \<Rightarrow> Ex bidef" where
-  "AddE E = transform
-              Additive
-              getList
-              (separated_by1 (MultE E) plus ())"
+  "AddE E = ftransform
+              (Some o Additive)
+              ((\<lambda>Additive as \<Rightarrow> Some as
+                |_ \<Rightarrow> None))
+              ((separated_by1 (MultE E) plus ()) :: Ex list bidef)"
 
 lemma mono_AddE[partial_function_mono]:
   assumes ma: "mono_bd A"
@@ -186,7 +188,7 @@ partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where [code]:
                     (\<lambda> Additive a \<Rightarrow> Some (Additive a)
                      | e          \<Rightarrow> None)
                     (AddE (expressionR ()))"
-
+print_theorems
 (*
 partial_function (bd) expressionR :: "unit \<Rightarrow> Ex bidef" where [code]:
   "expressionR u = transform
