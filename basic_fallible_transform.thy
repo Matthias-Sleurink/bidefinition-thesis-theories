@@ -249,5 +249,26 @@ lemma ftransform_well_formed:
     \<comment> \<open>Again, fastforce is consistently slower when has_result is unfolded.\<close>
   done
 
+definition well_formed_ftransform_funcs :: "('\<alpha> \<Rightarrow> '\<beta> option) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha> option) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
+  "well_formed_ftransform_funcs f f' b \<longleftrightarrow> (
+        (\<forall> i v l v'. has_result (parse b) i v l \<and> Some v' = f v \<longrightarrow> f' v' = Some v)
+      \<and> (\<forall> pr t. p_has_result (print (ftransform f f' b)) t pr \<longrightarrow> (\<exists>t'. f' t = Some t' \<and> f t' = Some t)))"
+
+lemma ftransform_well_formed2:
+  assumes funcs: "well_formed_ftransform_funcs f f' b"
+  assumes wf: "bidef_well_formed b"
+  shows "bidef_well_formed (ftransform f f' b)"
+  apply wf_init
+  subgoal using wf[THEN get_pngi] ftransform_PNGI by blast
+  subgoal
+    using wf[THEN get_parser_can_parse] funcs[unfolded well_formed_ftransform_funcs_def]
+    apply (simp add: parser_can_parse_print_result_def fp_NER NER_simps)
+    by fastforce
+  subgoal
+    using wf[THEN get_printer_can_print] funcs[unfolded well_formed_ftransform_funcs_def]
+    apply (simp add: printer_can_print_parse_result_def fp_NER NER_simps)
+    by fastforce
+  done
+
 
 end

@@ -245,5 +245,27 @@ lemma transform_well_formed3:
     by blast
   done
 
+\<comment> \<open>Best definition since it does not require re-stating WF\<close>
+\<comment> \<open>TODO: This, but for ftransform!\<close>
+definition well_formed_transform_funcs4 :: "('\<alpha> \<Rightarrow> '\<beta>) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<alpha> bidef \<Rightarrow> bool" where
+  "well_formed_transform_funcs4 f f' b \<longleftrightarrow> (
+        (\<forall> i v l. has_result (parse b) i v l \<longrightarrow> f' (f v) = v)
+      \<and> (\<forall> pr t. p_has_result (print (transform f f' b)) t pr \<longrightarrow> f (f' t) = t))"
+
+lemma transform_well_formed4:
+  assumes funcs: "well_formed_transform_funcs4 f f' b"
+  assumes wf: "bidef_well_formed b"
+  shows "bidef_well_formed (transform f f' b)"
+  apply wf_init
+  subgoal using wf[THEN get_pngi] transform_PNGI by blast
+  subgoal
+    using wf[THEN get_parser_can_parse] funcs[unfolded well_formed_transform_funcs4_def]
+    apply (simp add: parser_can_parse_print_result_def fp_NER NER_simps)
+    by (simp add: has_result_def)
+  subgoal
+    using wf[THEN get_printer_can_print] funcs[unfolded well_formed_transform_funcs4_def]
+    apply (simp add: printer_can_print_parse_result_def fp_NER NER_simps)
+    by fastforce
+  done
 
 end
