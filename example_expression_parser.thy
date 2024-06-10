@@ -15,9 +15,16 @@ datatype Ex
   | Multiply (getList: "Ex list")
   | Literal (getNat: nat)
   | Parenthesised (getE: Ex)
+print_theorems
 \<comment> \<open>Note that this is not the AST, more like a parse tree, it's up to the user to create an AST.\<close>
 \<comment> \<open>Which should be a simple fold over the lists.\<close>
-
+(*
+datatype ExA = Additive "ExM list"
+and
+ ExM = Multiply \<open>ExL list\<close>
+and
+  ExL = Literal "nat" | Parenthesised ExA
+*)
 
 fun val :: "Ex \<Rightarrow> nat" where
   "val (Additive []) = 0"
