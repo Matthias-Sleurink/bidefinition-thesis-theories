@@ -460,49 +460,87 @@ lemma Expression_no_eat_into_paren:
     subgoal by (subst (asm) Expression_def; clarsimp simp add: fp_NER)
     done
   oops
-      
 
 
+lemma mcont_print[cont_intro]:
+  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. print (x ()) i)"
+  apply (rule)
+  subgoal
+    apply (rule monotoneI)
+    by (simp add: bd_ord_def fun_ord_def)
+  apply (rule cont_intro)
+  unfolding bd_ord_def fun_ord_def
+  apply (rule contI)
+  unfolding bd_lub_def
+  apply clarsimp
+  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
 
-\<comment> \<open>This is not a feasible strategy, as you can see from the note below.\<close>
+lemma admissible_parser_can_parse[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. parser_can_parse_print_result (parse (expressionR ())) (print (expressionR ())))"
+  unfolding parser_can_parse_print_result_def p_has_result_def has_result_def
+  by simp
+
+lemma admissible_exist_printable[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. \<exists>s. print (expressionR ()) t = Some (Some s))"
+  apply (rule ccpo.admissibleI)
+  unfolding bd_ord_def fun_ord_def fun_lub_def bd_lub_def
+  apply clarsimp
+  by (smt (z3) all_not_in_conv chain_def flat_ord_def mem_Collect_eq option.lub_upper option.simps(3))
+
+lemma admissible_parse_result_eq[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. parse (expressionR ()) i \<noteq> Some (Some (t, l)))"
+  by simp
+
+lemma admissible_printer_can_print[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. printer_can_print_parse_result (parse (expressionR ())) (print (expressionR ())))"
+  unfolding printer_can_print_parse_result_def p_has_result_def has_result_def
+  by simp
+
+lemma admissible_WF:
+  "bd.admissible (\<lambda>expressionR. bidef_well_formed ((expressionR ())))"
+  unfolding bidef_well_formed_def
+  by simp
+
+lemma strict_WF:
+  "bidef_well_formed (bdc (\<lambda>u. None) (\<lambda>u. None))"
+  unfolding bidef_well_formed_def
+  by (simp add: strict_PNGI parser_can_parse_print_result_def p_has_result_def printer_can_print_parse_result_def has_result_def)
+
+
 lemma expression_well_formed:
   "bidef_well_formed Expression"
-  apply (subst Expression_def)
-  apply (rule ftransform_well_formed)
-  subgoal sorry
-  subgoal sorry
+  apply (induction rule: expressionR.fixp_induct)
+  subgoal by (rule admissible_WF)
+  subgoal by (simp add: strict_WF)
+  apply (rule ftransform_well_formed2)
+  subgoal by (auto simp add: NER_simps fp_NER AddE_def well_formed_ftransform_funcs_def split: Ex.splits)
+  unfolding AddE_def
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: fp_NER well_formed_ftransform_funcs_def split: Ex.splits)
+  unfolding MultE_def
+  apply (rule separated_by1_well_formed)
+  subgoal by (clarsimp simp add: fp_NER)
   subgoal
-    unfolding AddE_def
-    apply (rule transform_well_formed)
+    apply (rule ftransform_well_formed2)
+    subgoal by (clarsimp simp add: fp_NER well_formed_ftransform_funcs_def split: Ex.splits)
+    apply (rule separated_by1_well_formed)
+    subgoal by (clarsimp simp add: fp_NER)
     subgoal
-      apply (rule separated_by1_well_formed)
-      subgoal by (clarsimp simp add: ws_char_ws_p_has_result)
+      unfolding NOE_def
+      apply (rule ftransform_well_formed2)
+      subgoal by (clarsimp simp add: NER_simps fp_NER well_formed_ftransform_funcs_def split: Ex.splits sum.splits)
+      apply (rule or_well_formed)
+      subgoal by (rule Number_well_formed)
       subgoal
-        unfolding MultE_def
-        apply (rule transform_well_formed)
-        subgoal
-          apply (rule separated_by1_well_formed)
-          subgoal by (clarsimp simp add: ws_char_ws_p_has_result)
-          subgoal
-            unfolding NOE_def
-            apply (rule ftransform_well_formed)
-            subgoal sorry
-            subgoal sorry
-            subgoal
-              apply (rule or_well_formed)
-              subgoal by (rule Number_well_formed)
-              subgoal
-                unfolding ws_parenthesised_def
-                apply (rule transform_well_formed)
-                subgoal
-                  apply (rule b_then_well_formed)
-                  subgoal by (rule ws_char_ws_well_formed; clarsimp)
-                  subgoal
-                    apply (rule b_then_well_formed)
-                    subgoal \<comment> \<open>NOTE: This is the same as the original goal!\<close> sorry
-                    subgoal by (rule ws_char_ws_well_formed; clarsimp)
-                    subgoal sorry
-                    done
-                  oops
+        unfolding ws_parenthesised_def
+        apply (rule transform_well_formed4)
+        subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
+        
+        sorry
+      subgoal by (clarsimp simp add: fp_NER NER_simps well_formed_or_pair_def)
+      done
+    oops
+
+
 
 end
