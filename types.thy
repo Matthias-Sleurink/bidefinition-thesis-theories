@@ -61,8 +61,6 @@ lemma leftover_determ:
   using assms unfolding has_result_def
   by clarsimp
 
-
-
 \<comment> \<open>list_upto is important for instantiating the existentials in has_result_c proofs\<close>
 fun dropLastN :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a list" where
   "dropLastN a l = take (length l - a) l"
@@ -204,6 +202,9 @@ lemma p_has_result_eq_not_is_error:
   unfolding p_is_error_def p_has_result_def p_is_nonterm_def
   by auto
 
+lemma p_has_result_bottom[fp_NER]:
+  "p_has_result (\<lambda>a. None) e [] \<longleftrightarrow> False"
+  by (clarsimp simp add: p_has_result_def)
 
 
 section \<open>Underlying bidefinition type\<close>

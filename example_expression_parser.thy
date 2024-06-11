@@ -530,10 +530,26 @@ lemma expression_well_formed:
         unfolding ws_parenthesised_def
         apply (rule transform_well_formed4)
         subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
-        
-        sorry
+        apply (rule b_then_well_formed)
+        subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
+        subgoal
+          \<comment> \<open>This is there we need to create something like "chars can be taken from start of input"\<close>
+          \<comment> \<open>Because the inner parser (Expression) may end in ws)ws, which will eat into ws)ws (by eating away the ws.)\<close>
+          \<comment> \<open>But, of course, this does not matter for the parse result.\<close>
+          \<comment> \<open>Note that I'm fairly sure that we can resolve this in the creation of the bidefs,
+               but I purposefully did not to surface this issue.\<close>
+          sorry
+        subgoal
+          apply (rule first_printed_does_not_eat_into3)
+          subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
+          subgoal
+            find_theorems first_printed_chari b_then
+            sorry
+          done
+        done
       subgoal by (clarsimp simp add: fp_NER NER_simps well_formed_or_pair_def)
       done
+    
     oops
 
 
