@@ -216,7 +216,7 @@ lemma numberlist_comma_well_formed:
     apply (auto intro!: then_does_not_consume_past3
                 simp add: separator_wf nat_b_well_formed
                           nat_does_not_consume_past3
-                          comma_not_digit(1) ws_not_digit(1)
+                          ws_not_digit(1)
                           separator_no_consume_past3
                           fpc_def NER_simps)
     done

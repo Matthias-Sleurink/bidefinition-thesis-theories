@@ -53,8 +53,6 @@ lemma expression_punctuation_charsets[simp]:
 
   "CHR ''*'' \<notin> derived_digit_char.digit_chars"
   "CHR ''+'' \<notin> derived_digit_char.digit_chars"
-  "CHR ''('' \<notin> derived_digit_char.digit_chars"
-  "CHR '')'' \<notin> derived_digit_char.digit_chars"
 
   "CHR ''*'' \<notin> whitespace_chars"
   "CHR ''+'' \<notin> whitespace_chars"
@@ -207,32 +205,6 @@ lemmas Expression_def = expressionR.simps
 
 subsection \<open>Some parsing examples\<close>
 
-\<comment> \<open>Would these be good in simp?\<close>
-lemma exInr:
-  "\<exists>r'. (\<forall>x1. r' \<noteq> Inl x1) \<and> (\<forall>x2. r' = Inr x2 \<longrightarrow> P x2) \<equiv> (\<exists>x2. P x2)"
-  "\<exists>r'. (\<forall>x2. r' = Inr x2 \<longrightarrow> P x2) \<and> (\<forall>x1. r' \<noteq> Inl x1) \<equiv> (\<exists>x2. P x2)"
-  by (smt (verit) Inl_Inr_False Inr_inject obj_sumE)+
-lemma exInl:
-  "\<exists>r'. (\<forall>x1. r' \<noteq> Inr x1) \<and> (\<forall>x2. r' = Inl x2 \<longrightarrow> P x2) \<equiv> (\<exists>x2. P x2)"
-  "\<exists>r'. (\<forall>x2. r' = Inl x2 \<longrightarrow> P x2) \<and> (\<forall>x1. r' \<noteq> Inr x1) \<equiv> (\<exists>x2. P x2)"
-  by (smt (verit) Inl_Inr_False Inl_inject obj_sumE)+
-lemma exUnitList:
-  "(\<exists>l:: unit list. length l = n \<and> P l) \<equiv> (P (replicate n ()))"
-  by (smt (verit) length_replicate old.unit.exhaust replicate_length_same)
-lemma exEq:
-  "(\<exists>v. v = a \<and> P v) \<equiv> P a"
-  by simp
-lemma exId:
-  "(\<exists>v. P v \<and> v = id a) \<equiv> P a"
-  "(\<exists>v. P v \<and> id a = v) \<equiv> P a"
-  "(\<exists>v. v = id a \<and> P v) \<equiv> P a"
-  "(\<exists>v. id a = v \<and> P v) \<equiv> P a"
-  by simp_all
-
-
-lemmas ex_simps[simp] = exInr exInl exUnitList exEq exId
-
-
 lemma "is_error (parse Expression) ''''"
   apply (subst expressionR.simps)
   by (clarsimp simp add: NER_simps AddE_def MultE_def NOE_def Number_def)
@@ -346,7 +318,7 @@ lemma NOE_has_result_safe[NER_simps]:
   subgoal by (clarsimp simp add: NER_simps split: sum.splits; argo)
   subgoal
     apply (auto simp add: NER_simps not_both_lit_and_paren split: sum.splits)
-    by (metis chars_not_in_whitespace(2) dropWhile_hd_no_match expression_punctuation_charsets(7))
+    by (metis char_not_in_digit_chars(3) chars_not_in_whitespace(2) dropWhile_hd_no_match)
   done
 
 lemma MultE_has_result_safe[NER_simps]:

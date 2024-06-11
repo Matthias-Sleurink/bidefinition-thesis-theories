@@ -50,7 +50,7 @@ lemma numberlist_comma_unit_well_formed:
                         nat_b_PASI
                         ws_comma_ws_does_not_consume_past_char3
                         fpci_simps no_space_hd_nat
-                        nat_does_not_consume_past3 comma_not_digit(1)
+                        nat_does_not_consume_past3
                         print_empty fpc_def
                         PASI_implies_no_result_from_empty)
   subgoal
