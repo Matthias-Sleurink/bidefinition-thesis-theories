@@ -83,6 +83,9 @@ lemma mono_ws_parenthesised[partial_function_mono]:
 
 \<comment> \<open>The two ideas for making small combinators have easier NER rules is to add the definition to NER simps.\<close>
 \<comment> \<open>This requires the rule to be "safe" to unfold, which ws_parenthesised is.\<close>
+\<comment> \<open>Cannot add this to fp_NER too, since it'll give us duplicate fact added warnings when we add both NER and fp_NER.\<close>
+\<comment> \<open>So maybe the better solution is to add an unfold rule specific to the has_result, is_error, etc?\<close>
+\<comment> \<open>But in that case we're almost back to how complex it was at the start again.\<close>
 lemmas ws_paren_def[NER_simps] = ws_parenthesised_def
 
 
@@ -113,6 +116,9 @@ lemma Number_b_is_error[fp_NER]:
 lemma Number_b_is_nonterm[fp_NER]:
   "p_is_nonterm (print Number) i \<longleftrightarrow> False"
   by (clarsimp simp add: Number_def fp_NER)
+lemma Number_p_print_empty[print_empty, fp_NER]:
+  "p_has_result (print Number) i [] \<longleftrightarrow> False"
+  by (clarsimp simp add: Number_def print_empty)
 
 lemma Number_well_formed:
   "bidef_well_formed Number"
@@ -367,8 +373,22 @@ lemma PNGI_Expression:
   \<comment> \<open>First subgoal is now again `PNGI parse Expression`\<close>
   oops  
 
+\<comment> \<open>TODO: move these to types\<close>
 lemma mcont_parse[cont_intro]:
   "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. parse (x ()) i)"
+  apply (rule)
+  subgoal
+    apply (rule monotoneI)
+    by (simp add: bd_ord_def fun_ord_def)
+  apply (rule cont_intro)
+  unfolding bd_ord_def fun_ord_def
+  apply (rule contI)
+  unfolding bd_lub_def
+  apply clarsimp
+  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
+
+lemma mcont_print[cont_intro]:
+  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. print (x ()) i)"
   apply (rule)
   subgoal
     apply (rule monotoneI)
@@ -399,6 +419,23 @@ lemma PNGI_Expression:
     unfolding AddE_def MultE_def NOE_def Number_def ws_parenthesised_def
     by (intro ftransform_PNGI transform_PNGI_rev[THEN iffD2] separated_by1_PNGI or_PNGI PASI_PNGI  then_PASI then_PASI_from_pasi_pngi; assumption)
   done
+
+
+
+lemma admissible_no_empty_result:
+  "bd.admissible (\<lambda>r. \<not> p_has_result (print (r ())) e [])"
+  unfolding p_has_result_def
+  by simp
+
+lemma Expression_no_print_empty:
+  "\<not>p_has_result (print Expression) e []"
+  apply (induction rule: expressionR.fixp_induct)
+  subgoal by (rule admissible_no_empty_result)
+  subgoal by (clarsimp simp add: fp_NER)
+  by (clarsimp simp add: print_empty AddE_def MultE_def separated_by1_def NOE_def ws_parenthesised_def split: Ex.splits list.splits)
+
+
+
 
 (*
   = Additive (getList: "Ex list")
@@ -432,20 +469,6 @@ lemma Expression_no_eat_into_paren:
     subgoal by (subst (asm) Expression_def; clarsimp simp add: fp_NER)
     done
   oops
-
-
-lemma mcont_print[cont_intro]:
-  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. print (x ()) i)"
-  apply (rule)
-  subgoal
-    apply (rule monotoneI)
-    by (simp add: bd_ord_def fun_ord_def)
-  apply (rule cont_intro)
-  unfolding bd_ord_def fun_ord_def
-  apply (rule contI)
-  unfolding bd_lub_def
-  apply clarsimp
-  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
 
 lemma admissible_parser_can_parse[cont_intro]:
   "bd.admissible (\<lambda>expressionR. parser_can_parse_print_result (parse (expressionR ())) (print (expressionR ())))"
