@@ -299,5 +299,8 @@ lemma nat_b_leftover_can_be_dropped:
   done
 
 
+lemma nat_b_error_leftover_can_be_dropped:
+  "is_error (parse nat_b) (c @ l2) \<Longrightarrow> is_error (parse nat_b) c"
+  by (clarsimp simp add: NER_simps)
 
 end
