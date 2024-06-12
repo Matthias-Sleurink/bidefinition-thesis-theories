@@ -172,9 +172,6 @@ lemma line_no_consume_past_newline:
             sorry
           done
         done
-      subgoal
-        
-        sorry
     oops
 
 
