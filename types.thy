@@ -61,6 +61,18 @@ lemma leftover_determ:
   using assms unfolding has_result_def
   by clarsimp
 
+lemma bottom_has_result[NER_simps]:
+  "has_result (\<lambda>a. None) i r l \<longleftrightarrow> False"
+  by (clarsimp simp add: has_result_def)
+lemma bottom_is_error[NER_simps]:
+  "is_error (\<lambda>a. None) i \<longleftrightarrow> False"
+  by (clarsimp simp add: is_error_def)
+lemma bottom_is_nonterm[NER_simps]:
+  "is_nonterm (\<lambda>a. None) i \<longleftrightarrow> True"
+  by (clarsimp simp add: is_nonterm_def)
+
+
+
 \<comment> \<open>list_upto is important for instantiating the existentials in has_result_c proofs\<close>
 fun dropLastN :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a list" where
   "dropLastN a l = take (length l - a) l"
@@ -203,8 +215,17 @@ lemma p_has_result_eq_not_is_error:
   by auto
 
 lemma p_has_result_bottom[fp_NER]:
-  "p_has_result (\<lambda>a. None) e [] \<longleftrightarrow> False"
+  "p_has_result (\<lambda>a. None) e i \<longleftrightarrow> False"
   by (clarsimp simp add: p_has_result_def)
+
+lemma p_is_error_bottom[fp_NER]:
+  "p_is_error (\<lambda>a. None) e \<longleftrightarrow> False"
+  by (clarsimp simp add: p_is_error_def)
+
+lemma p_is_nonterm_bottom[fp_NER]:
+  "p_is_nonterm (\<lambda>a. None) e \<longleftrightarrow> True"
+  by (clarsimp simp add: p_is_nonterm_def)
+
 
 
 section \<open>Underlying bidefinition type\<close>
