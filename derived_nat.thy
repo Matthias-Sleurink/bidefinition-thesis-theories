@@ -283,5 +283,21 @@ lemma print_nat_hd_derived[simp]:
   "hd (print_nat a) \<in> derived_digit_char.digit_chars"
   using digit_chars_eq_digit_chars print_nat_hd by presburger
 
+lemma nat_b_leftover_can_be_dropped:
+  "has_result (parse nat_b) (c @ l2) r (l@l2) \<Longrightarrow> has_result (parse nat_b) c r l"
+  apply (cases c; clarsimp)
+  subgoal by(insert nat_b_PNGI[unfolded PNGI_def, rule_format, of l2 r \<open>l@l2\<close>]; clarsimp simp add: NER_simps)
+  subgoal for c' cs
+    apply (cases l; clarsimp)
+    subgoal by (clarsimp simp add: NER_simps split: if_splits)
+    subgoal for l' ls
+      apply (cases \<open>l' \<in> digit_chars\<close>; clarsimp simp add: NER_simps split: if_splits)
+      subgoal by (metis dropWhile_eq_Cons_conv)
+      subgoal by (metis dropWhile_eq_Cons_conv takeWhile_tail)
+      done
+    done
+  done
+
+
 
 end
