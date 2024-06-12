@@ -108,14 +108,9 @@ lemma return_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>Does not consume past char.\<close>
-lemma return_does_not_consume_past_char:
-  shows "does_not_consume_past_char (parse (return a)) ch"
-  unfolding does_not_consume_past_char_def
-  by (clarsimp simp add: return_has_result)
-
-lemma return_does_not_consume_past_char2:
-  shows "does_not_consume_past_char2 (parse (return a)) ch"
-  unfolding does_not_consume_past_char2_def
+lemma return_does_not_consume_past_char3:
+  shows "does_not_consume_past_char3 (parse (return a)) ch"
+  unfolding does_not_consume_past_char3_def
   by (clarsimp simp add: return_has_result)
 
 

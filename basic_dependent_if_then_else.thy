@@ -521,58 +521,6 @@ definition pa_does_not_eat_into_pb :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> 
         \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
 )"
 
-lemma if_then_else_does_not_consume_past_char:
-  assumes "PNGI (parse A)"
-  assumes "\<forall> i r l. has_result (parse A) i r l \<longrightarrow> PNGI (parse (a2B r))"
-  assumes "PNGI (parse C)"
-
-  assumes "\<forall> i r l. has_result (parse A) i r l \<longrightarrow> does_not_consume_past_char (parse (a2B r)) ch"
-  assumes "does_not_consume_past_char (parse C) ch"
-
-  assumes "A_is_error_on_C_consumed A C"
-
-  assumes "does_not_peek_past_end (parse A)"
-
-  shows "does_not_consume_past_char (parse (if_then_else A a2B C b2a)) ch"
-  using assms unfolding does_not_consume_past_char_def does_not_peek_past_end_def
-  apply clarsimp \<comment> \<open>\<forall> \<rightarrow> \<And> so that we can use the names\<close>
-  subgoal for c r l l'
-    apply (cases r) \<comment> \<open>Did we return from a->a2b or c?\<close>
-    subgoal for rl
-      apply (clarsimp simp add: if_then_else_has_result(1))
-      subgoal for ar al
-        apply (rule exI[of _ ar])
-        apply (clarsimp simp add: PNGI_def)
-        proof -
-          assume a1: "\<forall>i r l. has_result (parse A) i r l \<longrightarrow> (\<exists>c. i = c @ l)"
-          assume a2: "\<forall>i r. (\<exists>l. has_result (parse A) i r l) \<longrightarrow> (\<forall>i ra l. has_result (parse (a2B r)) i ra l \<longrightarrow> (\<exists>c. i = c @ l))"
-          assume a3: "\<forall>i r. Ex (has_result (parse A) i r) \<longrightarrow> (\<forall>c ra. (\<exists>l. has_result (parse (a2B r)) (c @ l) ra l) \<longrightarrow> (\<forall>l'. has_result (parse (a2B r)) (c @ ch # l') ra (ch # l')))"
-          assume a4: "\<forall>c r. (\<exists>l. has_result (parse A) (c @ l) r l) \<longrightarrow> (\<forall>l'. has_result (parse A) (c @ l') r l')"
-          assume a5: "has_result (parse A) (c @ l) ar al"
-          assume a6: "has_result (parse (a2B ar)) al rl l"
-          obtain ccs :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
-            f7: "c @ l = ccs al (c @ l) @ al"
-            using a5 a1 by meson
-          obtain ccsa :: "char list \<Rightarrow> char list \<Rightarrow> char list" where
-            f8: "al = ccsa l al @ l"
-            using a6 a5 a2 by meson
-          have "\<forall>cs. has_result (parse A) (ccs al (c @ l) @ cs) ar cs"
-            using f7 a5 a4 by metis
-          then show "\<exists>cs. has_result (parse A) (c @ ch # l') ar cs \<and> has_result (parse (a2B ar)) cs rl (ch # l')"
-            using f8 f7 a6 a3
-            by (smt (verit) append_assoc append_same_eq)
-        qed
-      done
-    subgoal for rr
-      unfolding A_is_error_on_C_consumed_def
-      apply (clarsimp simp add: if_then_else_has_result(2))
-      by blast
-    done
-  done
-
-
-
-
 \<comment> \<open>First printed char\<close>
 lemma if_then_else_fpci_ri:
   assumes "first_printed_chari (print C) ri c"

@@ -75,18 +75,6 @@ lemma drop_does_not_peek_past_end[peek_past_end_simps]:
 
 
 section \<open>Does not consume past char\<close>
-lemma drop_does_not_consume_past_char:
-  assumes "does_not_consume_past_char (parse A) ch"
-  shows "does_not_consume_past_char (parse (drop A oracle)) ch"
-  using assms unfolding does_not_consume_past_char_def
-  by (auto simp add: NER_simps)
-
-lemma drop_does_not_consume_past_char2:
-  assumes "does_not_consume_past_char2 (parse A) ch"
-  shows "does_not_consume_past_char2 (parse (drop A oracle)) ch"
-  using assms unfolding does_not_consume_past_char2_def
-  by (auto simp add: NER_simps)
-
 lemma drop_does_not_consume_past_char3:
   assumes "does_not_consume_past_char3 (parse A) ch"
   shows "does_not_consume_past_char3 (parse (drop A oracle)) ch"

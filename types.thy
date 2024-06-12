@@ -813,74 +813,6 @@ lemma no_peek_past_end_wf_stronger:
   by (metis append.right_neutral)
 
 
-(* Usable, for example, together with parser can parse print result and first_chars? *)
-definition does_not_consume_past_char :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
-  "does_not_consume_past_char p ch \<longleftrightarrow> (\<forall>c r l l'. has_result p (c@l) r l \<longrightarrow> has_result p (c@ch#l') r (ch#l'))"
-
-lemma no_consume_past_wf_stronger:
-  assumes "does_not_consume_past_char (parse A) ch"
-  assumes "bidef_well_formed A"
-  assumes "p_has_result (print A) i ipr"
-  shows "\<And>cs. has_result (parse A) (ipr@ch#cs) i (ch#cs)"
-  subgoal for cs
-    using assms(1)[unfolded does_not_consume_past_char_def, rule_format, of ipr \<open>[]\<close> i cs]
-          assms(2)[THEN get_parser_can_parse_unfold, rule_format, of i \<open>ipr@[]\<close>]
-          assms(3)
-    by clarsimp
-  done
-
-lemma does_not_peek_past_end_implies_does_not_consume_past_char:
-  assumes "does_not_peek_past_end A"
-  shows "\<And>ch. does_not_consume_past_char A ch"
-  using assms unfolding does_not_consume_past_char_def does_not_peek_past_end_def
-  by blast
-
-\<comment> \<open>This does not hold since for consume_past_char we always assume that the appended text is nonempty,
-     but does not peek past end also supports the empty case.\<close>
-lemma does_not_consume_past_any_char_eq_not_peek_past_end:
-  shows "(\<forall>ch. does_not_consume_past_char A ch) \<longleftrightarrow> does_not_peek_past_end A"
-  unfolding does_not_consume_past_char_def does_not_peek_past_end_def
-  apply auto
-  subgoal for c r l l'
-    apply (cases l')
-    subgoal \<comment> \<open>l'=[]\<close>
-      apply clarsimp
-      
-      sorry
-    subgoal
-      by blast
-    oops
-
-(*Attempt 2, what if the text is empty?*)
-definition does_not_consume_past_char2 :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
-  "does_not_consume_past_char2 p ch \<longleftrightarrow> (\<forall>c r l l'. has_result p (c@l) r l \<longrightarrow> (l'=[] \<or> hd l'=ch) \<longrightarrow> has_result p (c@l') r l')"
-
-lemma no_consume_past2_wf_stronger:
-  assumes "does_not_consume_past_char2 (parse A) ch"
-  assumes "bidef_well_formed A"
-  assumes "p_has_result (print A) i ipr"
-  shows "\<And>cs. cs=[] \<or> hd cs = ch \<longrightarrow> has_result (parse A) (ipr@cs) i cs"
-  subgoal for cs
-    using assms(1)[unfolded does_not_consume_past_char2_def, rule_format, of ipr \<open>[]\<close> i cs]
-          assms(2)[THEN get_parser_can_parse_unfold, rule_format, of i \<open>ipr@[]\<close>]
-          assms(3)
-    by clarsimp
-  done
-
-
-lemma does_not_consume_past_any_char2_eq_not_peek_past_end:
-  shows "(\<forall>ch. does_not_consume_past_char2 A ch) \<longleftrightarrow> does_not_peek_past_end A"
-  unfolding does_not_consume_past_char2_def does_not_peek_past_end_def
-  by blast
-
-lemma does_not_consume_past_char2_implies_does_not_consume_past_char:
-  assumes "does_not_consume_past_char2 p c"
-  shows "does_not_consume_past_char p c"
-  using assms
-  unfolding does_not_consume_past_char2_def does_not_consume_past_char_def
-  by fastforce
-
-
 (*Attempt 3, hd being a partial function is biting us in the ass, so let's not use it.*)
 definition does_not_consume_past_char3 :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
   "does_not_consume_past_char3 p ch \<longleftrightarrow> (\<forall>c r l l'.
@@ -904,12 +836,6 @@ lemma does_not_consume_past_any_char3_eq_not_peek_past_end:
   unfolding does_not_consume_past_char3_def does_not_peek_past_end_def
   by (metis neq_Nil_conv self_append_conv)
 
-lemma does_not_consume_past_char3_implies_does_not_consume_past_char:
-  assumes "does_not_consume_past_char3 p c"
-  shows "does_not_consume_past_char p c"
-  using assms
-  unfolding does_not_consume_past_char3_def does_not_consume_past_char_def
-  by fastforce
 
 
 section \<open>First printed character\<close>

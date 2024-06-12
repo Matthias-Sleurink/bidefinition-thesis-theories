@@ -212,31 +212,6 @@ definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<b
         \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2
 )"
 
-lemma then_does_not_consume_past_char:
-  assumes "bidef_well_formed A"
-  assumes "bidef_well_formed B"
-  assumes "pa_does_not_eat_into_pb_nondep A B"
-  assumes "does_not_consume_past_char2 (parse B) c"
-  shows "does_not_consume_past_char2 (parse (b_then A B)) c"
-  using assms
-  unfolding does_not_consume_past_char2_def pa_does_not_eat_into_pb_nondep_def bidef_well_formed_def
-            printer_can_print_parse_result_def parser_can_parse_print_result_def PNGI_def
-  apply (auto simp add: NER_simps)
-  subgoal
-    sorry
-  subgoal for c a b l l' l''
-    apply (rule exI[of _ \<open>drop (length (c@l) - length l') (c@l'')\<close>])
-    \<comment> \<open>This proof idea is sound I'm just not sure if we have the right preconditions here.\<close>
-    \<comment> \<open>This seems like it would be doable with the idea of charset and printables as well.\<close>
-    apply (auto) 
-    subgoal
-      sorry
-    subgoal
-      
-      sorry
-    sorry
-  oops
-
 
 lemma then_does_not_consume_past_char_from_first_no_peek_past_end:
   assumes dnppe: "does_not_peek_past_end (parse A)"
@@ -347,17 +322,6 @@ lemma does_not_peek_past_end_implies_does_not_eat_into:
   using no_peek_past_end_wf_stronger[OF assms(1, 2)]
         pa_does_not_eat_into_pb_nondep_def
   by blast
-
-lemma first_printed_does_not_eat_into:
-  assumes "bidef_well_formed A"
-  assumes "bidef_well_formed B"
-  assumes "\<forall>i c. first_printed_chari (print B) i c \<longrightarrow> does_not_consume_past_char2 (parse A) c"
-  shows "pa_does_not_eat_into_pb_nondep A B"
-  using assms
-  unfolding pa_does_not_eat_into_pb_nondep_def
-            first_printed_chari_def does_not_consume_past_char2_def
-            bidef_well_formed_def parser_can_parse_print_result_def
-  by (metis append.right_neutral)
 
 lemma first_printed_does_not_eat_into3:
   assumes "bidef_well_formed A"

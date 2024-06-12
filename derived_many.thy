@@ -424,18 +424,6 @@ lemma many_char_for_predicate_fpci[fpci_simps]:
     by (auto simp add: many_char_for_predicate_p_has_result)
   done
 
-lemma many_char_for_predicate_does_not_consume_past_char:
-  "does_not_consume_past_char2 (parse (many (char_for_predicate P ))) c \<longleftrightarrow> \<not>P c"
-  unfolding does_not_consume_past_char2_def
-  apply (auto simp add: NER_simps)
-  subgoal by (metis append_Nil2 dropWhile_eq_Cons_conv dropWhile_eq_self_iff list.sel(1))
-  subgoal by (metis append_same_eq takeWhile_dropWhile_id takeWhile_idem)
-  subgoal by (metis append_self_conv2 dropWhile_append dropWhile_eq_Nil_conv)
-  subgoal by (metis \<open>\<And>l ca. \<lbrakk>\<not> P c; l = dropWhile P (ca @ l)\<rbrakk> \<Longrightarrow> takeWhile P (ca @ l) = takeWhile P ca\<close>
-                    append.right_neutral list.collapse takeWhile_tail)
-  subgoal by (metis dropWhile_append dropWhile_hd_no_match self_append_conv2)
-  done
-
 lemma many_char_for_predicate_does_not_consume_past_char3:
   "does_not_consume_past_char3 (parse (many (char_for_predicate P))) c \<longleftrightarrow> \<not>P c"
   unfolding does_not_consume_past_char3_def

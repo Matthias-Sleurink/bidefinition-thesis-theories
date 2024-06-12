@@ -9,17 +9,13 @@ definition separator where
 lemma many_ws_wf:
   "bidef_well_formed (many whitespace_char)"
   by (clarsimp simp add: whitespace_char_def any_from_set_def many_char_for_predicate_well_formed)
-lemma many_ws_no_consume_past:
-  "does_not_consume_past_char2 (parse (many whitespace_char)) c \<longleftrightarrow> c \<notin> whitespace_chars"
-  by (clarsimp simp add: whitespace_char_def any_from_set_def
-                         many_char_for_predicate_does_not_consume_past_char)
 
 lemma separator_wf:
   "bidef_well_formed separator"
   unfolding separator_def
-  by (auto intro!: b_then_well_formed first_printed_does_not_eat_into
+  by (auto intro!: b_then_well_formed first_printed_does_not_eat_into3
            simp add: many_ws_wf this_char_well_formed
-                     this_char_does_not_consume_past_char2
+                     this_char_does_not_consume_past_char3
                      fpci_simps print_empty
                      many_ws_no_consume_past)
 

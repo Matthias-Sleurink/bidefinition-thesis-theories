@@ -171,20 +171,6 @@ lemma ftrans_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>Does not consume past char.\<close>
-lemma ftrans_does_not_consume_past_char:
-  assumes "does_not_consume_past_char (parse a) ch"
-  shows "does_not_consume_past_char (parse (ftransform f f' a)) ch"
-  using assms
-  unfolding does_not_consume_past_char_def
-  by (auto simp add: ftransform_has_result)
-
-lemma ftrans_does_not_consume_past_char2:
-  assumes "does_not_consume_past_char2 (parse a) ch"
-  shows "does_not_consume_past_char2 (parse (ftransform f f' a)) ch"
-  using assms
-  unfolding does_not_consume_past_char2_def
-  by (auto simp add: ftransform_has_result)
-
 lemma ftransform_does_not_consume_past_char3:
   assumes "does_not_consume_past_char3 (parse a) ch"
   shows "does_not_consume_past_char3 (parse (ftransform f f' a)) ch"

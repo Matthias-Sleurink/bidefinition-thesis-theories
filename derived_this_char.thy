@@ -73,10 +73,6 @@ lemma this_char_does_not_peek_past_end[peek_past_end_simps]:
   unfolding this_char_def
   by (clarsimp simp add: peek_past_end_simps)
 
-lemma this_char_does_not_consume_past_char2:
-  "does_not_consume_past_char2 (parse (this_char c)) c'"
-  by (clarsimp simp add: does_not_consume_past_char2_def NER_simps)
-
 lemma this_char_does_not_consume_past_char3:
   "does_not_consume_past_char3 (parse (this_char c)) c'"
   by (clarsimp simp add: does_not_consume_past_char3_def NER_simps)

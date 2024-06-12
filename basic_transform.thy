@@ -117,20 +117,6 @@ lemma transform_does_not_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>Does not consume past char.\<close>
-lemma transform_does_not_consume_past_char:
-  assumes "does_not_consume_past_char (parse a) ch"
-  shows "does_not_consume_past_char (parse (transform f f' a)) ch"
-  using assms
-  unfolding does_not_consume_past_char_def
-  by (auto simp add: transform_has_result)
-
-lemma transform_does_not_consume_past_char2:
-  assumes "does_not_consume_past_char2 (parse a) ch"
-  shows "does_not_consume_past_char2 (parse (transform f f' a)) ch"
-  using assms
-  unfolding does_not_consume_past_char2_def
-  by (auto simp add: transform_has_result)
-
 lemma transform_does_not_consume_past_char3:
   assumes "does_not_consume_past_char3 (parse a) ch"
   shows "does_not_consume_past_char3 (parse (transform f f' a)) ch"

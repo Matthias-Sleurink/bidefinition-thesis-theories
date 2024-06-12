@@ -114,16 +114,6 @@ lemma fail_does_not_peek_past_end[peek_past_end_simps]:
 
 
 section \<open>Does not consume past char\<close>
-lemma fail_does_not_consume_past_char:
-  shows "does_not_consume_past_char (parse fail) ch"
-  unfolding does_not_consume_past_char_def
-  by (clarsimp simp add: fail_has_result)
-
-lemma fail_does_not_consume_past_char2:
-  shows "does_not_consume_past_char2 (parse fail) ch"
-  unfolding does_not_consume_past_char2_def
-  by (clarsimp simp add: fail_has_result)
-
 lemma fail_does_not_consume_past_char3:
   shows "does_not_consume_past_char3 (parse fail) ch"
   unfolding does_not_consume_past_char3_def
