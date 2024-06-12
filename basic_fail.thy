@@ -27,7 +27,7 @@ lemma [code_unfold]: "fail = fail' ()"
 
 lemma mono_fail[partial_function_mono]:
   shows "mono_bd (\<lambda>f. fail)"
-  by (rule bd.const_mono)
+  by pf_mono_prover
 
 
 

@@ -30,7 +30,8 @@ definition peek :: "'\<alpha> bidef \<Rightarrow> '\<alpha> bidef" where
 lemma mono_peek_res[partial_function_mono]:
   assumes ma: "mono_bd A"
   shows "mono_bd (\<lambda>f. peek (A f))"
-  using ma unfolding monotone_def bd_ord_def peek_def
+  using ma
+  unfolding monotone_def bd_ord_def peek_def
   apply auto \<comment> \<open>Splitting option here just turns into 9 subgoals that have basically the same smt proof.\<close>
   subgoal by (smt (verit, ccfv_SIG) flat_ord_def fun_ord_def option.case_eq_if peek_p.simps)
   subgoal by (smt (verit, del_insts) flat_ord_def fun_ord_def option.case_eq_if peek_pr.simps)
