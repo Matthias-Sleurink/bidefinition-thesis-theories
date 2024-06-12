@@ -899,6 +899,13 @@ lemma fpci_implies_fpc2:
     by clarsimp
   done
 
+section \<open>chars_can_be_dropped\<close>
+text \<open>The idea here is that some parsers may drop initial characters and still have the same result.
+Consider for example the parser that removes all leading whitespace and the parses a non whitespace character.
+For this parser it does not matter if a prefix is removed, as long as said prefix is whitespace only.\<close>
+definition chars_can_be_dropped :: "'a parser \<Rightarrow> char set \<Rightarrow> bool" where
+  "chars_can_be_dropped p cs = (\<forall> i r l. has_result p i r l \<longrightarrow> has_result p (dropWhile (\<lambda>c. c \<in> cs) i) r l)"
+
 
 
 

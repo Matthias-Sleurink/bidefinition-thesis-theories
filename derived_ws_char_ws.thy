@@ -186,6 +186,14 @@ lemma ws_char_ws_fpc[fpc_simps]:
 
 
 
+section \<open>chars_can_be_dropped\<close>
+lemma ws_char_ws_chars_can_be_dropped:
+  "chars_can_be_dropped (parse (ws_char_ws c)) whitespace_chars"
+  unfolding chars_can_be_dropped_def
+  by (clarsimp simp add: NER_simps)
+
+
+
 section \<open>Well formed\<close>
 lemma many_ws_wf:
   "bidef_well_formed (many whitespace_char)"
