@@ -159,6 +159,35 @@ value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
 
+\<comment> \<open>Where E stands for the recursed Expression, which does not matter here\<close>
+lemma NOE_no_consume_past_star:
+  "does_not_consume_past_char3 (parse (NOE (E))) CHR ''*''"
+  unfolding does_not_consume_past_char3_def NOE_def
+  apply (clarsimp; rule conjI)
+  subgoal for c r l
+    apply (clarsimp simp add: NER_simps simp del: ws_parenthesised_def)
+    subgoal for r'
+      apply (cases r'; clarsimp)
+      subgoal
+        apply (rule exI[of _ \<open>Inl r\<close>]; clarsimp)
+        apply (subst Number_has_result; subst (asm) Number_has_result)
+        by (clarsimp simp add: nat_b_leftover_can_be_dropped[of c l _ \<open>[]\<close>])
+      subgoal for r'r
+        apply (rule exI[of _ \<open>Inr r'r\<close>]; clarsimp; rule conjI)
+        subgoal
+          apply (subst Number_is_error; subst (asm) Number_is_error) 
+          by (clarsimp simp add: nat_b_error_leftover_can_be_dropped)
+        subgoal
+          \<comment> \<open>This makes me feel like we need some sort of system for saying that changes to the leftover don't matter mod some things that do.\<close>
+          \<comment> \<open>But how do we do that?\<close>
+          sorry
+        done
+      done
+    done
+  subgoal sorry
+  oops
+
+
 definition MultE :: "Ex bidef \<Rightarrow> Ex bidef" where
   "MultE E = ftransform
                (Some o Multiply)
@@ -443,7 +472,7 @@ lemma expression_well_formed:
       subgoal by (clarsimp simp add: NER_simps fp_NER well_formed_ftransform_funcs_def split: Ex.splits sum.splits)
       apply (rule or_well_formed)
       subgoal by (rule Number_well_formed)
-      subgoal
+      subgoal \<comment> \<open>bidef_well_formed (ws_parenthesised (f_ ()))\<close>
         unfolding ws_parenthesised_def
         apply (rule transform_well_formed4)
         subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
@@ -460,14 +489,42 @@ lemma expression_well_formed:
           apply (rule first_printed_does_not_eat_into3)
           subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
           subgoal
+            apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, OF expression_punctuation_charsets(9)])
             find_theorems first_printed_chari b_then
+            find_theorems does_not_consume_past_char3 ws_char_ws
             sorry
           done
         done
       subgoal by (clarsimp simp add: fp_NER NER_simps well_formed_or_pair_def)
       done
-    
-    oops
+    apply (rule b_then_well_formed) 
+    subgoal \<comment> \<open>bidef_well_formed (f_ ()) \<Longrightarrow> bidef_well_formed (NOE (f_ ()))\<close>
+      unfolding NOE_def
+      apply (rule ftransform_well_formed2)
+      subgoal by (clarsimp simp add: NER_simps fp_NER well_formed_ftransform_funcs_def split: Ex.splits sum.splits)
+      apply (rule or_well_formed)
+      subgoal by (rule Number_well_formed)
+      subgoal \<comment> \<open>bidef_well_formed (ws_parenthesised (f_ ())) is already a subgoal above.\<close> sorry
+      subgoal by (clarsimp simp add: well_formed_or_pair_def NER_simps fp_NER)
+      done
+    subgoal
+      
+      sorry
+    subgoal
+      apply (rule first_printed_does_not_eat_into3)
+      subgoal \<comment> \<open>bidef_well_formed (f_ ()) \<Longrightarrow> bidef_well_formed (NOE (f_ ())) is already a subgoal above.\<close> sorry
+      subgoal
+        apply (subst many_fpci)
+        apply (clarsimp simp add: fp_NER fpci_simps split: list.splits)
+        \<comment> \<open>does_not_consume_past_char3 (parse (NOE (f_ ()))) CHR ''*''\<close>
+        
+        
+        
+        sorry
+      done
+    done
+  subgoal sorry
+  oops
 
 
 
