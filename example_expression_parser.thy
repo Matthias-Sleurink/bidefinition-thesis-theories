@@ -363,53 +363,7 @@ lemma "has_result (parse Expression) ''1*(2+3)'' (Additive [Multiply [Literal 1,
   by (clarsimp simp add: NER_simps)
 
 
-\<comment> \<open>This is done with the classic recursive method, which cannot work for us.\<close>
-lemma PNGI_Expression:
-  "PNGI (parse Expression)"
-  apply (subst Expression_def)
-  apply (auto intro!: ftransform_PNGI separated_by1_PNGI or_PNGI then_PNGI
-            simp add: AddE_def MultE_def NOE_def Number_def ws_parenthesised_def
-                      transform_PNGI_rev nat_b_PNGI ws_char_ws_PNGI)
-  \<comment> \<open>First subgoal is now again `PNGI parse Expression`\<close>
-  oops  
-
-\<comment> \<open>TODO: move these to types\<close>
-lemma mcont_parse[cont_intro]:
-  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. parse (x ()) i)"
-  apply (rule)
-  subgoal
-    apply (rule monotoneI)
-    by (simp add: bd_ord_def fun_ord_def)
-  apply (rule cont_intro)
-  unfolding bd_ord_def fun_ord_def
-  apply (rule contI)
-  unfolding bd_lub_def
-  apply clarsimp
-  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
-
-lemma mcont_print[cont_intro]:
-  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. print (x ()) i)"
-  apply (rule)
-  subgoal
-    apply (rule monotoneI)
-    by (simp add: bd_ord_def fun_ord_def)
-  apply (rule cont_intro)
-  unfolding bd_ord_def fun_ord_def
-  apply (rule contI)
-  unfolding bd_lub_def
-  apply clarsimp
-  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
-
-lemma admissible_PNGI[cont_intro]:
-  "bd.admissible (\<lambda>expressionR. PNGI (parse (expressionR ())))"
-  unfolding PNGI_def
-  unfolding has_result_def
-  by simp
-
-lemma strict_PNGI:
-  "PNGI ((\<lambda>u. None))"
-  by (simp add: PNGI_def has_result_def)
-
+\<comment> \<open>These both use admissible and strict rules defined in the types file.\<close>
 lemma PNGI_Expression:
   "PNGI (parse Expression)"
   apply (induction rule: expressionR.fixp_induct)
@@ -420,12 +374,6 @@ lemma PNGI_Expression:
     by (intro ftransform_PNGI transform_PNGI_rev[THEN iffD2] separated_by1_PNGI or_PNGI PASI_PNGI  then_PASI then_PASI_from_pasi_pngi; assumption)
   done
 
-
-
-lemma admissible_no_empty_result:
-  "bd.admissible (\<lambda>r. \<not> p_has_result (print (r ())) e [])"
-  unfolding p_has_result_def
-  by simp
 
 lemma Expression_no_print_empty:
   "\<not>p_has_result (print Expression) e []"
@@ -469,37 +417,6 @@ lemma Expression_no_eat_into_paren:
     subgoal by (subst (asm) Expression_def; clarsimp simp add: fp_NER)
     done
   oops
-
-lemma admissible_parser_can_parse[cont_intro]:
-  "bd.admissible (\<lambda>expressionR. parser_can_parse_print_result (parse (expressionR ())) (print (expressionR ())))"
-  unfolding parser_can_parse_print_result_def p_has_result_def has_result_def
-  by simp
-
-lemma admissible_exist_printable[cont_intro]:
-  "bd.admissible (\<lambda>expressionR. \<exists>s. print (expressionR ()) t = Some (Some s))"
-  apply (rule ccpo.admissibleI)
-  unfolding bd_ord_def fun_ord_def fun_lub_def bd_lub_def
-  apply clarsimp
-  by (smt (z3) all_not_in_conv chain_def flat_ord_def mem_Collect_eq option.lub_upper option.simps(3))
-
-lemma admissible_parse_result_eq[cont_intro]:
-  "bd.admissible (\<lambda>expressionR. parse (expressionR ()) i \<noteq> Some (Some (t, l)))"
-  by simp
-
-lemma admissible_printer_can_print[cont_intro]:
-  "bd.admissible (\<lambda>expressionR. printer_can_print_parse_result (parse (expressionR ())) (print (expressionR ())))"
-  unfolding printer_can_print_parse_result_def p_has_result_def has_result_def
-  by simp
-
-lemma admissible_WF:
-  "bd.admissible (\<lambda>expressionR. bidef_well_formed ((expressionR ())))"
-  unfolding bidef_well_formed_def
-  by simp
-
-lemma strict_WF:
-  "bidef_well_formed (bdc (\<lambda>u. None) (\<lambda>u. None))"
-  unfolding bidef_well_formed_def
-  by (simp add: strict_PNGI parser_can_parse_print_result_def p_has_result_def printer_can_print_parse_result_def has_result_def)
 
 
 lemma expression_well_formed:

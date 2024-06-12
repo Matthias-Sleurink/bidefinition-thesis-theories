@@ -61,13 +61,13 @@ lemma leftover_determ:
   using assms unfolding has_result_def
   by clarsimp
 
-lemma bottom_has_result[NER_simps]:
+lemma bottom_has_result[NER_simps, cont_intro]:
   "has_result (\<lambda>a. None) i r l \<longleftrightarrow> False"
   by (clarsimp simp add: has_result_def)
-lemma bottom_is_error[NER_simps]:
+lemma bottom_is_error[NER_simps, cont_intro]:
   "is_error (\<lambda>a. None) i \<longleftrightarrow> False"
   by (clarsimp simp add: is_error_def)
-lemma bottom_is_nonterm[NER_simps]:
+lemma bottom_is_nonterm[NER_simps, cont_intro]:
   "is_nonterm (\<lambda>a. None) i \<longleftrightarrow> True"
   by (clarsimp simp add: is_nonterm_def)
 
@@ -214,15 +214,15 @@ lemma p_has_result_eq_not_is_error:
   unfolding p_is_error_def p_has_result_def p_is_nonterm_def
   by auto
 
-lemma p_has_result_bottom[fp_NER]:
+lemma p_has_result_bottom[fp_NER, cont_intro]:
   "p_has_result (\<lambda>a. None) e i \<longleftrightarrow> False"
   by (clarsimp simp add: p_has_result_def)
 
-lemma p_is_error_bottom[fp_NER]:
+lemma p_is_error_bottom[fp_NER, cont_intro]:
   "p_is_error (\<lambda>a. None) e \<longleftrightarrow> False"
   by (clarsimp simp add: p_is_error_def)
 
-lemma p_is_nonterm_bottom[fp_NER]:
+lemma p_is_nonterm_bottom[fp_NER, cont_intro]:
   "p_is_nonterm (\<lambda>a. None) e \<longleftrightarrow> True"
   by (clarsimp simp add: p_is_nonterm_def)
 
@@ -972,5 +972,101 @@ lemma fpci_implies_fpc2:
     apply (rule exI[of _ \<open>[]\<close>])
     by clarsimp
   done
+
+
+
+
+section \<open>Admissible\<close>
+text \<open>These lemmas are needed for admissibility proving, which are required to use the induction rules for partial functions.\<close>
+
+
+\<comment> \<open>TODO: move these to types\<close>
+lemma mcont_parse[cont_intro]:
+  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. parse (x ()) i)"
+  apply (rule)
+  subgoal
+    apply (rule monotoneI)
+    by (simp add: bd_ord_def fun_ord_def)
+  apply (rule cont_intro)
+  unfolding bd_ord_def fun_ord_def
+  apply (rule contI)
+  unfolding bd_lub_def
+  apply clarsimp
+  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
+
+lemma mcont_print[cont_intro]:
+  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. print (x ()) i)"
+  apply (rule)
+  subgoal
+    apply (rule monotoneI)
+    by (simp add: bd_ord_def fun_ord_def)
+  apply (rule cont_intro)
+  unfolding bd_ord_def fun_ord_def
+  apply (rule contI)
+  unfolding bd_lub_def
+  apply clarsimp
+  by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
+
+lemma admissible_PNGI[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. PNGI (parse (expressionR ())))"
+  unfolding PNGI_def
+  unfolding has_result_def
+  by simp
+
+lemma strict_PNGI[cont_intro]:
+  "PNGI ((\<lambda>u. None))"
+  by (simp add: PNGI_def has_result_def)
+
+
+lemma admissible_PASI[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. PASI (parse (expressionR ())))"
+  unfolding PASI_def
+  unfolding has_result_def
+  by simp
+
+lemma strict_PASI[cont_intro]:
+  "PASI ((\<lambda>u. None))"
+  by (simp add: PASI_def has_result_def)
+
+
+lemma admissible_no_empty_result[cont_intro]:
+  "bd.admissible (\<lambda>r. \<not> p_has_result (print (r ())) e [])"
+  unfolding p_has_result_def
+  by simp
+
+
+
+lemma admissible_parser_can_parse[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. parser_can_parse_print_result (parse (expressionR ())) (print (expressionR ())))"
+  unfolding parser_can_parse_print_result_def p_has_result_def has_result_def
+  by simp
+
+lemma admissible_exist_printable[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. \<exists>s. print (expressionR ()) t = Some (Some s))"
+  apply (rule ccpo.admissibleI)
+  unfolding bd_ord_def fun_ord_def fun_lub_def bd_lub_def
+  apply clarsimp
+  by (smt (z3) all_not_in_conv chain_def flat_ord_def mem_Collect_eq option.lub_upper option.simps(3))
+
+lemma admissible_parse_result_eq[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. parse (expressionR ()) i \<noteq> Some (Some (t, l)))"
+  by simp
+
+lemma admissible_printer_can_print[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. printer_can_print_parse_result (parse (expressionR ())) (print (expressionR ())))"
+  unfolding printer_can_print_parse_result_def p_has_result_def has_result_def
+  by simp
+
+lemma admissible_WF[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. bidef_well_formed ((expressionR ())))"
+  unfolding bidef_well_formed_def
+  by simp
+
+lemma strict_WF[cont_intro]:
+  "bidef_well_formed (bdc (\<lambda>u. None) (\<lambda>u. None))"
+  unfolding bidef_well_formed_def
+  by (simp add: strict_PNGI parser_can_parse_print_result_def p_has_result_def printer_can_print_parse_result_def has_result_def)
+
+
 
 end
