@@ -84,6 +84,13 @@ lemma list_upto_simps[simp]:
   "list_upto l l = []"
   by (clarsimp simp add: list_upto_def)
 
+lemma hd_list_upto:
+  assumes "length longer > length shorter"
+  assumes "P (hd longer)"
+  shows "P (hd (list_upto longer shorter))"
+  using assms
+  by (induction longer; clarsimp simp add: list_upto_def)
+  
 
 lemma list_upto_take_cons:
   assumes "\<exists>c. l = c@s"
