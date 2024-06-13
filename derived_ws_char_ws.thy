@@ -35,6 +35,15 @@ lemma ws_char_ws_has_result[NER_simps]:
   apply (auto simp add: ws_char_ws_def NER_simps whitespace_char_def any_from_set_def)
   by (metis dropWhile_eq_Nil_conv hd_Cons_tl)
 
+lemma ws_char_ws_has_result_implies_leftover_head:
+  assumes "has_result (parse (ws_char_ws c)) i r l"
+  shows "case l of [] \<Rightarrow> True | (l'#ls) \<Rightarrow> l' \<notin> whitespace_chars"
+  using assms[unfolded ws_char_ws_has_result]
+  apply (clarsimp split: list.splits)
+  by (metis hd_dropWhile list.discI list.sel(1))
+
+
+
 lemma ws_char_ws_has_result_c[NER_simps]:
   "has_result_c (parse (ws_char_ws c)) i r l \<longleftrightarrow>
       r = ()
