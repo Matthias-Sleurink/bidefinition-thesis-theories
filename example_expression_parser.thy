@@ -88,6 +88,41 @@ lemma mono_ws_parenthesised[partial_function_mono]:
 \<comment> \<open>But in that case we're almost back to how complex it was at the start again.\<close>
 lemmas ws_paren_def[NER_simps] = ws_parenthesised_def
 
+lemma lt_lte_lt:
+  assumes "(l :: nat) < l''"
+  assumes "l'' \<le> l'"
+  shows "l<l'"
+  using assms
+  by simp
+  
+
+
+lemma paren_drop_leftover:
+  assumes PNGI_e: "PNGI (parse E)"
+  assumes hr: "has_result (parse (ws_parenthesised E)) (c @ l) r l"
+  shows "has_result (parse (ws_parenthesised E)) c r []"
+  using hr
+  apply (clarsimp simp add: NER_simps simp del: ws_char_ws_has_result)
+  subgoal for l' l''
+    \<comment> \<open>list_upto longer shorter drops the lenth of shorter from longer\<close>
+    apply (rule exI[of _ \<open>list_upto l' l\<close>]; rule conjI)
+    subgoal
+      \<comment> \<open>To show we this kinda need to show that the hd of list_upto l' l is not in ws\<close>
+      using ws_char_ws_has_result_implies_leftover_head[of \<open>CHR ''(''\<close> \<open>c@l\<close>  \<open>()\<close> l']
+      apply clarsimp
+
+      using ws_char_ws_PASI[THEN PASI_as_has_result, of _ l'' _ l]
+      using PNGI_e[THEN PNGI_as_has_result, of l' _ l'']
+      using lt_lte_lt[of \<open>length l\<close> \<open>length l''\<close> \<open>length l'\<close>]
+      using hd_list_upto[of l l']
+      using gr_implies_not0[of \<open>length l\<close> \<open>length l'\<close>]
+      
+      sorry
+    subgoal
+      
+      sorry
+  oops
+
 
 \<comment> \<open>Is there way some way of saying that this is just the Literal branch of the type?\<close>
 definition Number :: "Ex bidef" where
@@ -180,6 +215,8 @@ lemma NOE_no_consume_past_star:
         subgoal
           \<comment> \<open>This makes me feel like we need some sort of system for saying that changes to the leftover don't matter mod some things that do.\<close>
           \<comment> \<open>But how do we do that?\<close>
+          \<comment> \<open>thm paren_drop_leftover\<close>
+          \<comment> \<open>Just need to prove it now.\<close>
           sorry
         done
       done
