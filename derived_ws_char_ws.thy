@@ -202,6 +202,31 @@ lemma ws_char_ws_chars_can_be_dropped:
   by (clarsimp simp add: NER_simps)
 
 
+section \<open>can drop past leftover\<close>
+lemma ws_char_ws_can_drop_past_lefover:
+  assumes "has_result (parse (ws_char_ws C)) (c @ l @ l') () (l @ l')"
+  shows "has_result (parse (ws_char_ws C)) (c @ l) () (l)"
+  using assms
+  apply (cases l; clarsimp)
+  subgoal
+    apply (insert ws_char_ws_has_result_implies_leftover_head[of C \<open>c @ l'\<close> \<open>()\<close> l', simplified]; clarsimp split: list.splits)
+    apply (clarsimp simp add: NER_simps; rule conjI)
+    subgoal by (metis assms has_result_c_def ws_char_ws_has_result_c)
+    subgoal
+      apply (rule conjI)
+      subgoal by (metis assms has_result_c_def ws_char_ws_has_result_c dropWhile_eq_Nil_conv)
+      subgoal by (metis assms has_result_c_def ws_char_ws_has_result_c)
+      done
+    done
+  subgoal for a l
+    \<comment> \<open>now we know that a is not in whitespace so we anything after it is not affected by the dropwhile.\<close>
+    apply (insert ws_char_ws_has_result_implies_leftover_head[of C \<open>c @ a # l @ l'\<close> \<open>()\<close> \<open>a # l @ l'\<close>, simplified]; clarsimp)
+    apply (clarsimp simp add: NER_simps; rule conjI)
+    subgoal by (metis assms does_not_consume_past_char3_def hd_dropWhile ws_char_ws_does_not_consume_past_char3 ws_char_ws_has_result)
+    subgoal by (metis dropWhile_append3 hd_append2 list.sel(1) self_append_conv2)
+    done
+  done
+
 
 section \<open>Well formed\<close>
 lemma many_ws_wf:
