@@ -512,6 +512,11 @@ lemma PNGI_as_has_result:
   using assms PNGI_def
   by fastforce
 
+lemma PNGI_empty_int_empty_res:
+  assumes "PNGI p"
+  shows "has_result p [] r l \<longrightarrow> l = []"
+  using assms unfolding PNGI_def by blast
+
 
 lemma PASI_implies_PNGI:
   "PASI p \<longrightarrow> PNGI p"
