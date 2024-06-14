@@ -89,6 +89,7 @@ lemma mono_ws_parenthesised[partial_function_mono]:
 lemmas ws_paren_def[NER_simps] = ws_parenthesised_def
 
 \<comment> \<open>The way this proof is structured really implies that this can be built up from drop_past_leftover and PNGI for all combinators.\<close>
+\<comment> \<open>This is not the general version! We need to add another l' before the l here!\<close>
 lemma paren_drop_leftover:
   assumes drop_past_leftover_e: "\<And> c l l' r.  has_result (parse E) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse E) (c @ l) r l"
   assumes PNGI_e: "PNGI (parse E)"
@@ -205,9 +206,20 @@ value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
 
-\<comment> \<open>Where E stands for the recursed Expression, which does not matter here\<close>
+lemma cat_to_cons_nested:
+  assumes "cb @ cc = cb' # cbs"
+  shows "ca @ cb @ cc @ C # l' = ca @ cb' # cbs @ C # l'"
+        "cb @ cc @ C # l' = cb' # cbs @ C # l'"
+  using assms
+  by simp_all
+
+
+\<comment> \<open>Where E stands for the recursed Expression, for which we actually only need PNGI and these two assms.\<close>
 lemma NOE_no_consume_past_star:
-  "does_not_consume_past_char3 (parse (NOE (E))) CHR ''*''"
+  assumes E_drop_leftover: "\<And>c l l' r. has_result (parse E) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse E) (c @ l) r l"
+  assumes E_change_leftover_tail: "\<And> c l l' l'' r. l\<noteq>[] \<Longrightarrow> (has_result (parse E) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse E) (c @ l @ l'') r (l @ l''))"
+  assumes PNGI_e: "PNGI (parse E)"
+  shows "does_not_consume_past_char3 (parse (NOE (E))) CHR ''*''"
   unfolding does_not_consume_past_char3_def NOE_def
   apply (clarsimp; rule conjI)
   subgoal for c r l
@@ -224,16 +236,71 @@ lemma NOE_no_consume_past_star:
           apply (subst Number_is_error; subst (asm) Number_is_error) 
           by (clarsimp simp add: nat_b_error_leftover_can_be_dropped)
         subgoal
-          \<comment> \<open>This makes me feel like we need some sort of system for saying that changes to the leftover don't matter mod some things that do.\<close>
-          \<comment> \<open>But how do we do that?\<close>
-          \<comment> \<open>thm paren_drop_leftover\<close>
-          \<comment> \<open>Just need to prove it now.\<close>
-          sorry
+          using paren_drop_leftover[of E, OF _ PNGI_e, of c l r'r]
+                E_drop_leftover
+          by fast
         done
       done
     done
-  subgoal sorry
-  oops
+  subgoal for c r l
+    apply (clarsimp simp add: NER_simps)
+    subgoal for r' l'
+      apply (cases r'; clarsimp)
+      subgoal
+        apply (rule exI[of _ r']; clarsimp simp add: Number_has_result)
+        subgoal for n
+          using nat_does_not_consume_past3[of \<open>CHR ''*''\<close>, simplified,
+                                           unfolded does_not_consume_past_char3_def,
+                                           rule_format, of c l n l']
+          by fast
+        done
+      subgoal for b
+        apply (rule exI[of _ r']; clarsimp; rule conjI)
+        subgoal
+          apply (clarsimp simp add: Number_is_error)
+          \<comment> \<open>This might be generalisable\<close>
+          apply (insert nat_b_error_leftover_can_be_dropped[of c l]; clarsimp)
+          by (cases c; clarsimp simp add: nat_is_error)
+        subgoal
+          apply (clarsimp simp add: transform_has_result b_then_has_result)
+          subgoal for l'' l'''
+            apply (insert ws_char_ws_PASI[of \<open>CHR ''(''\<close>, unfolded PASI_def, rule_format, of \<open>c@l\<close> \<open>()\<close> l'']; clarsimp)
+            subgoal for ca
+              apply (insert PNGI_e[unfolded PNGI_def, rule_format, of l'' b l''']; clarsimp)
+              subgoal for cb
+                apply (insert ws_char_ws_PASI[of \<open>CHR '')''\<close>, unfolded PASI_def, rule_format, of l''' \<open>()\<close> l]; clarsimp)
+                subgoal for cc
+                  apply (rule exI[of _ \<open>cb @ cc @ CHR ''*'' # l'\<close>]; rule conjI)
+                  subgoal
+                    apply (insert ws_char_ws_has_result_implies_leftover_head[of \<open>CHR ''(''\<close> \<open>ca @ cb @ cc @ l\<close> \<open>()\<close> \<open>cb @ cc @ l\<close>]; clarsimp)
+                    apply (split list.splits; clarsimp)
+                    apply (cases \<open>cb@cc\<close>; clarsimp)
+                    subgoal for x21 x22 cb' cbs
+                      apply (cases \<open>cb' \<noteq> x21\<close>)
+                      subgoal by (metis hd_append2 list.sel(1) self_append_conv2)
+                      apply (subst cat_to_cons_nested(1)[of cb cc cb' cbs ca \<open>CHR ''*''\<close> l']; clarsimp)
+                      apply (subst cat_to_cons_nested(2)[of cb cc cb' cbs \<open>CHR ''*''\<close> l']; clarsimp)
+                      using ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, simplified, of x21,
+                                    unfolded does_not_consume_past_char3_def]
+                      by blast
+                    done
+                  subgoal
+                    apply (rule exI[of _ \<open>cc @ CHR ''*'' # l'\<close>]; rule conjI)
+                    subgoal using E_change_leftover_tail[of cc cb l b \<open>CHR ''*'' # l'\<close>] by fast
+                    subgoal
+                      using ws_char_ws_does_not_consume_past_char3[of \<open>CHR '')''\<close> \<open>CHR ''*''\<close>, simplified,
+                                  unfolded does_not_consume_past_char3_def, rule_format, of cc l \<open>()\<close> l']
+                      by fast
+                    done
+                  done
+                done
+              done
+            done
+          done
+        done
+      done
+    done
+  done
 
 
 definition MultE :: "Ex bidef \<Rightarrow> Ex bidef" where
