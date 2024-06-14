@@ -576,9 +576,10 @@ lemma expression_well_formed:
   unfolding MultE_def
   apply (rule separated_by1_well_formed)
   subgoal by (clarsimp simp add: fp_NER)
-  subgoal
+  subgoal for E
     apply (rule ftransform_well_formed2)
     subgoal by (clarsimp simp add: fp_NER well_formed_ftransform_funcs_def split: Ex.splits)
+    \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ())\<close>
     apply (rule separated_by1_well_formed)
     subgoal by (clarsimp simp add: fp_NER)
     subgoal
@@ -631,14 +632,34 @@ lemma expression_well_formed:
       subgoal
         apply (subst many_fpci)
         apply (clarsimp simp add: fp_NER fpci_simps split: list.splits)
-        \<comment> \<open>does_not_consume_past_char3 (parse (NOE (f_ ()))) CHR ''*''\<close>
-        
-        
-        
-        sorry
+        apply (rule NOE_no_consume_past_star)
+        subgoal for pri pri' prt prt' c l l' r
+          \<comment> \<open>Can drop leftover after leftover blocker\<close>
+          sorry
+        subgoal for pri pri' prt prt' c l l' l'' r
+          \<comment> \<open>Can change leftover after nonempty tail of c\<close>
+          sorry
+        subgoal
+          \<comment> \<open>PNGI E\<close>
+          sorry
+        done
       done
     done
-  subgoal sorry
+  subgoal for E
+    apply (rule b_then_well_formed)
+    subgoal
+      apply (rule ftransform_well_formed2)
+      subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: Ex.splits)
+      \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ()) (already a subgoal above)\<close>
+      sorry
+    subgoal
+      \<comment> \<open>Maybe a specialisation for WF many b_then can be made?\<close>
+      \<comment> \<open>Like first does not eat into second and second does not eat into first?\<close>
+      sorry
+    subgoal
+      
+      sorry
+    done
   oops
 
 

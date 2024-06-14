@@ -161,7 +161,6 @@ lemma ws_char_ws_does_not_consume_past_char3:
   done
 
 
-
 section \<open>First printed/parsed char\<close>
 lemma ws_char_ws_fpci[fpci_simps]:
   shows "first_printed_chari (print (ws_char_ws c)) i c' \<longleftrightarrow> c' = c"
