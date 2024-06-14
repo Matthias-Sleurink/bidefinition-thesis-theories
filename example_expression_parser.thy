@@ -88,16 +88,9 @@ lemma mono_ws_parenthesised[partial_function_mono]:
 \<comment> \<open>But in that case we're almost back to how complex it was at the start again.\<close>
 lemmas ws_paren_def[NER_simps] = ws_parenthesised_def
 
-lemma lt_lte_lt:
-  assumes "(l :: nat) < l''"
-  assumes "l'' \<le> l'"
-  shows "l<l'"
-  using assms
-  by simp
-  
-
-
+\<comment> \<open>The way this proof is structured really implies that this can be built up from drop_past_leftover and PNGI for all combinators.\<close>
 lemma paren_drop_leftover:
+  assumes drop_past_leftover_e: "\<And> c l l' r.  has_result (parse E) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse E) (c @ l) r l"
   assumes PNGI_e: "PNGI (parse E)"
   assumes hr: "has_result (parse (ws_parenthesised E)) (c @ l) r l"
   shows "has_result (parse (ws_parenthesised E)) c r []"
@@ -107,21 +100,39 @@ lemma paren_drop_leftover:
     \<comment> \<open>list_upto longer shorter drops the lenth of shorter from longer\<close>
     apply (rule exI[of _ \<open>list_upto l' l\<close>]; rule conjI)
     subgoal
-      \<comment> \<open>To show we this kinda need to show that the hd of list_upto l' l is not in ws\<close>
-      using ws_char_ws_has_result_implies_leftover_head[of \<open>CHR ''(''\<close> \<open>c@l\<close>  \<open>()\<close> l']
-      apply clarsimp
-
-      using ws_char_ws_PASI[THEN PASI_as_has_result, of _ l'' _ l]
-      using PNGI_e[THEN PNGI_as_has_result, of l' _ l'']
-      using lt_lte_lt[of \<open>length l\<close> \<open>length l''\<close> \<open>length l'\<close>]
-      using hd_list_upto[of l l']
-      using gr_implies_not0[of \<open>length l\<close> \<open>length l'\<close>]
-      
-      sorry
+      apply (insert ws_char_ws_PASI[of \<open>CHR ''(''\<close>, unfolded PASI_def, rule_format, of \<open>c@l\<close> \<open>()\<close> l']; clarsimp)
+      subgoal for ca
+        apply (insert PNGI_e[unfolded PNGI_def, rule_format, of l' r l'']; clarsimp)
+        subgoal for cb
+          apply (insert ws_char_ws_PASI[of \<open>CHR '')''\<close>, unfolded PASI_def, rule_format, of l'' \<open>()\<close> l]; clarsimp)
+          subgoal for cc
+            apply (insert list_upto_self[of \<open>cb @ cc\<close> l]; clarsimp)
+            by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR ''(''\<close> ca \<open>cb @ cc\<close> l, simplified])
+          done
+        done
+      done
     subgoal
-      
-      sorry
-  oops
+      apply (rule exI[of _ \<open>list_upto l'' l\<close>]; rule conjI)
+      subgoal
+        apply (insert PNGI_e[unfolded PNGI_def, rule_format, of l' r l'']; clarsimp)
+        subgoal for ca
+          apply (insert ws_char_ws_PASI[of \<open>CHR '')''\<close>, unfolded PASI_def, rule_format, of l'' \<open>()\<close> l]; clarsimp)
+          subgoal for cb
+            apply (subst list_upto_self[of _ l])
+            apply (subst list_upto_self[of \<open>ca@cb\<close> l, simplified])
+            by (rule drop_past_leftover_e[of ca cb l r, simplified])
+          done
+        done
+      subgoal
+        apply (insert ws_char_ws_PASI[of \<open>CHR '')''\<close>, unfolded PASI_def, rule_format, of l'' \<open>()\<close> l]; clarsimp)
+        subgoal for ca
+          apply (subst list_upto_self[of ca l])
+          by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR '')''\<close> ca \<open>[]\<close> l, simplified])
+        done
+      done
+    done
+  done
+
 
 
 \<comment> \<open>Is there way some way of saying that this is just the Literal branch of the type?\<close>
