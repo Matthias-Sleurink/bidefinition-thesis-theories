@@ -195,11 +195,11 @@ lemma int_b_print_empty[print_empty, fp_NER]:
 
 
 section \<open>PASI PNGI\<close>
-lemma int_b_PNGI[PASI_PNGI]:
+lemma int_b_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse int_b)"
   by (clarsimp simp add: PASI_PNGI int_b_def)
 
-lemma int_b_PASI[PASI_PNGI]:
+lemma int_b_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse int_b)"
   by (clarsimp simp add: PASI_PNGI int_b_def PASI_dep_if_then_else)
 

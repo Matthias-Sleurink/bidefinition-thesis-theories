@@ -120,18 +120,25 @@ lemma mono_ftransform[partial_function_mono]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma ftransform_PASI[PASI_PNGI]:
+lemma ftransform_PASI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse bi)"
   shows "PASI (parse (ftransform t t' bi))"
   using assms
   by (auto simp add: PASI_def NER_simps fp_NER)
 
-lemma ftransform_PNGI[PASI_PNGI]:
+lemma ftransform_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse bi)"
   shows "PNGI (parse (ftransform t t' bi))"
   using assms
   by (auto simp add: PNGI_def NER_simps fp_NER)
 
+lemma ftransform_PASI_never_fail[PASI_PNGI, PASI_PNGI_intros]:
+  "PASI (parse (ftransform (Some \<circ> f) (Some \<circ> f') b)) \<longleftrightarrow> PASI (parse b)"
+  by (auto simp add: PASI_def NER_simps; blast)
+
+lemma ftransform_PNGI_never_fail[PASI_PNGI, PASI_PNGI_intros]:
+  "PNGI (parse (ftransform (Some \<circ> f) (Some \<circ> f') b)) \<longleftrightarrow> PNGI (parse b)"
+  by (auto simp add: PNGI_def NER_simps; blast)
 
 
 \<comment> \<open>Charset\<close>

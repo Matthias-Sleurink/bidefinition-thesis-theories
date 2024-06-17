@@ -96,17 +96,14 @@ lemma many1_PNGI_from_PNGI:
   apply (rule many_PNGI)
   oops
 
-lemma many1_PNGI[PASI_PNGI]:
+lemma many1_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse p)"
   shows "PNGI (parse (many1 p))"
-  unfolding many1_def
-  apply (rule ftransform_PNGI)
-  apply (rule then_PNGI)
-  subgoal by (clarsimp simp add: assms PASI_implies_PNGI)
-  apply (rule many_PNGI)
-  by (rule assms)
+  unfolding many1_def using assms
+  apply (intro PASI_PNGI_intros) \<comment> \<open>Both of these are in the intro set. What do we need to make it do this?\<close>
+  by (clarsimp simp add: assms PASI_implies_PNGI)+
 
-lemma many1_PASI[PASI_PNGI]:
+lemma many1_PASI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse p)"
   shows "PASI (parse (many1 p))"
   unfolding many1_def

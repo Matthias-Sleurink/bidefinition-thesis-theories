@@ -82,11 +82,11 @@ lemma ws_comma_ws_print_empty[print_empty, fp_NER]:
 
 
 section \<open>PNGI, PASI\<close>
-lemma ws_comma_ws_PNGI[PASI_PNGI]:
+lemma ws_comma_ws_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse ws_comma_ws)"
   by (simp add: ws_comma_ws_def drop_PNGI then_PNGI many_PNGI whitespace_char_PASI this_char_PNGI)
 
-lemma ws_comma_ws_PASI[PASI_PNGI]:
+lemma ws_comma_ws_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse ws_comma_ws)"
   apply (subst ws_comma_ws_def)
   apply (subst drop_PASI)

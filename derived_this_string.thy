@@ -62,11 +62,11 @@ lemma this_string_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PASI, PNGI\<close>
-lemma this_string_PNGI[PASI_PNGI]:
+lemma this_string_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse (this_string s))"
   by (simp add: this_string_def this_char_PNGI PNGI_m_map)
 
-lemma this_string_PASI[PASI_PNGI]:
+lemma this_string_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "s \<noteq> [] \<Longrightarrow> PASI (parse (this_string s))"
   by (simp add: this_string_def this_char_PASI PASI_m_map)
 

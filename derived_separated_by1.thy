@@ -87,13 +87,13 @@ lemma separated_by1_print_empty[print_empty, fp_NER]:
 
 
 section \<open>PASI PNGI\<close>
-lemma separated_by1_PNGI[PASI_PNGI]:
+lemma separated_by1_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse elem)"
   assumes "PASI (parse (b_then sep elem))"
   shows "PNGI (parse (separated_by1 elem sep oracle))"
   by (auto intro!: PASI_PNGI simp add: separated_by1_def assms)
   
-lemma separated_by1_PASI[PASI_PNGI]:
+lemma separated_by1_PASI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse elem)"
   assumes "PASI (parse (b_then sep elem))"
   shows "PASI (parse (separated_by1 elem sep oracle))"

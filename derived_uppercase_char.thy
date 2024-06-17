@@ -58,12 +58,12 @@ lemma uppercase_char_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma uppercase_char_PNGI[PASI_PNGI]:
+lemma uppercase_char_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse uppercase_char)"
   unfolding uppercase_char_def
   by (rule any_from_set_PNGI)
 
-lemma uppercase_char_PASI[PASI_PNGI]:
+lemma uppercase_char_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse uppercase_char)"
   unfolding uppercase_char_def
   by (rule any_from_set_PASI)

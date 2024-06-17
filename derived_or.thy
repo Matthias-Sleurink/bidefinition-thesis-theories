@@ -84,15 +84,15 @@ lemma or_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma or_PNGI[PASI_PNGI]:
+lemma or_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse a)"
   assumes "PNGI (parse b)"
   shows "PNGI (parse (or a b))"
-  using assms
-  apply (simp add: PNGI_def NER_simps split: sum.splits)
-  by fast
+  using assms unfolding or_def 
+  by (intro PASI_PNGI_intros; simp add: PASI_PNGI_intros)
+  \<comment> \<open>Can we make intro and simp work together here? we have PNGI (parse (return)) in the intro set.\<close>
 
-lemma or_PASI[PASI_PNGI]:
+lemma or_PASI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse a)"
   assumes "PASI (parse b)"
   shows "PASI (parse (or a b))"

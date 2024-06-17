@@ -81,15 +81,15 @@ lemma digit_char_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma digit_char_PNGI[PASI_PNGI]:
+lemma digit_char_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse digit_char)"
   unfolding digit_char_def
-  by (rule any_from_set_PNGI)
+  by (intro PASI_PNGI_intros)
 
-lemma digit_char_PASI[PASI_PNGI]:
+lemma digit_char_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse digit_char)"
   unfolding digit_char_def
-  by (rule any_from_set_PASI)
+  by (intro PASI_PNGI_intros)
 
 
 

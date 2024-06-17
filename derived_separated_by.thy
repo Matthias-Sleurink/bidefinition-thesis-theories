@@ -154,7 +154,7 @@ lemma separated_by_print_empty:
   by (clarsimp simp add: print_empty split: list.splits)+
 
 \<comment> \<open>PASI, PNGI\<close>
-lemma separated_by_PNGI[PASI_PNGI]:
+lemma separated_by_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes PNGI_elem: "PNGI (parse elem)"
   assumes PASI_then: "PASI (parse (b_then sep elem))"
   shows "PNGI (parse (separated_by sep elem sep_oracle))"

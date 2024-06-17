@@ -115,11 +115,11 @@ lemma peek_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma peek_PNGI[PASI_PNGI]:
+lemma peek_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse (peek b))"
   by (simp add: PNGI_def NER_simps)
 
-lemma peek_PASI[PASI_PNGI]:
+lemma peek_PASI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "\<exists> i r l. has_result (parse b) i r l"
   shows "PASI (parse (peek b)) \<longleftrightarrow> False"
   by (simp add: assms PASI_def NER_simps)

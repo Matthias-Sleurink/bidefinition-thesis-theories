@@ -6,8 +6,7 @@ begin
 definition char_for_predicate :: "(char \<Rightarrow> bool) \<Rightarrow> char bidef" where
   "char_for_predicate p = dep_then one_char (\<lambda>found. if p found then return found else fail) id"
 
-export_code char_for_predicate in SML
-  module_name tes
+
 
 \<comment> \<open>NER\<close>
 lemma char_for_predicate_is_nonterm[NER_simps]:
@@ -53,15 +52,15 @@ lemma char_for_predicate_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma char_for_predicate_PNGI[PASI_PNGI]:
+lemma char_for_predicate_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse (char_for_predicate p))"
   unfolding char_for_predicate_def
-  apply (rule dep_then_PNGI)
-  subgoal by (rule one_char_PNGI)
+  apply (intro PASI_PNGI_intros)
+  \<comment> \<open>Why doesn't if_PNGI_p (in the intros) do this?\<close> thm if_PNGI_p
   by (auto simp add: return_PNGI fail_PNGI)
 
 
-lemma char_for_predicate_PASI[PASI_PNGI]:
+lemma char_for_predicate_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse (char_for_predicate p))"
   unfolding char_for_predicate_def
   apply (rule dep_then_PASI_PASI_PNGI)

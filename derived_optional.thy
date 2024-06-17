@@ -70,7 +70,7 @@ lemma optional_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma optional_PNGI[PASI_PNGI]:
+lemma optional_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse p)"
   shows "PNGI (parse (optional p))"
   unfolding optional_def
@@ -81,8 +81,7 @@ lemma optional_PNGI[PASI_PNGI]:
   subgoal using return_PNGI by fast
   done
 
-
-lemma optional_PASI[PASI_PNGI]:
+lemma optional_PASI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse p)"
   assumes "\<nexists>i. is_error (parse p) i"
   shows "PASI (parse (optional p))"

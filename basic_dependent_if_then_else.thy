@@ -316,7 +316,7 @@ lemma if_then_else_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma PNGI_dep_if_then_else[PASI_PNGI]:
+lemma PNGI_dep_if_then_else[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "\<forall> i r l. has_result (parse ab) i r l \<longrightarrow> PNGI (parse (a2bb r))"
   assumes "PNGI (parse cb)"
@@ -325,7 +325,7 @@ lemma PNGI_dep_if_then_else[PASI_PNGI]:
   apply (simp add: PNGI_def NER_simps split: sum.splits)
   by fastforce
 
-lemma PNGI_dep_if_then_else_all:
+lemma PNGI_dep_if_then_else_all[PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "\<forall> i. PNGI (parse (a2bb i))"
   assumes "PNGI (parse cb)"
@@ -334,7 +334,7 @@ lemma PNGI_dep_if_then_else_all:
   apply (simp add: PNGI_def NER_simps split: sum.splits)
   by fastforce
 
-lemma PASI_dep_if_then_else:
+lemma PASI_dep_if_then_else[PASI_PNGI_intros]:
   assumes "PASI (parse ab)"
   assumes "\<forall> i. PASI (parse (a2bb i))"
   assumes "PASI (parse cb)"
@@ -343,7 +343,7 @@ lemma PASI_dep_if_then_else:
   apply (simp add: PASI_def NER_simps split: sum.splits)
   by fastforce
 
-lemma dep_if_then_else_PASI_PASI_PNGI_PASI:
+lemma dep_if_then_else_PASI_PASI_PNGI_PASI[PASI_PNGI_intros]:
   assumes "PASI (parse ab)"
   assumes "\<forall> i. PNGI (parse (a2bb i))"
   assumes "PASI (parse cb)"
@@ -352,7 +352,7 @@ lemma dep_if_then_else_PASI_PASI_PNGI_PASI:
   apply (simp add: PASI_def PNGI_def NER_simps split: sum.splits)
   by fastforce
 
-lemma dep_if_then_else_PASI_PNGI_PASI_PASI:
+lemma dep_if_then_else_PASI_PNGI_PASI_PASI[PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "\<forall> i. PASI (parse (a2bb i))"
   assumes "PASI (parse cb)"

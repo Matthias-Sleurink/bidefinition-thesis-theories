@@ -72,11 +72,11 @@ lemma one_char_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma one_char_PNGI[PASI_PNGI]:
+lemma one_char_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse one_char)"
   by (simp add: PNGI_def NER_simps)
 
-lemma one_char_PASI[PASI_PNGI]:
+lemma one_char_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse one_char)"
   by (simp add: PASI_def NER_simps)
 

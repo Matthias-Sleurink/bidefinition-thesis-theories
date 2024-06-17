@@ -77,11 +77,11 @@ lemma return_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma return_PNGI[PASI_PNGI]:
+lemma return_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse (return t))"
   by (simp add: PNGI_def NER_simps)
 
-lemma return_PASI[PASI_PNGI]:
+lemma return_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse (return t)) \<longleftrightarrow> False"
   by (simp add: PASI_def NER_simps)
 

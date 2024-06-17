@@ -70,12 +70,12 @@ lemma whitespace_char_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma whitespace_char_PNGI[PASI_PNGI]:
+lemma whitespace_char_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse whitespace_char)"
   unfolding whitespace_char_def
   by (rule any_from_set_PNGI)
 
-lemma whitespace_char_PASI[PASI_PNGI]:
+lemma whitespace_char_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse whitespace_char)"
   unfolding whitespace_char_def
   by (rule any_from_set_PASI)

@@ -58,15 +58,15 @@ lemma any_from_set_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma any_from_set_PNGI[PASI_PNGI]:
+lemma any_from_set_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse (any_from_set s))"
   unfolding any_from_set_def
-  by (rule char_for_predicate_PNGI)
+  by (intro PASI_PNGI_intros)
 
-lemma any_from_set_PASI[PASI_PNGI]:
+lemma any_from_set_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse (any_from_set s))"
   unfolding any_from_set_def
-  by (rule char_for_predicate_PASI)
+  by (intro PASI_PNGI_intros)
 
 
 

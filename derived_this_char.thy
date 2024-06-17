@@ -55,15 +55,15 @@ lemma this_char_print_empty[print_empty, fp_NER]:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma this_char_PNGI[PASI_PNGI]:
+lemma this_char_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse (this_char c))"
   unfolding this_char_def
-  by (rule any_from_set_PNGI)
+  by (intro PASI_PNGI_intros)
 
-lemma this_char_PASI[PASI_PNGI]:
+lemma this_char_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse (this_char c))"
   unfolding this_char_def
-  by (rule any_from_set_PASI)
+  by (intro PASI_PNGI_intros)
 
 
 

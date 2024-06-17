@@ -125,19 +125,16 @@ lemma b_then_print_empty:
 
 
 \<comment> \<open>PNGI, PASI\<close>
-lemma then_PNGI[PASI_PNGI]:
+lemma then_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "PNGI (parse bb)"
   shows "PNGI (parse (b_then ab bb))"
-  unfolding b_then_def
-  apply (rule dep_then_PNGI)
-  subgoal by (rule assms(1))
-  subgoal
-    using transform_PNGI assms(2)
-    by blast
-  done
+  unfolding b_then_def using assms
+  apply (intro PASI_PNGI_intros; simp) \<comment> \<open>Again this doesn't work with transform\<close>
+  using transform_PNGI assms(2)
+  by blast
 
-lemma then_PASI:
+lemma then_PASI[PASI_PNGI_intros]:
   assumes "PASI (parse ab)"
   assumes "PASI (parse bb)"
   shows "PASI (parse (b_then ab bb))"
@@ -149,7 +146,7 @@ lemma then_PASI:
     by blast
   done
 
-lemma then_PASI_from_pasi_pngi:
+lemma then_PASI_from_pasi_pngi[PASI_PNGI_intros]:
   assumes "PASI (parse ab)"
   assumes "PNGI (parse bb)"
   shows "PASI (parse (b_then ab bb))"
@@ -161,7 +158,7 @@ lemma then_PASI_from_pasi_pngi:
     by (clarsimp simp add: assms(2))
   done
 
-lemma then_PASI_from_pngi_pasi:
+lemma then_PASI_from_pngi_pasi[PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "PASI (parse bb)"
   shows "PASI (parse (b_then ab bb))"
