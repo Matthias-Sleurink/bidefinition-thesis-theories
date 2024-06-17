@@ -948,6 +948,33 @@ lemma cannot_be_grown_to_many:
     done
   oops
 
+lemma WF_many_then:
+  assumes wf_a: "bidef_well_formed A"
+  assumes pa_a: "PASI (parse A)"
+
+  assumes wf_b: "bidef_well_formed B"
+  assumes pa_b: "PASI (parse B)"
+
+\<comment> \<open>Cannot do via this, need the first char and no peek past stuff.\<close>
+  assumes b_no_grow_a: "parse_result_cannot_be_grown_by_printer (parse A) (print B)"
+  assumes a_no_grow_b: "parse_result_cannot_be_grown_by_printer (parse B) (print A)"
+
+  shows "bidef_well_formed (many (b_then A B))"
+  apply wf_init
+  subgoal by (intro PASI_PNGI_intros; simp add: pa_a pa_b)
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    sorry
+  subgoal
+    apply (rule printer_can_print_parse_result_many; rule disjI2)
+    apply (rule b_then_well_formed)
+    subgoal by (rule wf_a)
+    subgoal by (rule wf_b)
+    unfolding pa_does_not_eat_into_pb_nondep_def
+    using b_no_grow_a[unfolded parse_result_cannot_be_grown_by_printer_def]
+    using wf_a[THEN get_parser_can_parse_unfold]
+    by fastforce
+  oops
 
 
 value "one_char"
