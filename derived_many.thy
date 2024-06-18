@@ -951,30 +951,57 @@ lemma cannot_be_grown_to_many:
 lemma WF_many_then:
   assumes wf_a: "bidef_well_formed A"
   assumes pa_a: "PASI (parse A)"
+  assumes no_nonterm_empty_a: "\<not> is_nonterm (parse A) []"
 
   assumes wf_b: "bidef_well_formed B"
   assumes pa_b: "PASI (parse B)"
 
-\<comment> \<open>Cannot do via this, need the first char and no peek past stuff.\<close>
-  assumes b_no_grow_a: "parse_result_cannot_be_grown_by_printer (parse A) (print B)"
-  assumes a_no_grow_b: "parse_result_cannot_be_grown_by_printer (parse B) (print A)"
+  assumes b_no_peek_past_first_char_of_a: "\<forall>i c. first_printed_chari (print B) i c \<longrightarrow> does_not_consume_past_char3 (parse A) c"
+  assumes a_no_peek_past_first_char_of_b: "\<forall>i c. first_printed_chari (print A) i c \<longrightarrow> does_not_consume_past_char3 (parse B) c"
 
   shows "bidef_well_formed (many (b_then A B))"
   apply wf_init
   subgoal by (intro PASI_PNGI_intros; simp add: pa_a pa_b)
   subgoal
     unfolding parser_can_parse_print_result_def
-    sorry
+    apply clarsimp
+    subgoal for pr t
+      apply (induction pr arbitrary: t)
+      subgoal by (clarsimp simp add: fp_NER NER_simps pa_a no_nonterm_empty_a PASI_implies_error_from_empty)
+      subgoal for pr' prs t
+        apply (clarsimp simp add: NER_simps fp_NER)
+        subgoal for t_tl t_hd t_mid
+          apply (rule exI[of _ t_tl]; clarsimp)
+          apply (rule exI[of _ \<open>t_mid @ t_tl\<close>]; rule conjI)
+          subgoal
+            by (metis PASI_implies_no_result_from_empty b_no_peek_past_first_char_of_a first_printed_chari_def hd_append2 no_consume_past3_wf_stronger pa_b print_result_is_canon_result wf_a wf_b)
+          subgoal
+            apply (insert wf_b[THEN get_parser_can_parse_unfold, rule_format, of \<open>snd pr'\<close> t_mid]; clarsimp)
+            apply (cases t_tl; clarsimp) \<comment> \<open>case where t_tl,prs=[] is trivial\<close>
+            subgoal for tl_hd tl_tl
+              apply (cases prs; clarsimp)
+              subgoal by (clarsimp simp add: fp_NER)
+              subgoal for prs_hda prs_hdb prs_tl
+                apply (insert wf_pasi_no_empty_print[OF wf_a pa_a])
+                apply (insert a_no_peek_past_first_char_of_b[unfolded does_not_consume_past_char3_def,
+                                rule_format, of prs_hda tl_hd t_mid \<open>[]\<close> \<open>snd pr'\<close> tl_tl, simplified]; clarsimp)
+                by (metis b_then_print_empty_safe first_printed_chari_def fst_conv list.sel(1) list.simps(3) many_fpci_cons then_fpci)
+              done
+            done
+          done
+        done
+      done
+    done
   subgoal
     apply (rule printer_can_print_parse_result_many; rule disjI2)
     apply (rule b_then_well_formed)
     subgoal by (rule wf_a)
     subgoal by (rule wf_b)
-    unfolding pa_does_not_eat_into_pb_nondep_def
-    using b_no_grow_a[unfolded parse_result_cannot_be_grown_by_printer_def]
-    using wf_a[THEN get_parser_can_parse_unfold]
-    by fastforce
-  oops
+    apply (rule first_printed_does_not_eat_into3)
+    subgoal by (rule wf_a)
+    subgoal by (rule b_no_peek_past_first_char_of_a)
+    done
+  done
 
 
 value "one_char"
