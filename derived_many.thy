@@ -981,11 +981,23 @@ lemma WF_many_then:
             subgoal for tl_hd tl_tl
               apply (cases prs; clarsimp)
               subgoal by (clarsimp simp add: fp_NER)
-              subgoal for prs_hda prs_hdb prs_tl
+              subgoal premises prems for prs_hda prs_hdb prs_tl
+                apply (insert prems wf_pasi_no_empty_print[OF wf_a pa_a])
+                thm prems
+                apply (insert a_no_peek_past_first_char_of_b[unfolded does_not_consume_past_char3_def,
+                                rule_format, of prs_hda tl_hd t_mid \<open>[]\<close> \<open>snd pr'\<close> tl_tl, simplified, OF _ prems(6)]; clarsimp)
+                by (metis b_then_print_empty_safe first_printed_chari_def fst_conv list.sel(1) list.simps(3) many_fpci_cons then_fpci)
+(*              subgoal for prs_hda prs_hdb prs_tl
                 apply (insert wf_pasi_no_empty_print[OF wf_a pa_a])
+                apply (rule a_no_peek_past_first_char_of_b[unfolded does_not_consume_past_char3_def,
+                                rule_format, of prs_hda tl_hd t_mid \<open>[]\<close> \<open>snd pr'\<close> tl_tl, simplified]; assumption?)
+
+
+                using a_no_peek_past_first_char_of_b[unfolded does_not_consume_past_char3_def,
+                                rule_format, of prs_hda tl_hd t_mid \<open>[]\<close> \<open>snd pr'\<close> tl_tl, simplified]
                 apply (insert a_no_peek_past_first_char_of_b[unfolded does_not_consume_past_char3_def,
                                 rule_format, of prs_hda tl_hd t_mid \<open>[]\<close> \<open>snd pr'\<close> tl_tl, simplified]; clarsimp)
-                by (metis b_then_print_empty_safe first_printed_chari_def fst_conv list.sel(1) list.simps(3) many_fpci_cons then_fpci)
+                by (metis b_then_print_empty_safe first_printed_chari_def fst_conv list.sel(1) list.simps(3) many_fpci_cons then_fpci)*)
               done
             done
           done
