@@ -726,6 +726,14 @@ lemma print_result_is_canon_result2:
   unfolding bidef_well_formed_def parser_can_parse_print_result_def
   by (simp add: p_has_result_def has_result_def)
 
+lemma wf_pasi_no_empty_print:
+  assumes wf_a: "bidef_well_formed A"
+  assumes pa_a: "PASI (parse A)"
+  shows "\<nexists> i. p_has_result (print A) i []"
+  using PASI_implies_no_result_from_empty[OF pa_a]
+        wf_a[THEN get_parser_can_parse_unfold]
+  by blast
+
 
 
 section \<open>Charset, first_chars\<close>
