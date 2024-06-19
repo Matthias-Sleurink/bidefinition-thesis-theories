@@ -880,6 +880,11 @@ lemma empty_result_means_no_first_char[fpci_simps]:
   using assms unfolding first_printed_chari_def
   by (simp add: print_results_always_same)
 
+lemma fpci_bottom[fpci_simps]:
+  "first_printed_chari (\<lambda>_. None) i c \<longleftrightarrow> False"
+  by (clarsimp simp add: first_printed_chari_def fp_NER)
+
+
 
 section \<open>First parsed character\<close>
 text \<open>The problem with fpci above is that more than just the printed text can be parsed.
@@ -1027,6 +1032,10 @@ lemma strict_WF[cont_intro]:
   unfolding bidef_well_formed_def
   by (simp add: strict_PNGI parser_can_parse_print_result_def p_has_result_def printer_can_print_parse_result_def has_result_def)
 
+lemma admissible_fpci_not_in_set[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. first_printed_chari (print (expressionR ())) i c \<longrightarrow> c \<notin> S)"
+  unfolding first_printed_chari_def p_has_result_def
+  by simp
 
 
 end
