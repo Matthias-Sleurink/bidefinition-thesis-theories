@@ -145,6 +145,19 @@ lemma separated_by1_fpci[fpci_simps]:
   subgoal by (auto simp add: fpci_simps)
   done
 
+lemma separated_by1_fpci_unsafe:
+  "first_printed_chari (print (separated_by1 elem sep oracle)) I c \<longleftrightarrow> (
+    case I of
+      [] \<Rightarrow> False
+    | [i] \<Rightarrow> first_printed_chari (print elem) i c
+    | (i#is) \<Rightarrow> (
+      if p_has_result (print elem) i [] then
+        (first_printed_chari (print (many (b_then sep elem))) (map (Pair oracle) is) c)
+      else
+        (first_printed_chari (print elem) i c \<and> (\<exists>t. p_has_result (print (many (b_then sep elem))) (map (Pair oracle) is) t))
+))"
+  by (auto simp add: fpci_simps ex_many_p_has_result split: list.splits)
+
 
 
 lemma separated_by1_fpc[fpc_simps]:
