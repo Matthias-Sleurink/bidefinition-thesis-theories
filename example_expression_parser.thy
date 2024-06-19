@@ -65,6 +65,13 @@ lemma chars_not_in_whitespace[simp]:
   "c \<in> derived_digit_char.digit_chars \<longrightarrow> c\<notin>whitespace_chars"
   unfolding derived_digit_char.digit_chars_def whitespace_chars_def
   by blast+
+lemma in_ws_and_digits_eq_false[simp]:
+  "c \<in> digit_chars                    \<and> c \<in> whitespace_chars \<longleftrightarrow> False"
+  "c \<in> derived_digit_char.digit_chars \<and> c \<in> whitespace_chars \<longleftrightarrow> False"
+  unfolding derived_digit_char.digit_chars_def whitespace_chars_def
+  by blast+
+
+
 
 abbreviation triple :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> 'c bidef \<Rightarrow> ('a \<times> 'b \<times> 'c) bidef" where
   "triple A B C \<equiv> b_then A (b_then B C)"
