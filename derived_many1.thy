@@ -96,43 +96,18 @@ lemma many1_PNGI_from_PNGI:
   apply (rule many_PNGI)
   oops
 
-
-  thm iffD2
-
-lemma "PASI (parse (transform f f' b))"
-
-  apply (rule iffD2, rule PASI_PNGI_intros)
-
-  apply (rule PASI_PNGI_intros)
-
 lemma many1_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse p)"
   shows "PNGI (parse (many1 p))"
-  unfolding many1_def using assms
-  apply -
-
-  thm PASI_PNGI_intros
-
-  apply (intro PASI_PNGI_intros) \<comment> \<open>Both of these are in the intro set. What do we need to make it do this?\<close>
-  apply (rule mp, rule PASI_PNGI_intros)
-
-  apply (repeat_new \<open>assumption | rule PASI_PNGI_intros |  rule mp, rule PASI_PNGI_intros | rule iffD2, rule PASI_PNGI_intros\<close>)
-  apply ( rule PASI_PNGI_intros |  rule mp, rule PASI_PNGI_intros)
-  apply ( rule PASI_PNGI_intros |  rule mp, rule PASI_PNGI_intros)
-
-  thm PASI_PNGI_intros
-  apply (intro PASI_PNGI_intros) \<comment> \<open>Both of these are in the intro set. What do we need to make it do this?\<close>
-  by (clarsimp simp add: assms PASI_implies_PNGI)+
+  unfolding many1_def apply (insert assms)
+  by (repeat_new \<open>intro PASI_PNGI_intros | assumption | rule PASI_implies_PNGI[THEN mp]\<close>)
 
 lemma many1_PASI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PASI (parse p)"
   shows "PASI (parse (many1 p))"
-  unfolding many1_def
-  apply (rule ftransform_PASI)
-  apply (rule then_PASI_from_pasi_pngi)
-  subgoal by (rule assms(1))
-  apply (rule many_PNGI)
-  by (rule assms(1))
+  unfolding many1_def apply (insert assms)
+  by (repeat_new \<open>intro PASI_PNGI_intros | assumption | rule PASI_implies_PNGI[THEN mp]\<close>)
+
 
 
 lemma printer_can_print_parse_result_many1:
