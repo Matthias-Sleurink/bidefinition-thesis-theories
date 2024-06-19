@@ -670,9 +670,15 @@ lemma expression_well_formed:
           subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
           subgoal
             apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, OF expression_punctuation_charsets(9)])
-            find_theorems first_printed_chari b_then
-            find_theorems does_not_consume_past_char3 ws_char_ws
-            sorry
+            apply (subst then_fpci)
+            apply (subgoal_tac \<open>\<nexists>i. p_has_result (print (E ())) i []\<close>; clarsimp)
+            subgoal for i c
+              apply (subgoal_tac \<open>first_printed_chari (print (E ())) i c \<Longrightarrow> c \<notin> whitespace_chars\<close>)
+              subgoal by clarsimp
+              subgoal sorry \<comment> \<open>first_printed_chari (print (E ())) i c \<Longrightarrow> c \<notin> whitespace_chars\<close>
+              done
+            subgoal sorry \<comment> \<open>\<nexists>i. p_has_result (print (E ())) i []\<close>
+            done
           done
         done
       subgoal by (clarsimp simp add: fp_NER NER_simps well_formed_or_pair_def)
