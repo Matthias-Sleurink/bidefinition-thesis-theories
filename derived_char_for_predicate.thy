@@ -55,17 +55,12 @@ lemma char_for_predicate_print_empty[print_empty, fp_NER]:
 lemma char_for_predicate_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   "PNGI (parse (char_for_predicate p))"
   unfolding char_for_predicate_def
-  apply (intro PASI_PNGI_intros)
-  \<comment> \<open>Why doesn't if_PNGI_p (in the intros) do this?\<close> thm if_PNGI_p
-  by (auto simp add: return_PNGI fail_PNGI)
-
+  by (clarsimp simp add: PASI_PNGI_intros)
 
 lemma char_for_predicate_PASI[PASI_PNGI, PASI_PNGI_intros]:
   "PASI (parse (char_for_predicate p))"
   unfolding char_for_predicate_def
-  apply (rule dep_then_PASI_PASI_PNGI)
-  subgoal by (rule one_char_PASI)
-  by (simp add: return_PNGI fail_PNGI)
+  by (clarsimp simp add: PASI_PNGI_intros)
 
 
 

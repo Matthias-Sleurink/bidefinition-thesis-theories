@@ -492,6 +492,11 @@ type_synonym '\<alpha> bidef = "'\<alpha> bd"
 section \<open>PASI, PNGI\<close>
 named_theorems PASI_PNGI
 named_theorems PASI_PNGI_intros
+
+\<comment> \<open>Do for this subgoal and repeat for each newly created subgoal, try to solve via assumption, if not, apply an intro rule, if not, use mp with intro rule, if not, use clarsimp with PASI_PNGI_intros.\<close>
+method pasi_pngi = (repeat_new \<open>assumption | rule PASI_PNGI_intros |  rule mp, rule PASI_PNGI_intros | clarsimp simp add: PASI_PNGI_intros\<close>)
+
+
 \<comment> \<open>PASI, Parser Always Shrinks Input (Including it being a tail of the input)\<close>
 definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
   "PASI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. (i = c @ l \<and> c \<noteq> [])))"
@@ -518,8 +523,9 @@ lemma PNGI_empty_int_empty_res:
   shows "has_result p [] r l \<longrightarrow> l = []"
   using assms unfolding PNGI_def by blast
 
-
-lemma PASI_implies_PNGI[PASI_PNGI_intros]:
+\<comment> \<open>This would not be bad to have in the PASI intros, but it's also not great since this almost always applies, but is basically never the solution.\<close>
+\<comment> \<open>Can we somehow set this up such that it is only applied if we know PASI from an assm?\<close>
+lemma PASI_implies_PNGI:
   "PASI p \<longrightarrow> PNGI p"
   using PASI_def PNGI_def
   by fast

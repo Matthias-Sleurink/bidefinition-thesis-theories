@@ -66,30 +66,22 @@ lemma mono_transform[partial_function_mono]:
   by fact
 
 
-method pasi = repeat_new \<open>rule PASI_PNGI_intros | assumption\<close>
 
-\<comment> \<open>Why can't intro solve this with our intro rules?\<close>
 \<comment> \<open>PNGI, PASI\<close>
 lemma transform_PASI:
   shows "PASI (parse b) \<longleftrightarrow> PASI (parse (transform f f' b))"
   unfolding transform_def
-  apply (rule iffI)
-  subgoal by pasi
-    apply (repeat_new \<open>rule PASI_PNGI_intros | assumption\<close>)
-
-
-  apply (intro PASI_PNGI_intros iffI)
   apply (simp add: PASI_def NER_simps)
   by blast
-lemmas transform_PASI_rev[PASI_PNGI, PASI_PNGI_intros] = transform_PASI[symmetric]
-thm PASI_PNGI_intros
+lemmas transform_PASI_rev[PASI_PNGI] = transform_PASI[symmetric]
+
 lemma transform_PNGI:
   shows "PNGI (parse b) \<longleftrightarrow> PNGI (parse (transform f f' b))"
   apply (simp add: PNGI_def NER_simps)
   by blast
+lemmas transform_PNGI_rev[PASI_PNGI] = transform_PNGI[symmetric]
 
-lemmas transform_PNGI_rev[PASI_PNGI, PASI_PNGI_intros] = transform_PNGI[symmetric]
-
+lemmas transform_PASI_intros[PASI_PNGI_intros] = transform_PNGI[THEN iffD1] transform_PASI[THEN iffD1]
 
 
 \<comment> \<open>Charset\<close>

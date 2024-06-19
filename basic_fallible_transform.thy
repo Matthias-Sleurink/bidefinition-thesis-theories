@@ -132,13 +132,16 @@ lemma ftransform_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   using assms
   by (auto simp add: PNGI_def NER_simps fp_NER)
 
-lemma ftransform_PASI_never_fail[PASI_PNGI, PASI_PNGI_intros]:
+lemma ftransform_PASI_never_fail[PASI_PNGI]:
   "PASI (parse (ftransform (Some \<circ> f) (Some \<circ> f') b)) \<longleftrightarrow> PASI (parse b)"
   by (auto simp add: PASI_def NER_simps; blast)
 
-lemma ftransform_PNGI_never_fail[PASI_PNGI, PASI_PNGI_intros]:
+lemma ftransform_PNGI_never_fail[PASI_PNGI]:
   "PNGI (parse (ftransform (Some \<circ> f) (Some \<circ> f') b)) \<longleftrightarrow> PNGI (parse b)"
   by (auto simp add: PNGI_def NER_simps; blast)
+
+lemmas ftransform_PASI_intros[PASI_PNGI_intros] = ftransform_PASI_never_fail[THEN iffD2] ftransform_PNGI_never_fail[THEN iffD2]
+
 
 
 \<comment> \<open>Charset\<close>

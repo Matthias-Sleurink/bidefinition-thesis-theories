@@ -92,62 +92,37 @@ lemma dep_then_PNGI[PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "\<forall>i. PNGI (parse (a2bb i))"
   shows "PNGI (parse (dep_then ab a2bb b2a))"
-  unfolding dep_then_def \<comment> \<open>Why can't intro solve this with our intro rules?\<close>
-  unfolding transform_PNGI[symmetric, of projl Inl]
-  apply (rule PNGI_dep_if_then_else_all)
-  subgoal by (rule assms(1))
-  subgoal by (rule assms(2))
-  subgoal by (rule fail_PNGI)
-  done
+  unfolding dep_then_def
+  by (clarsimp simp add: assms PASI_PNGI_intros)
 
 lemma dep_then_PNGI_for_ab_results[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "\<forall>i r l. has_result (parse ab) i r l \<longrightarrow> PNGI (parse (a2bb r))"
   shows "PNGI (parse (dep_then ab a2bb b2a))"
   unfolding dep_then_def
-  unfolding transform_PNGI[symmetric, of projl Inl]
-  apply (rule PNGI_dep_if_then_else)
-  subgoal by (rule assms(1))
-  subgoal by (rule assms(2))
-  subgoal by (rule fail_PNGI)
-  done
+  by (clarsimp simp add: assms PASI_PNGI_intros)
 
 lemma dep_then_PASI[PASI_PNGI_intros]:
   assumes "PASI (parse ab)"
   assumes "\<forall>i. PASI (parse (a2bb i))"
   shows "PASI (parse (dep_then ab a2bb b2a))"
   unfolding dep_then_def
-  unfolding transform_PASI[symmetric, of projl Inl]
-  apply (rule PASI_dep_if_then_else)
-  subgoal by (rule assms(1))
-  subgoal by (rule assms(2))
-  subgoal by (rule fail_PASI)
-  done
-
+  by (clarsimp simp add: assms PASI_PNGI_intros)
 
 lemma dep_then_PASI_PASI_PNGI[PASI_PNGI_intros]:
   assumes "PASI (parse ab)"
   assumes "\<forall>i. PNGI (parse (a2bb i))"
   shows "PASI (parse (dep_then ab a2bb b2a))"
   unfolding dep_then_def
-  unfolding transform_PASI[symmetric, of projl Inl]
-  apply (rule dep_if_then_else_PASI_PASI_PNGI_PASI)
-  subgoal by (rule assms(1))
-  subgoal by (rule assms(2))
-  subgoal by (rule fail_PASI)
-  done
+  by (clarsimp simp add: assms PASI_PNGI_intros)
 
 lemma dep_then_PASI_PNGI_PASI[PASI_PNGI_intros]:
   assumes "PNGI (parse ab)"
   assumes "\<forall>i. PASI (parse (a2bb i))"
   shows "PASI (parse (dep_then ab a2bb b2a))"
   unfolding dep_then_def
-  unfolding transform_PASI[symmetric, of projl Inl]
-  apply (rule dep_if_then_else_PASI_PNGI_PASI_PASI)
-  subgoal by (rule assms(1))
-  subgoal by (rule assms(2))
-  subgoal by (rule fail_PASI)
-  done
+  by (clarsimp simp add: assms PASI_PNGI_intros)
+
 
 
 \<comment> \<open>Does not peek past end\<close>
