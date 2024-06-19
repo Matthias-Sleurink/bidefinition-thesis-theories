@@ -582,6 +582,50 @@ lemma Expression_no_eat_into_paren:
     done
   oops
 
+lemma fpci_expression_not_whitespace:
+  assumes "first_printed_chari (print Expression) i c"
+  shows "c \<notin> whitespace_chars"
+  apply (insert assms)
+  apply (induction rule: expressionR.fixp_induct)
+  subgoal by (rule admissible_fpci_not_in_set)
+  subgoal by (clarsimp simp add: fpci_simps)
+  subgoal for E
+    apply (clarsimp simp add: fpci_simps print_empty split: Ex.splits)
+    unfolding AddE_def
+    apply (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
+    subgoal
+      unfolding MultE_def
+      apply (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
+      subgoal
+        unfolding NOE_def
+        apply (clarsimp simp add: fpci_simps print_empty split: Ex.splits)
+        subgoal for p_in
+          by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+        done
+      subgoal
+        unfolding NOE_def
+        apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
+        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+        done
+      done
+    subgoal
+      unfolding MultE_def
+      apply (clarsimp simp add: fpci_simps fp_NER separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
+      subgoal
+        unfolding NOE_def
+        apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
+        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+        done
+      subgoal
+        apply (subst (asm) (4) NOE_def)
+        apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
+        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+        done
+      done
+    done
+  done
+
 
 lemma expression_well_formed:
   "bidef_well_formed Expression"
