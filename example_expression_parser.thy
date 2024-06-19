@@ -88,6 +88,12 @@ lemma mono_ws_parenthesised[partial_function_mono]:
   unfolding ws_parenthesised_def using ma
   by pf_mono_prover
 
+lemma fpci_ws_parenthesised[fpci_simps]:
+  "first_printed_chari (print (ws_parenthesised A)) i c \<Longrightarrow> c = CHR ''(''"
+  unfolding ws_parenthesised_def
+  by (clarsimp simp add: fpci_simps print_empty)
+
+
 \<comment> \<open>The two ideas for making small combinators have easier NER rules is to add the definition to NER simps.\<close>
 \<comment> \<open>This requires the rule to be "safe" to unfold, which ws_parenthesised is.\<close>
 \<comment> \<open>Cannot add this to fp_NER too, since it'll give us duplicate fact added warnings when we add both NER and fp_NER.\<close>
