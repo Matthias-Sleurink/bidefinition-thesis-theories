@@ -180,6 +180,13 @@ lemma Number_p_print_empty[print_empty, fp_NER]:
   "p_has_result (print Number) i [] \<longleftrightarrow> False"
   by (clarsimp simp add: Number_def print_empty)
 
+lemma fpci_Number[fpci_simps]:
+  assumes "first_printed_chari (print Number) i c"
+  shows "c \<in> digit_chars"
+        "c \<notin> whitespace_chars"
+  apply (insert assms)
+  by (clarsimp simp add: Number_def fpci_simps)+
+
 lemma Number_well_formed:
   "bidef_well_formed Number"
   unfolding Number_def
