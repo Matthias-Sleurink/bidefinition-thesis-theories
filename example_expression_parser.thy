@@ -584,6 +584,20 @@ lemma Expression_no_print_empty:
   shows "\<forall>i. \<not> p_has_result (print (ftransform Some (case_Ex (\<lambda>a. Some (Additive a)) (\<lambda>list. None) (\<lambda>nat. None) (\<lambda>Ex. None)) (AddE (E ())))) i []"
   by (clarsimp simp add: print_empty AddE_def MultE_def separated_by1_def NOE_def ws_parenthesised_def split: Ex.splits list.splits)
 
+lemma Expression_can_drop_leftover:
+  assumes E_wf: "bidef_well_formed (E ())"
+  assumes fpci_E_no_ws: "\<forall>i c. first_printed_chari (print (E ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+  assumes E_no_print_empty: "\<forall>i. \<not> p_has_result (print (E ())) i []"
+  assumes E_can_drop_leftover: "\<forall>c l l' r. has_result (parse (E ())) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse (E ())) (c @ l) r l"
+  shows "\<forall>c l l' r.
+            has_result (parse (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ())))) (c @ l @ l') r (l @ l') \<longrightarrow>
+            has_result (parse (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ())))) (c @ l) r l"
+  apply clarsimp
+  subgoal for c l l' r
+    apply (clarsimp simp add: NER_simps)
+    find_theorems AddE
+    sorry
+  oops
 
 lemma expression_well_formed:
 	assumes wf_E: "bidef_well_formed (E ())"
