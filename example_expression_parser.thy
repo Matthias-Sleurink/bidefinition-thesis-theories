@@ -221,6 +221,13 @@ lemma mono_NOE[partial_function_mono]:
   unfolding NOE_def using ma
   by pf_mono_prover
 
+lemma PNGI_NOE:
+  assumes "PNGI (parse E)"
+  shows "PNGI (parse (NOE E))"
+  using assms unfolding NOE_def Number_def ws_parenthesised_def
+  by pasi_pngi
+
+
 \<comment> \<open>Some quick tests to see how this 'else' case in case expressions works.\<close>
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Literal 4)"
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
