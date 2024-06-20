@@ -388,6 +388,44 @@ lemma mono_MultE[partial_function_mono]:
   unfolding MultE_def using ma
   by pf_mono_prover
 
+lemma pngi_MultE:
+  assumes "PNGI (parse E)"
+  shows "PNGI (parse (MultE E))"
+  apply (insert assms)
+  unfolding MultE_def NOE_def ws_parenthesised_def Number_def
+  apply pasi_pngi back back \<comment> \<open>Solution found with back, how do we make it do this without back?\<close>
+  done
+
+\<comment> \<open>We can drag in assms from Expression can drop leftover\<close>
+lemma MultE_can_drop_leftover:
+  assumes pngi_E: "PNGI (parse E)"
+  assumes E_can_drop_leftover: "\<And>c l l' r. has_result (parse E) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse E) (c @ l) r l"
+  assumes hr_with_leftover: "has_result (parse (MultE E)) (c @ l @ l') r (l @ l')"
+  shows "has_result (parse (MultE E)) (c @ l) r l"
+  using hr_with_leftover unfolding MultE_def
+  apply (clarsimp simp add: NER_simps)
+  subgoal for r
+    apply (cases r; clarsimp simp add: NER_simps) \<comment> \<open>empty case is trivial\<close>
+    subgoal for r' rs l'a
+      apply (insert PNGI_NOE[OF pngi_E, unfolded PNGI_def, rule_format, of \<open>c @ l @ l'\<close> r' l'a]; clarsimp)
+      subgoal for cNOE
+        apply (insert many_PNGI[of \<open>b_then star (NOE E)\<close>, OF then_PASI_from_pasi_pngi[OF ws_char_ws_PASI PNGI_NOE[OF pngi_E]],
+                        unfolded PNGI_def, rule_format, of l'a \<open>zip (replicate (length rs) ()) rs\<close> \<open>l@l'\<close>]; clarsimp)
+        subgoal for cMany
+          apply (rule exI[of _ \<open>cMany @ l\<close>]; rule conjI)
+          subgoal
+            apply (rule NOE_can_drop_leftover[OF pngi_E, of cNOE \<open>cMany@l\<close> l' r', simplified])
+            subgoal using E_can_drop_leftover by blast
+            subgoal using E_can_drop_leftover by blast
+            done
+          subgoal
+            \<comment> \<open>TODO: use the below rule to prove this.\<close>
+            thm many_can_drop_leftover
+            sorry
+  oops
+
+
+
 definition AddE :: "Ex bidef \<Rightarrow> Ex bidef" where
   "AddE E = ftransform
               (Some o Additive)
@@ -641,13 +679,32 @@ lemma Expression_can_drop_leftover:
   assumes fpci_E_no_ws: "\<forall>i c. first_printed_chari (print (E ())) i c \<longrightarrow> c \<notin> whitespace_chars"
   assumes E_no_print_empty: "\<forall>i. \<not> p_has_result (print (E ())) i []"
   assumes E_can_drop_leftover: "\<forall>c l l' r. has_result (parse (E ())) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse (E ())) (c @ l) r l"
+  assumes E_pngi: "PNGI (parse (E ()))"
   shows "\<forall>c l l' r.
             has_result (parse (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ())))) (c @ l @ l') r (l @ l') \<longrightarrow>
             has_result (parse (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ())))) (c @ l) r l"
   apply clarsimp
   subgoal for c l l' r
     apply (clarsimp simp add: NER_simps)
-    find_theorems AddE
+    unfolding AddE_def
+    apply (clarsimp simp add: NER_simps)
+    subgoal for r \<comment> \<open>Note that we're overwriting the previous binding to r here, which is renamed r__ automatically\<close>
+      apply (cases r; clarsimp simp add: NER_simps) \<comment> \<open>Empty case is trivially true\<close>
+      subgoal for r' rs l'a
+        apply (insert pngi_MultE[OF E_pngi, unfolded PNGI_def, rule_format, of \<open>c@l@l'\<close> r' l'a]; clarsimp)
+        subgoal for cMultE
+          \<comment> \<open>Why do I need to add the result in the insert here to get clarsimp to work?\<close>
+          apply (insert many_PNGI[of \<open>b_then example_expression_parser.plus (MultE (E ()))\<close>,
+                          OF then_PASI_from_pasi_pngi[OF ws_char_ws_PASI pngi_MultE[OF E_pngi]],
+                          unfolded PNGI_def, rule_format, of l'a \<open>zip (replicate (length rs) ()) rs\<close> \<open>l@l'\<close>]; clarsimp)
+          subgoal for cMany
+            apply (rule exI[of _ \<open>cMany @ l\<close>]; rule conjI)
+            subgoal
+              
+              sorry
+            subgoal sorry
+          
+        \<comment> \<open>Looks like we need PNGI here.\<close>
     sorry
   oops
 
