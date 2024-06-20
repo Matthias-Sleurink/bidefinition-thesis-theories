@@ -1037,5 +1037,9 @@ lemma admissible_fpci_not_in_set[cont_intro]:
   unfolding first_printed_chari_def p_has_result_def
   by simp
 
+lemma admissible_can_drop_leftover[cont_intro]:
+  "bd.admissible (\<lambda>expressionR. (\<forall>c l l' r. has_result (parse (expressionR ())) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse (expressionR ())) (c @ l) r l))"
+  unfolding has_result_def
+  by simp
 
 end
