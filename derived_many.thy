@@ -1010,4 +1010,25 @@ value "parse (b_then one_char one_char) ''abcd''"
 value "parse (many (b_then one_char one_char)) ''abcde''"
 
 
+lemma many_can_drop_leftover:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_error_leftover: "\<And> l l'. is_error (parse A) (l @ l') \<Longrightarrow> is_error (parse A) l"
+  assumes A_pasi: "PASI (parse A)"
+  shows "has_result (parse (many A)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (many A)) (c @ l) r l"
+  apply (induction r arbitrary: c l l')
+  subgoal by (clarsimp simp add: NER_simps A_can_drop_error_leftover)
+  subgoal for r' rs c l l'
+    apply (clarsimp simp add: NER_simps)
+    subgoal for l'a
+      apply (insert A_pasi[THEN PASI_implies_PNGI_meta, unfolded PNGI_def, rule_format, of \<open>c@l@l'\<close> r' l'a]; clarsimp)
+      subgoal for cA
+        apply (insert many_PNGI[OF A_pasi, unfolded PNGI_def, rule_format, of l'a rs \<open>l@l'\<close>]; clarsimp)
+        subgoal for cM
+          by (rule exI[of _ \<open>cM @ l\<close>]; clarsimp simp add: A_can_drop_leftover)
+        done
+      done
+    done
+  done
+
+
 end
