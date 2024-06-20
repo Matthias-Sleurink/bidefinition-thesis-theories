@@ -538,100 +538,58 @@ lemma PNGI_Expression:
     by (intro ftransform_PNGI transform_PNGI_rev[THEN iffD2] separated_by1_PNGI or_PNGI PASI_PNGI  then_PASI then_PASI_from_pasi_pngi; assumption)
   done
 
-
-lemma Expression_no_print_empty:
-  "\<not>p_has_result (print Expression) e []"
-  apply (induction rule: expressionR.fixp_induct)
-  subgoal by (rule admissible_no_empty_result)
-  subgoal by (clarsimp simp add: fp_NER)
-  by (clarsimp simp add: print_empty AddE_def MultE_def separated_by1_def NOE_def ws_parenthesised_def split: Ex.splits list.splits)
-
-
-
-
-(*
-  = Additive (getList: "Ex list")
-  | Multiply (getList: "Ex list")
-  | Literal (getNat: nat)
-  | Parenthesised (getE: Ex)
-*)
 section \<open>Well formed\<close>
-lemma Expression_no_eat_into_paren:
-  "pa_does_not_eat_into_pb_nondep Expression (ws_char_ws CHR '')'')"
-  unfolding pa_does_not_eat_into_pb_nondep_def
-  apply (auto simp add: NER_simps fp_NER)
-  subgoal for r t
-    apply (cases r; clarsimp)
-    subgoal for xs
-      apply (induction xs arbitrary: t rule: rev_induct)
-      subgoal by (subst (asm) Expression_def; auto simp add: fp_NER AddE_def)
-      subgoal for m ms t''
-        apply (subst Expression_def)
-        apply (subst (asm) (3) Expression_def)
-        apply (subst (asm) (1) Expression_def)
-        apply (subst (asm) (2) Expression_def)
-        apply (auto simp add: fp_NER NER_simps AddE_def)
-        
-        
-        sorry
-      done
-    \<comment> \<open>All other Ex's cannot be printed by Expression so the assm is false:\<close>
-    subgoal by (subst (asm) Expression_def; clarsimp simp add: fp_NER)
-    subgoal by (subst (asm) Expression_def; clarsimp simp add: fp_NER)
-    subgoal by (subst (asm) Expression_def; clarsimp simp add: fp_NER)
-    done
-  oops
-
 lemma fpci_expression_not_whitespace:
-  assumes "first_printed_chari (print Expression) i c"
-  shows "c \<notin> whitespace_chars"
-  apply (insert assms)
-  apply (induction rule: expressionR.fixp_induct)
-  subgoal by (rule admissible_fpci_not_in_set)
-  subgoal by (clarsimp simp add: fpci_simps)
-  subgoal for E
-    apply (clarsimp simp add: fpci_simps print_empty split: Ex.splits)
-    unfolding AddE_def
+assumes "first_printed_chari (print (E ())) i c \<Longrightarrow> c \<notin> whitespace_chars"
+	assumes "first_printed_chari (print (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ())))) i c"
+	shows "c \<notin> whitespace_chars"
+	apply (insert assms)
+  apply (clarsimp simp add: fpci_simps print_empty split: Ex.splits)
+  unfolding AddE_def
+  apply (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
+  subgoal
+    unfolding MultE_def
     apply (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
     subgoal
-      unfolding MultE_def
-      apply (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
-      subgoal
-        unfolding NOE_def
-        apply (clarsimp simp add: fpci_simps print_empty split: Ex.splits)
-        subgoal for p_in
-          by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-        done
-      subgoal
-        unfolding NOE_def
-        apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
-        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-        done
+      unfolding NOE_def
+      apply (clarsimp simp add: fpci_simps print_empty split: Ex.splits)
+      subgoal for p_in
+        by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
       done
     subgoal
-      unfolding MultE_def
-      apply (clarsimp simp add: fpci_simps fp_NER separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
-      subgoal
-        unfolding NOE_def
-        apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
-        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-        done
-      subgoal
-        apply (subst (asm) (4) NOE_def)
-        apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
-        subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-        done
+      unfolding NOE_def
+      apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
+      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+      done
+    done
+  subgoal
+    unfolding MultE_def
+    apply (clarsimp simp add: fpci_simps fp_NER separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
+    subgoal
+      unfolding NOE_def
+      apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
+      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
+      done
+    subgoal
+      apply (subst (asm) (4) NOE_def)
+      apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
+      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
       done
     done
   done
 
+\<comment> \<open>Doesn't even need any induction premise\<close>
+lemma Expression_no_print_empty:
+  shows "\<forall>i. \<not> p_has_result (print (ftransform Some (case_Ex (\<lambda>a. Some (Additive a)) (\<lambda>list. None) (\<lambda>nat. None) (\<lambda>Ex. None)) (AddE (E ())))) i []"
+  by (clarsimp simp add: print_empty AddE_def MultE_def separated_by1_def NOE_def ws_parenthesised_def split: Ex.splits list.splits)
+
 
 lemma expression_well_formed:
-  "bidef_well_formed Expression"
-  apply (induction rule: expressionR.fixp_induct)
-  subgoal by (rule admissible_WF)
-  subgoal by (simp add: strict_WF)
+	assumes wf_E: "bidef_well_formed (E ())"
+	assumes fpci_E_no_ws: "\<And>i c. first_printed_chari (print (E ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+  assumes E_no_print_empty: "\<forall>i. \<not> p_has_result (print (E ())) i []"
+	shows "bidef_well_formed (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ())))"
   apply (rule ftransform_well_formed2)
   subgoal by (auto simp add: NER_simps fp_NER AddE_def well_formed_ftransform_funcs_def split: Ex.splits)
   unfolding AddE_def
@@ -640,49 +598,41 @@ lemma expression_well_formed:
   unfolding MultE_def
   apply (rule separated_by1_well_formed)
   subgoal by (clarsimp simp add: fp_NER)
-  subgoal for E
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: fp_NER well_formed_ftransform_funcs_def split: Ex.splits)
+  \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ())\<close>
+  apply (rule separated_by1_well_formed)
+  subgoal by (clarsimp simp add: fp_NER)
+  subgoal
+    unfolding NOE_def
     apply (rule ftransform_well_formed2)
-    subgoal by (clarsimp simp add: fp_NER well_formed_ftransform_funcs_def split: Ex.splits)
-    \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ())\<close>
-    apply (rule separated_by1_well_formed)
-    subgoal by (clarsimp simp add: fp_NER)
-    subgoal
-      unfolding NOE_def
-      apply (rule ftransform_well_formed2)
-      subgoal by (clarsimp simp add: NER_simps fp_NER well_formed_ftransform_funcs_def split: Ex.splits sum.splits)
-      apply (rule or_well_formed)
-      subgoal by (rule Number_well_formed)
-      subgoal \<comment> \<open>bidef_well_formed (ws_parenthesised (f_ ()))\<close>
-        unfolding ws_parenthesised_def
-        apply (rule transform_well_formed4)
-        subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
-        apply (rule b_then_well_formed)
+    subgoal by (clarsimp simp add: NER_simps fp_NER well_formed_ftransform_funcs_def split: Ex.splits sum.splits)
+    apply (rule or_well_formed)
+    subgoal by (rule Number_well_formed)
+    subgoal \<comment> \<open>bidef_well_formed (ws_parenthesised (f_ ()))\<close>
+      unfolding ws_parenthesised_def
+      apply (rule transform_well_formed4)
+      subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
+      apply (rule b_then_well_formed)
+      subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
+      subgoal
+        \<comment> \<open>This is there we need to create something like "chars can be taken from start of input"\<close>
+        \<comment> \<open>Because the inner parser (Expression) may end in ws)ws, which will eat into ws)ws (by eating away the ws.)\<close>
+        \<comment> \<open>But, of course, this does not matter for the parse result.\<close>
+        \<comment> \<open>Note that I'm fairly sure that we can resolve this in the creation of the bidefs,
+             but I purposefully did not to surface this issue.\<close>
+        sorry
+      subgoal
+        apply (rule first_printed_does_not_eat_into3)
         subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
         subgoal
-          \<comment> \<open>This is there we need to create something like "chars can be taken from start of input"\<close>
-          \<comment> \<open>Because the inner parser (Expression) may end in ws)ws, which will eat into ws)ws (by eating away the ws.)\<close>
-          \<comment> \<open>But, of course, this does not matter for the parse result.\<close>
-          \<comment> \<open>Note that I'm fairly sure that we can resolve this in the creation of the bidefs,
-               but I purposefully did not to surface this issue.\<close>
-          sorry
-        subgoal
-          apply (rule first_printed_does_not_eat_into3)
-          subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
-          subgoal
-            apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, OF expression_punctuation_charsets(9)])
-            apply (subst then_fpci)
-            apply (subgoal_tac \<open>\<nexists>i. p_has_result (print (E ())) i []\<close>; clarsimp)
-            subgoal for i c
-              apply (subgoal_tac \<open>first_printed_chari (print (E ())) i c \<Longrightarrow> c \<notin> whitespace_chars\<close>)
-              subgoal by clarsimp
-              subgoal sorry \<comment> \<open>first_printed_chari (print (E ())) i c \<Longrightarrow> c \<notin> whitespace_chars\<close>
-              done
-            subgoal sorry \<comment> \<open>\<nexists>i. p_has_result (print (E ())) i []\<close>
-            done
-          done
+          apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, OF expression_punctuation_charsets(9)])
+          apply (subst then_fpci)
+          by (clarsimp simp add: E_no_print_empty fpci_E_no_ws)
         done
-      subgoal by (clarsimp simp add: fp_NER NER_simps well_formed_or_pair_def)
       done
+    subgoal by (clarsimp simp add: fp_NER NER_simps well_formed_or_pair_def)
+    done
     apply (rule b_then_well_formed) 
     subgoal \<comment> \<open>bidef_well_formed (f_ ()) \<Longrightarrow> bidef_well_formed (NOE (f_ ()))\<close>
       unfolding NOE_def
@@ -714,23 +664,43 @@ lemma expression_well_formed:
           sorry
         done
       done
-    done
+  apply (rule b_then_well_formed)
+  subgoal
+    apply (rule ftransform_well_formed2)
+    subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: Ex.splits)
+    \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ()) (already a subgoal above)\<close>
+    sorry
+  subgoal
+    \<comment> \<open>Maybe a specialisation for WF many b_then can be made?\<close>
+    \<comment> \<open>Like first does not eat into second and second does not eat into first?\<close>
+    sorry
+  subgoal
+    
+    sorry
+  oops
+
+lemma expression_well_formed:
+  "bidef_well_formed Expression \<and>
+   (\<forall>i c. first_printed_chari (print Expression) i c \<longrightarrow> c \<notin> whitespace_chars) \<and>
+   (\<nexists>i. p_has_result (print (Expression)) i [])
+"
+  apply (induction rule: expressionR.fixp_induct)
+  subgoal by clarsimp
+  subgoal by (clarsimp simp add: strict_WF fpci_simps fp_NER)
   subgoal for E
-    apply (rule b_then_well_formed)
+    apply (clarsimp)
+    apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>
     subgoal
-      apply (rule ftransform_well_formed2)
-      subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: Ex.splits)
-      \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ()) (already a subgoal above)\<close>
+      \<comment> \<open>apply (rule expression_well_formed; (assumption | clarsimp))\<close>
       sorry
     subgoal
-      \<comment> \<open>Maybe a specialisation for WF many b_then can be made?\<close>
-      \<comment> \<open>Like first does not eat into second and second does not eat into first?\<close>
-      sorry
+      using fpci_expression_not_whitespace[of E]
+      by blast
     subgoal
-      
-      sorry
+      by (rule Expression_no_print_empty)
     done
   oops
+
 
 
 
