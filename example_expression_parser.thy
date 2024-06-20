@@ -492,22 +492,22 @@ lemma NOE_has_result_safe[NER_simps]:
   done
 
 lemma MultE_has_result_safe[NER_simps]:
-  "has_result (parse (MultE Expression)) i (Additive as) l \<longleftrightarrow> False"
-  "has_result (parse (MultE Expression)) i (Literal n) l \<longleftrightarrow> False"
-  "has_result (parse (MultE Expression)) i (Parenthesised e) l \<longleftrightarrow> False"
-  "has_result (parse (MultE Expression)) i (Multiply []) l \<longleftrightarrow> False"
-  "has_result (parse (MultE Expression)) i (Multiply [m]) l \<longleftrightarrow> has_result (parse (NOE Expression)) i m l \<and> (is_error (parse star) l \<or> (\<exists>l'. has_result (parse star) l () l' \<and> is_error (parse (NOE Expression)) l'))"
-  "has_result (parse (MultE Expression)) i (Multiply (m#ms)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (NOE Expression)) i m l' \<and> has_result (parse (many (b_then star (NOE Expression)))) l' (zip (replicate (length ms) ()) ms) l)"
+  "has_result (parse (MultE E)) i (Additive as) l \<longleftrightarrow> False"
+  "has_result (parse (MultE E)) i (Literal n) l \<longleftrightarrow> False"
+  "has_result (parse (MultE E)) i (Parenthesised e) l \<longleftrightarrow> False"
+  "has_result (parse (MultE E)) i (Multiply []) l \<longleftrightarrow> False"
+  "has_result (parse (MultE E)) i (Multiply [m]) l \<longleftrightarrow> has_result (parse (NOE E)) i m l \<and> (is_error (parse star) l \<or> (\<exists>l'. has_result (parse star) l () l' \<and> is_error (parse (NOE E)) l'))"
+  "has_result (parse (MultE E)) i (Multiply (m#ms)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (NOE E)) i m l' \<and> has_result (parse (many (b_then star (NOE E)))) l' (zip (replicate (length ms) ()) ms) l)"
   unfolding MultE_def
   by (clarsimp simp add: NER_simps split: sum.splits)+
 
 lemma AddE_has_result_safe[NER_simps]:
-  "has_result (parse (AddE Expression)) i (Literal n) l \<longleftrightarrow> False"
-  "has_result (parse (AddE Expression)) i (Parenthesised e) l \<longleftrightarrow> False"
-  "has_result (parse (AddE Expression)) i (Multiply ms) l \<longleftrightarrow> False"
-  "has_result (parse (AddE Expression)) i (Additive []) l \<longleftrightarrow> False"
-  "has_result (parse (AddE Expression)) i (Additive [a]) l \<longleftrightarrow> has_result (parse (MultE Expression)) i a l \<and> (is_error (parse plus) l \<or> (\<exists>l'. has_result (parse plus) l () l' \<and> is_error (parse (AddE Expression)) l'))"
-  "has_result (parse (AddE Expression)) i (Additive (a#as)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (MultE Expression)) i a l' \<and> has_result (parse (many (b_then plus (MultE Expression)))) l' (zip (replicate (length as) ()) as) l)"
+  "has_result (parse (AddE E)) i (Literal n) l \<longleftrightarrow> False"
+  "has_result (parse (AddE E)) i (Parenthesised e) l \<longleftrightarrow> False"
+  "has_result (parse (AddE E)) i (Multiply ms) l \<longleftrightarrow> False"
+  "has_result (parse (AddE E)) i (Additive []) l \<longleftrightarrow> False"
+  "has_result (parse (AddE E)) i (Additive [a]) l \<longleftrightarrow> has_result (parse (MultE E)) i a l \<and> (is_error (parse plus) l \<or> (\<exists>l'. has_result (parse plus) l () l' \<and> is_error (parse (AddE E)) l'))"
+  "has_result (parse (AddE E)) i (Additive (a#as)) l \<longleftrightarrow> (\<exists>l'. has_result (parse (MultE E)) i a l' \<and> has_result (parse (many (b_then plus (MultE E)))) l' (zip (replicate (length as) ()) as) l)"
   unfolding AddE_def
   by (clarsimp simp add: NER_simps split: sum.splits)+
 
