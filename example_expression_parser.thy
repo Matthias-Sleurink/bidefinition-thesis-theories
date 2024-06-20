@@ -599,7 +599,14 @@ lemma Expression_can_drop_leftover:
     sorry
   oops
 
-lemma expression_well_formed:
+lemma Expression_pngi_induct:
+  assumes "PNGI (parse (E ()))"
+  shows "PNGI (parse (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ()))))"
+  unfolding AddE_def MultE_def NOE_def Number_def ws_parenthesised_def using assms
+  by pasi_pngi
+
+
+lemma expression_well_formed_induct:
 	assumes wf_E: "bidef_well_formed (E ())"
 	assumes fpci_E_no_ws: "\<And>i c. first_printed_chari (print (E ())) i c \<longrightarrow> c \<notin> whitespace_chars"
   assumes E_no_print_empty: "\<forall>i. \<not> p_has_result (print (E ())) i []"
@@ -697,11 +704,13 @@ lemma expression_well_formed:
   "bidef_well_formed Expression \<and>
    (\<forall>i c. first_printed_chari (print Expression) i c \<longrightarrow> c \<notin> whitespace_chars) \<and>
    (\<nexists>i. p_has_result (print (Expression)) i []) \<and>
-   (\<forall>c l l' r. has_result (parse Expression) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse Expression) (c @ l) r l)
+   (\<forall>c l l' r. has_result (parse Expression) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse Expression) (c @ l) r l) \<and>
+   (PNGI (parse Expression))
 "
   apply (induction rule: expressionR.fixp_induct)
   subgoal by clarsimp
-  subgoal by (clarsimp simp add: strict_WF fpci_simps fp_NER NER_simps)
+  subgoal
+    by (clarsimp simp add: strict_WF strict_PNGI fpci_simps fp_NER NER_simps)
   subgoal for E
     apply (clarsimp)
     apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>
@@ -714,7 +723,10 @@ lemma expression_well_formed:
     subgoal
       by (rule Expression_no_print_empty)
     subgoal
+      \<comment> \<open>Can drop leftover\<close>
       sorry
+    subgoal
+      by (rule Expression_pngi_induct)
     done
   oops
 
