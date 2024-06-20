@@ -682,11 +682,12 @@ lemma expression_well_formed:
 lemma expression_well_formed:
   "bidef_well_formed Expression \<and>
    (\<forall>i c. first_printed_chari (print Expression) i c \<longrightarrow> c \<notin> whitespace_chars) \<and>
-   (\<nexists>i. p_has_result (print (Expression)) i [])
+   (\<nexists>i. p_has_result (print (Expression)) i []) \<and>
+   (\<forall>c l l' r. has_result (parse Expression) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse Expression) (c @ l) r l)
 "
   apply (induction rule: expressionR.fixp_induct)
   subgoal by clarsimp
-  subgoal by (clarsimp simp add: strict_WF fpci_simps fp_NER)
+  subgoal by (clarsimp simp add: strict_WF fpci_simps fp_NER NER_simps)
   subgoal for E
     apply (clarsimp)
     apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>
@@ -698,6 +699,8 @@ lemma expression_well_formed:
       by blast
     subgoal
       by (rule Expression_no_print_empty)
+    subgoal
+      sorry
     done
   oops
 
