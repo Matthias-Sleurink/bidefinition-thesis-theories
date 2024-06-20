@@ -530,7 +530,7 @@ lemma PASI_implies_PNGI:
   using PASI_def PNGI_def
   by fast
 
-lemma PASI_implies_PNGI:
+lemma PASI_implies_PNGI_meta:
   "PASI p \<Longrightarrow> PNGI p"
   using PASI_def PNGI_def
   by fast
