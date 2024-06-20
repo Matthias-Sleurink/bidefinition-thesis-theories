@@ -233,6 +233,51 @@ value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1])"
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
 
+
+\<comment> \<open>We can drag in assms from MultE can drop leftover\<close>
+lemma NOE_can_drop_leftover:
+  assumes pngi_E: "PNGI (parse E)"
+  assumes E_can_drop_leftover: "\<And>c l l' r. has_result (parse E) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse E) (c @ l) r l"
+  assumes hr_with_leftover: "has_result (parse (NOE E)) (c @ l @ l') r (l @ l')"
+  shows "has_result (parse (NOE E)) (c @ l) r l"
+  using hr_with_leftover unfolding NOE_def
+  apply (clarsimp simp add: NER_simps)
+  subgoal for r
+    apply (cases r; clarsimp)
+    subgoal
+      apply (rule exI[of _ r])
+      by (clarsimp simp add: Number_has_result nat_b_leftover_can_be_dropped[of \<open>c@l\<close> l' _ l])
+    subgoal for b
+      apply (rule exI[of _ r]; clarsimp simp add: Number_is_error; rule conjI)
+      subgoal by (rule nat_b_error_leftover_can_be_dropped[of \<open>c@l\<close> l', simplified])
+      subgoal
+        apply (clarsimp simp add: b_then_has_result transform_has_result)
+        subgoal for l'a l'aa
+          apply (insert ws_char_ws_PNGI[of \<open>CHR ''(''\<close>, unfolded PNGI_def, rule_format, of \<open>c@l@l'\<close> \<open>()\<close> l'a]; clarsimp)
+          subgoal for cOpen
+            apply (insert pngi_E[unfolded PNGI_def, rule_format, of l'a b l'aa]; clarsimp)
+            subgoal for cE
+              apply (insert ws_char_ws_PNGI[of \<open>CHR '')''\<close>, unfolded PNGI_def, rule_format, of l'aa \<open>()\<close> \<open>l@l'\<close>]; clarsimp)
+              subgoal for cClose
+                apply (rule exI[of _ \<open>cE @ cClose @ l\<close>]; rule conjI)
+                subgoal
+                  by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR ''(''\<close> cOpen \<open>cE@cClose@l\<close> l', simplified])
+                subgoal
+                  apply (rule exI[of _ \<open>cClose @ l\<close>]; rule conjI)
+                  subgoal by (rule E_can_drop_leftover[of cE \<open>cClose@l\<close> l' b, simplified])
+                  subgoal by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR '')''\<close> cClose l l', simplified])
+                  done
+                done
+              done
+            done
+          done
+        done
+      done
+    done
+  done
+
+
+
 lemma cat_to_cons_nested:
   assumes "cb @ cc = cb' # cbs"
   shows "ca @ cb @ cc @ C # l' = ca @ cb' # cbs @ C # l'"
