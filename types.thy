@@ -530,6 +530,12 @@ lemma PASI_implies_PNGI:
   using PASI_def PNGI_def
   by fast
 
+lemma PASI_implies_PNGI:
+  "PASI p \<Longrightarrow> PNGI p"
+  using PASI_def PNGI_def
+  by fast
+
+
 lemma PASI_implies_res_length_shorter:
   assumes "PASI p"
   shows "has_result p i r l \<longrightarrow> length i > length l"
