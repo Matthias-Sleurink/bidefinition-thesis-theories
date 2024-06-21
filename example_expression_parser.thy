@@ -234,6 +234,22 @@ value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
 
 
+lemma NOE_can_drop_leftover_on_error:
+  shows "is_error (parse (b_then star (NOE E))) (i @ i') \<Longrightarrow> is_error (parse (b_then star (NOE E))) i"
+  apply (clarsimp simp add: b_then_is_error)
+  apply (cases \<open>is_error (parse star) (i @ i')\<close>; clarsimp)
+  subgoal
+    apply (clarsimp simp add: NER_simps)
+    by (metis Cons_eq_appendI dropWhile_append1 expression_punctuation_charsets(7) list.set_intros(1) set_dropWhileD)
+  subgoal for l
+    unfolding NOE_def
+    apply (clarsimp simp add: ftransform_is_error or_is_error)
+    
+    sorry
+
+  oops
+
+
 \<comment> \<open>We can drag in assms from MultE can drop leftover\<close>
 lemma NOE_can_drop_leftover:
   assumes pngi_E: "PNGI (parse E)"
