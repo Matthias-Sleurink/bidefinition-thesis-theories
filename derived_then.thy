@@ -216,6 +216,29 @@ lemma then_does_not_consume_past_char_from_first_no_peek_past_end:
   done
 
 
+lemma then_can_drop_leftover:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_pngi: "PNGI (parse A)"
+
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes B_pngi: "PNGI (parse B)"
+
+  shows "has_result (parse (b_then A B)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (b_then A B)) (c @ l) r l"
+  apply (clarsimp simp add: NER_simps)
+  subgoal for la
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>c@l@l'\<close> \<open>fst r\<close> la]; clarsimp)
+    subgoal for ca
+      apply (insert B_pngi[unfolded PNGI_def, rule_format, of la \<open>snd r\<close> \<open>l@l'\<close>]; clarsimp)
+      subgoal for cb
+        apply (rule exI[of _ \<open>cb@l\<close>]; rule conjI)
+        subgoal by (rule A_can_drop_leftover[of ca \<open>cb@l\<close> l' \<open>fst r\<close>, simplified])
+        subgoal by (rule B_can_drop_leftover[of cb l l' \<open>snd r\<close>])
+        done
+      done
+    done
+  done
+
+
 
 \<comment> \<open>First printed char\<close>
 lemma then_fpci[fpci_simps]:
