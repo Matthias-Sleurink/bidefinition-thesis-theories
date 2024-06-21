@@ -125,6 +125,23 @@ lemma or_fpci[fpci_simps]:
 
 
 
+lemma or_can_drop_leftover:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>c l l'. is_error (parse A) (c @ l @ l') \<Longrightarrow> is_error (parse A) (c @ l)"
+
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+
+  shows "has_result (parse (or A B)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (or A B)) (c @ l) r l"
+  apply (clarsimp simp add: NER_simps split: sum.splits)
+  subgoal for ra by (rule A_can_drop_leftover[of c l l'])
+  subgoal for rb
+    apply (rule conjI)
+    subgoal by (rule A_can_drop_leftover_error[of c l l'])
+    subgoal by (rule B_can_drop_leftover[of c l l'])
+    done
+  done
+
+
 \<comment> \<open>Well Formed\<close>
 \<comment> \<open>A print result of b2 must not be parsable by b1\<close>
 definition well_formed_or_pair :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
