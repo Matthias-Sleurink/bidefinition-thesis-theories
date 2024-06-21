@@ -239,6 +239,78 @@ lemma then_can_drop_leftover:
   done
 
 
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
+  assumes A_pngi: "PNGI (parse A)"
+
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes B_can_drop_leftover_error: "\<And>i i' i''. is_error (parse B) (i @ i' @ i'') \<Longrightarrow> is_error (parse B) (i@i')"
+  assumes B_pngi: "PNGI (parse B)"
+
+  shows "is_error (parse (b_then A B)) (i @ i' @ i'') \<Longrightarrow> is_error (parse (b_then A B)) (i@i')"
+  apply (clarsimp simp add: NER_simps)
+  apply (cases \<open>is_error (parse A) (i @ i')\<close>; clarsimp)
+  apply (cases \<open>is_error (parse A) (i @ i' @ i'')\<close>; clarsimp)
+  subgoal by (clarsimp simp only: A_can_drop_leftover_error[of i i' i''])
+  subgoal for r l
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>i @ i' @ i''\<close> r l]; clarsimp)
+    subgoal for cA
+      
+    using B_can_drop_leftover_error
+    sorry
+  oops
+
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
+  assumes A_pngi: "PNGI (parse A)"
+
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes B_can_drop_leftover_error: "\<And>i i' i''. is_error (parse B) (i @ i' @ i'') \<Longrightarrow> is_error (parse B) (i@i')"
+  assumes B_pngi: "PNGI (parse B)"
+
+  shows "is_error (parse (b_then A B)) (i @ i' @ i'') \<Longrightarrow> is_error (parse (b_then A B)) (i@i')"
+  apply (clarsimp simp only: b_then_is_error[of A B \<open>i @ i' @ i''\<close>])
+  \<comment> \<open>Split if it was A or B that caused the error.\<close>
+  apply (cases \<open>is_error (parse A) (i @ i' @ i'')\<close>; clarsimp)
+  subgoal by (clarsimp simp only: b_then_is_error A_can_drop_leftover_error)
+  subgoal for r l
+    apply (clarsimp simp add: b_then_is_error)
+    
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>i@i'@i''\<close> r l]; clarsimp)
+    subgoal for cA
+      apply (cases \<open>l = i'@i''\<close>)
+      subgoal sorry
+      subgoal
+      
+    sorry
+  oops
+
+
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
+  assumes A_pngi: "PNGI (parse A)"
+
+  shows "is_error (parse (b_then A B)) (i @ i' @ i'') \<Longrightarrow> is_error (parse (b_then A B)) (i@i')"
+  apply (clarsimp simp add: NER_simps)
+  apply (cases \<open>is_error (parse A) (i @ i' @ i'')\<close>)
+  subgoal by (rule A_can_drop_leftover_error)
+  apply clarsimp
+  subgoal for r l
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>i@i'@i''\<close> r l]; clarsimp)
+    subgoal for cA
+      
+      using A_can_drop_leftover[of cA \<open>[]\<close> l r, simplified]
+    
+    using A_can_drop_leftover[of i i' i'' r]
+    
+    sorry
+  oops
+
+
+
 
 \<comment> \<open>First printed char\<close>
 lemma then_fpci[fpci_simps]:
