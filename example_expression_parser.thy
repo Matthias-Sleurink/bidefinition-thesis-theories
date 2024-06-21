@@ -221,7 +221,7 @@ lemma mono_NOE[partial_function_mono]:
   unfolding NOE_def using ma
   by pf_mono_prover
 
-lemma PNGI_NOE:
+lemma PNGI_NOE[PASI_PNGI_intros]:
   assumes "PNGI (parse E)"
   shows "PNGI (parse (NOE E))"
   using assms unfolding NOE_def Number_def ws_parenthesised_def
@@ -394,7 +394,7 @@ lemma pngi_MultE:
   apply (insert assms)
   unfolding MultE_def NOE_def ws_parenthesised_def Number_def
   apply pasi_pngi back back \<comment> \<open>Solution found with back, how do we make it do this without back?\<close>
-  done
+  done \<comment> \<open>This can be solved by using by pasi_pngi, is that the canonical solution here?\<close>
 
 \<comment> \<open>We can drag in assms from Expression can drop leftover\<close>
 lemma MultE_can_drop_leftover:
@@ -419,9 +419,25 @@ lemma MultE_can_drop_leftover:
             subgoal using E_can_drop_leftover by blast
             done
           subgoal
-            \<comment> \<open>TODO: use the below rule to prove this.\<close>
-            thm many_can_drop_leftover
-            sorry
+            apply (rule many_can_drop_leftover; assumption?)
+            subgoal for ca la lb rb
+              apply (rule then_can_drop_leftover; assumption?)
+              subgoal for cs l l' rs
+                apply (cases \<open>rs = ()\<close>; clarsimp) \<comment> \<open>Case where not () is trivially false. Needed to apply the below rule.\<close>
+                by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR ''*''\<close> cs l l']; assumption)
+              subgoal by pasi_pngi
+              subgoal
+                apply (rule NOE_can_drop_leftover; assumption?)
+                subgoal by (rule pngi_E)
+                subgoal for ce l l' re by (rule E_can_drop_leftover[of ce l l' re])
+                done
+              subgoal using pngi_E by pasi_pngi
+              done
+            subgoal
+              \<comment> \<open>NOE E can drop leftover on error\<close>
+              sorry
+            subgoal using pngi_E by pasi_pngi
+            done
   oops
 
 
