@@ -61,6 +61,14 @@ lemma leftover_determ:
   using assms unfolding has_result_def
   by clarsimp
 
+lemma result_leftover_determ:
+  assumes "has_result p i r  l"
+  assumes "has_result p i r' l'"
+  shows "r = r' \<and> l = l'"
+  using assms unfolding has_result_def
+  by clarsimp
+
+
 lemma bottom_has_result[NER_simps, cont_intro]:
   "has_result (\<lambda>a. None) i r l \<longleftrightarrow> False"
   by (clarsimp simp add: has_result_def)
