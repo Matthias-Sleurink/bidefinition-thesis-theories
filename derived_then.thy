@@ -239,6 +239,90 @@ lemma then_can_drop_leftover:
   done
 
 
+
+
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
+  assumes A_pngi: "PNGI (parse A)"
+
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes B_can_drop_leftover_error: "\<And>i i' i''. is_error (parse B) (i @ i' @ i'') \<Longrightarrow> is_error (parse B) (i@i')"
+  assumes B_pngi: "PNGI (parse B)"
+
+  assumes AB_error: "is_error (parse (b_then A B)) (i @ i' @ i'')"
+  
+  shows "is_error (parse (b_then A B)) (i@i')"
+  apply (clarsimp simp add: NER_simps)
+  \<comment> \<open>We have to show that: If A having a result means that the B is not error then A must be error\<close>
+  
+
+
+  oops
+
+
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
+  assumes A_pngi: "PNGI (parse A)"
+
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes B_can_drop_leftover_error: "\<And>i i' i''. is_error (parse B) (i @ i' @ i'') \<Longrightarrow> is_error (parse B) (i@i')"
+  assumes B_pngi: "PNGI (parse B)"
+
+  shows "is_error (parse (b_then A B)) (i @ i' @ i'') \<Longrightarrow> is_error (parse (b_then A B)) (i@i')"
+  apply (clarsimp simp add: NER_simps)
+  apply (cases \<open>is_error (parse A) (i @ i' @ i'')\<close>)
+  subgoal by (rule A_can_drop_leftover_error[of i i' i''])
+  supply [[simp_trace]]
+  supply [[simp_trace_depth_limit=3]]
+  apply clarsimp
+  supply [[simp_trace=false]]
+    subgoal for r l \<comment> \<open>A has result on i i' i''\<close>
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>i@i'@i''\<close> r l]; clarsimp)
+    subgoal for cA
+      \<comment> \<open>We have that A is not error on i i' i'', so we know that A is not error on  i i' i''.\<close>
+      \<comment> \<open>So to show that AB is error on i i' either: A is error on i i', or B is error on the leftover from A on i i'\<close>
+      \<comment> \<open>We have that A has result on a i' i''.\<close>
+      \<comment> \<open>And if we can show that has_result A i@i' r l, then we have the proof via negation of premise.\<close>
+      \<comment> \<open>So, we want to show hr A i@i'@i''\<close>
+      apply (cases \<open>\<exists>r l. has_result (parse A) (i@i') r l\<close>; clarsimp)
+      subgoal for sr sl
+        apply (insert has_result_implies_not_is_error[of \<open>parse A\<close> \<open>i@i'\<close> sr sl]; clarsimp)
+        
+        sorry
+      subgoal
+        
+        sorry
+      
+    oops
+
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
+  assumes A_pngi: "PNGI (parse A)"
+
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes B_can_drop_leftover_error: "\<And>i i' i''. is_error (parse B) (i @ i' @ i'') \<Longrightarrow> is_error (parse B) (i@i')"
+  assumes B_pngi: "PNGI (parse B)"
+
+  shows "is_error (parse (b_then A B)) (i @ i' @ i'') \<Longrightarrow> is_error (parse (b_then A B)) (i@i')"
+  apply (clarsimp simp add: NER_simps)
+  apply (cases \<open>is_error (parse A) (i @ i' @ i'')\<close>; clarsimp)
+  subgoal using A_can_drop_leftover_error by blast
+  subgoal for r l
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>i@i'@i''\<close> r l]; clarsimp)
+    subgoal for cA
+    proof -
+      assume p1: "\<forall>r l. has_result (parse A) (i @ i') r l \<longrightarrow> \<not> is_error (parse B) l"
+      assume hra: "has_result (parse A) (cA @ l) r l"
+      assume err_lb: "is_error (parse B) l"
+      assume ca_l: "i @ i' @ i'' = cA @ l"
+
+      thm A_can_drop_leftover
+  oops
+
+
 lemma then_can_drop_leftover_on_error:
   assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
   assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
@@ -256,9 +340,20 @@ lemma then_can_drop_leftover_on_error:
   subgoal for r l
     apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>i @ i' @ i''\<close> r l]; clarsimp)
     subgoal for cA
-      
-    using B_can_drop_leftover_error
-    sorry
+      apply (subgoal_tac \<open>has_result (parse A) (i @ i' @ i'') r (i' @ i'')\<close>)
+      subgoal \<comment> \<open>We have assumed it here\<close>
+        apply (insert A_can_drop_leftover[of i i' i'' r]; clarsimp)
+        \<comment> \<open>Now we want to apply this new fact to the first premise, but since we cannot refer to it nicely we must do it like this\<close>
+        apply (cases \<open>\<not> is_error (parse B) i'\<close>)
+        subgoal \<comment> \<open>This holds\<close>
+          by (metis B_can_drop_leftover_error append_self_conv2 result_leftover_determ)
+        subgoal \<comment> \<open>This is false, which is trivially false from the premise\<close> by clarsimp
+        done
+      subgoal \<comment> \<open>We need to prove it here.\<close>
+        
+        sorry
+      done
+    done
   oops
 
 lemma then_can_drop_leftover_on_error:
