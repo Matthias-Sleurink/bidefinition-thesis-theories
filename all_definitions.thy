@@ -68,4 +68,20 @@ lemma charset_example:
 
 
 
+
+
+definition counter_example:
+  "counter_example = ftransform (\<lambda>pr. if (length pr = 2) then None else Some pr) (Some) (many (this_char CHR ''A''))"
+
+lemma test:
+  "is_error (parse counter_example) (i @ i' @ i'') \<Longrightarrow> is_error (parse counter_example) (i@i')"
+  quickcheck
+  oops
+
+
+
+
+
+
+
 end

@@ -239,7 +239,31 @@ lemma then_can_drop_leftover:
   done
 
 
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i' @ i'') \<Longrightarrow> is_error (parse A) (i@i')"
+  assumes A_pngi: "PNGI (parse A)"
 
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes B_can_drop_leftover_error: "\<And>i i' i''. is_error (parse B) (i @ i' @ i'') \<Longrightarrow> is_error (parse B) (i@i')"
+  assumes B_pngi: "PNGI (parse B)"
+
+  assumes AB_error: "is_error (parse (b_then A B)) (i @ i' @ i'')"
+  
+  shows "is_error (parse (b_then A B)) (i@i')"
+  apply (clarsimp simp add: NER_simps)
+  \<comment> \<open>We have to show that: If A having a result means that the B is not error then A must be error\<close>
+
+  apply (insert AB_error[THEN b_then_is_error[of A B \<open>i@i'@i''\<close>, THEN iffD1]])
+  apply (induction i'' rule: rev_induct; clarsimp) \<comment> \<open>Base case is trivial\<close>
+  subgoal for i''tl i''
+    apply auto
+    subgoal by (rule A_can_drop_leftover_error[of i i' \<open>i''@[i''tl]\<close>])
+    subgoal for r l
+      apply (cases \<open>is_error (parse A) (i @ i' @ i'')\<close>; clarsimp) \<comment> \<open>Case where true is trivial\<close>
+      
+      sorry
+  oops
 
 lemma then_can_drop_leftover_on_error:
   assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
@@ -255,7 +279,16 @@ lemma then_can_drop_leftover_on_error:
   shows "is_error (parse (b_then A B)) (i@i')"
   apply (clarsimp simp add: NER_simps)
   \<comment> \<open>We have to show that: If A having a result means that the B is not error then A must be error\<close>
-  
+
+  apply (insert AB_error[THEN b_then_is_error[of A B \<open>i@i'@i''\<close>, THEN iffD1]])
+  apply (cases \<open>is_error (parse A) (i @ i' @ i'')\<close>)
+  subgoal \<comment> \<open>Assume that the error from A B comes from A\<close>
+    by (rule A_can_drop_leftover_error)
+  subgoal \<comment> \<open>The error from A B comes from B. So A does have a result for i i' i''\<close>
+    apply clarsimp
+    subgoal for r l
+      using A_can_drop_leftover[of i i' i'' r]
+    sorry
 
 
   oops

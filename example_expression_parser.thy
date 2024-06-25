@@ -234,6 +234,10 @@ value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
 
 
+lemma inner_cases_cannot_be_true:
+  "(case r of Inl x \<Rightarrow> Some x | Inr r \<Rightarrow> Some (Parenthesised r)) = None \<longleftrightarrow> False"
+  by (cases r; clarsimp)
+
 lemma NOE_can_drop_leftover_on_error:
   shows "is_error (parse (b_then star (NOE E))) (i @ i') \<Longrightarrow> is_error (parse (b_then star (NOE E))) i"
   apply (clarsimp simp add: b_then_is_error)
@@ -243,10 +247,21 @@ lemma NOE_can_drop_leftover_on_error:
     by (metis Cons_eq_appendI dropWhile_append1 expression_punctuation_charsets(7) list.set_intros(1) set_dropWhileD)
   subgoal for l
     unfolding NOE_def
-    apply (clarsimp simp add: ftransform_is_error or_is_error)
-    
-    sorry
-
+    apply (clarsimp simp add: ftransform_is_error or_is_error inner_cases_cannot_be_true)
+    apply (clarsimp simp add: ws_char_ws_has_result ws_char_ws_is_error)
+    apply auto
+    subgoal by (metis (no_types, lifting) Number_is_error dropWhile_append1 dropWhile_eq_Nil_conv nat_b_error_leftover_can_be_dropped self_append_conv2)
+    subgoal for i_tl x
+      
+      sorry
+    subgoal by (metis dropWhile_eq_Nil_conv list.simps(3))
+    subgoal
+      
+      sorry
+    subgoal
+      
+      sorry
+    done
   oops
 
 
@@ -449,7 +464,7 @@ lemma MultE_can_drop_leftover:
                 done
               subgoal using pngi_E by pasi_pngi
               done
-            subgoal
+            subgoal for l l'
               \<comment> \<open>NOE E can drop leftover on error\<close>
               sorry
             subgoal using pngi_E by pasi_pngi
@@ -734,7 +749,9 @@ lemma Expression_can_drop_leftover:
             subgoal
               
               sorry
-            subgoal sorry
+            subgoal
+              
+              sorry
           
         \<comment> \<open>Looks like we need PNGI here.\<close>
     sorry
