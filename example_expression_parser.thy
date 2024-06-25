@@ -739,8 +739,9 @@ lemma sepBy1_NOE_star_no_consume_past_plus:
     \<comment> \<open>No specialisation for fpc many, create?\<close>
     sorry
   subgoal for r l
-    
-    
+    \<comment> \<open>This shows a weakness in then_does_not_consume_past3 which is solvable.\<close>
+    apply (cases \<open>r = []\<close>; cases \<open>l = []\<close>; (clarsimp simp add: NER_simps)?)
+    \<comment> \<open>Note that this clearly shows that the current then no consume past rule doesn't suffice.\<close>
     sorry
   oops
 
