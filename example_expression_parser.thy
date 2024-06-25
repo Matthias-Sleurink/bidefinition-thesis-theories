@@ -872,6 +872,7 @@ lemma expression_well_formed_induct:
         subgoal for pri pri' prt prt' c l l' r by (rule E_drop_leftover[rule_format, of c l l' r])
         subgoal for pri pri' prt prt' c l l' l'' r
           \<comment> \<open>Can change leftover after nonempty tail of c\<close>
+          \<comment> \<open>This seems like it should be another element in the induction conjunction.\<close>
           sorry
         subgoal by (rule E_pngi)
         done
