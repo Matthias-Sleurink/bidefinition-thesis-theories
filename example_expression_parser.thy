@@ -227,6 +227,12 @@ lemma PNGI_NOE[PASI_PNGI_intros]:
   using assms unfolding NOE_def Number_def ws_parenthesised_def
   by pasi_pngi
 
+lemma PASI_NOE[PASI_PNGI_intros]:
+  assumes "PNGI (parse E)"
+  shows "PASI (parse (NOE E))"
+  using assms unfolding NOE_def Number_def ws_parenthesised_def
+  by pasi_pngi
+
 
 \<comment> \<open>Some quick tests to see how this 'else' case in case expressions works.\<close>
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Literal 4)"
