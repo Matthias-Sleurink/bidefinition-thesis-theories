@@ -723,6 +723,29 @@ assumes "first_printed_chari (print (E ())) i c \<Longrightarrow> c \<notin> whi
     by (clarsimp simp add: fpci_simps fp_NER separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
   done
 
+lemma sepBy1_NOE_star_no_consume_past_plus:
+  assumes wf_NOE_E: "bidef_well_formed (NOE E)"
+  assumes wf_many_star_NOE_E: "bidef_well_formed (many (b_then star (NOE E)))"
+  shows "does_not_consume_past_char3 (parse (separated_by1 (NOE E) star ())) CHR ''+''"
+  unfolding separated_by1_def
+  apply (rule ftransform_does_not_consume_past_char3)
+  apply (rule then_does_not_consume_past3; clarsimp?)
+  subgoal by (rule wf_NOE_E)
+  subgoal by (rule wf_many_star_NOE_E)
+  subgoal
+    \<comment> \<open>No specialisation for does not consume past char3 many. Consider making?\<close>
+    sorry
+  subgoal for i c
+    \<comment> \<open>No specialisation for fpc many, create?\<close>
+    sorry
+  subgoal for r l
+    
+    
+    sorry
+  oops
+
+
+
 \<comment> \<open>Doesn't even need any induction premise\<close>
 lemma Expression_no_print_empty:
   shows "\<forall>i. \<not> p_has_result (print (ftransform Some (case_Ex (\<lambda>a. Some (Additive a)) (\<lambda>list. None) (\<lambda>nat. None) (\<lambda>Ex. None)) (AddE (E ())))) i []"
@@ -902,7 +925,9 @@ lemma expression_well_formed_induct:
       apply (rule ftransform_does_not_consume_past_char3)
       \<comment> \<open>no consume past ''+'' sepby1 NOE star\<close>
       \<comment> \<open>does_not_consume_past_char3 (parse (separated_by1 (NOE (E ())) star ())) CHR ''+''\<close>
+      \<comment> \<open>Should pull this out to external proof.\<close>
       find_theorems does_not_consume_past_char3 separated_by1
+      \<comment> \<open>sepBy1_NOE_star_no_consume_past_plus\<close>
       sorry
     done
   subgoal
@@ -917,6 +942,7 @@ lemma expression_well_formed_induct:
       apply (clarsimp simp add: fpci_simps print_empty)
       apply (rule ftransform_does_not_consume_past_char3)
       \<comment> \<open>does_not_consume_past_char3 (parse (separated_by1 (NOE (E ())) star ())) CHR ''+'' (Already a subgoal above.)\<close>
+      \<comment> \<open>sepBy1_NOE_star_no_consume_past_plus\<close>
       sorry
     done
   oops
