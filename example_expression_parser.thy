@@ -882,8 +882,28 @@ lemma expression_well_formed_induct:
     sorry
   subgoal
     \<comment> \<open>WF many then plus, ftrans sepby1 NOE star\<close>
-    thm WF_many_then
-    sorry
+    apply (rule WF_many_then; clarsimp?)
+    subgoal by (rule ws_char_ws_well_formed[of \<open>CHR ''+''\<close>, simplified])
+    subgoal by pasi_pngi
+    subgoal by (clarsimp simp add: ws_char_ws_is_nonterm[of \<open>CHR ''+''\<close> \<open>[]\<close>])
+    subgoal
+      apply (rule ftransform_well_formed2)
+      subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: Ex.splits)
+      \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ()) (already a subgoal above)\<close>
+      sorry
+    subgoal by (insert E_pngi; pasi_pngi)
+    subgoal for i c
+      by (clarsimp simp add: fpci_simps separated_by1_fpci_unsafe
+                                ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''+''\<close>, simplified]
+                                print_empty
+                      split: Ex.splits list.splits if_splits)
+    subgoal for c
+      apply (clarsimp simp add: fpci_simps)
+      apply (rule ftransform_does_not_consume_past_char3)
+      \<comment> \<open>no consume past ''+'' sepby1 NOE star\<close>
+      find_theorems does_not_consume_past_char3 separated_by1
+      sorry
+    done
   subgoal
     \<comment> \<open>Probably solvable via this\<close> thm first_printed_does_not_eat_into3
     sorry
