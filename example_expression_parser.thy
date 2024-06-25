@@ -93,6 +93,12 @@ lemma fpci_ws_parenthesised[fpci_simps]:
   unfolding ws_parenthesised_def
   by (clarsimp simp add: fpci_simps print_empty)
 
+lemma ws_parenthesised_never_print_empty[print_empty]:
+  "\<nexists>i. p_has_result (print (ws_parenthesised E)) i []"
+  unfolding ws_parenthesised_def
+  by (clarsimp simp add: print_empty)
+
+
 
 \<comment> \<open>The two ideas for making small combinators have easier NER rules is to add the definition to NER simps.\<close>
 \<comment> \<open>This requires the rule to be "safe" to unfold, which ws_parenthesised is.\<close>
@@ -232,6 +238,13 @@ lemma PASI_NOE[PASI_PNGI_intros]:
   shows "PASI (parse (NOE E))"
   using assms unfolding NOE_def Number_def ws_parenthesised_def
   by pasi_pngi
+
+lemma NOE_never_print_empty[print_empty]:
+  "\<nexists>i. p_has_result (print (NOE E)) i []"
+  unfolding NOE_def
+  apply (clarsimp simp add: print_empty split: Ex.splits)
+  using ws_parenthesised_never_print_empty \<comment> \<open>This is in print_empty.\<close>
+  by force
 
 
 \<comment> \<open>Some quick tests to see how this 'else' case in case expressions works.\<close>
