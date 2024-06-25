@@ -901,12 +901,24 @@ lemma expression_well_formed_induct:
       apply (clarsimp simp add: fpci_simps)
       apply (rule ftransform_does_not_consume_past_char3)
       \<comment> \<open>no consume past ''+'' sepby1 NOE star\<close>
+      \<comment> \<open>does_not_consume_past_char3 (parse (separated_by1 (NOE (E ())) star ())) CHR ''+''\<close>
       find_theorems does_not_consume_past_char3 separated_by1
       sorry
     done
   subgoal
-    \<comment> \<open>Probably solvable via this\<close> thm first_printed_does_not_eat_into3
-    sorry
+    apply (rule first_printed_does_not_eat_into3; clarsimp?)
+    subgoal
+      apply (rule ftransform_well_formed2)
+      subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: Ex.splits)
+      \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ()) (already a subgoal above)\<close>
+      sorry
+    subgoal for i c
+      apply (clarsimp simp add: fpci_simps many_fpci split: list.splits)
+      apply (clarsimp simp add: fpci_simps print_empty)
+      apply (rule ftransform_does_not_consume_past_char3)
+      \<comment> \<open>does_not_consume_past_char3 (parse (separated_by1 (NOE (E ())) star ())) CHR ''+'' (Already a subgoal above.)\<close>
+      sorry
+    done
   oops
 
 lemma expression_well_formed:
