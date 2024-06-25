@@ -253,6 +253,14 @@ value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e
 value "(\<lambda>Literal n \<Rightarrow> Inl (Literal n) | e \<Rightarrow> Inr e) (Additive [Literal 1, Multiply [Literal 2]])"
 
 
+lemma first_printed_char_NOE_no_whitespace[fpci_simps]:
+  "first_printed_chari (print (NOE E)) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  unfolding NOE_def
+  apply (clarsimp simp add: fpci_simps split: Ex.splits)
+  using fpci_ws_parenthesised by force
+
+
+
 lemma inner_cases_cannot_be_true:
   "(case r of Inl x \<Rightarrow> Some x | Inr r \<Rightarrow> Some (Parenthesised r)) = None \<longleftrightarrow> False"
   by (cases r; clarsimp)
@@ -709,34 +717,10 @@ assumes "first_printed_chari (print (E ())) i c \<Longrightarrow> c \<notin> whi
   apply (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
   subgoal
     unfolding MultE_def
-    apply (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
-    subgoal
-      unfolding NOE_def
-      apply (clarsimp simp add: fpci_simps print_empty split: Ex.splits)
-      subgoal for p_in
-        by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-      done
-    subgoal
-      unfolding NOE_def
-      apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
-      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-      done
-    done
+    by (clarsimp simp add: fpci_simps print_empty separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
   subgoal
     unfolding MultE_def
-    apply (clarsimp simp add: fpci_simps fp_NER separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
-    subgoal
-      unfolding NOE_def
-      apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
-      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-      done
-    subgoal
-      apply (subst (asm) (4) NOE_def)
-      apply (clarsimp simp add: fpci_simps fp_NER split: Ex.splits)
-      subgoal for p_in by (subst (asm) fpci_ws_parenthesised[of \<open>E ()\<close> p_in c]; clarsimp)
-      done
-    done
+    by (clarsimp simp add: fpci_simps fp_NER separated_by1_fpci_unsafe split: Ex.splits list.splits if_splits)
   done
 
 \<comment> \<open>Doesn't even need any induction premise\<close>
