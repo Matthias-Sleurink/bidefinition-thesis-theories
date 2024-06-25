@@ -419,7 +419,7 @@ lemma mono_MultE[partial_function_mono]:
   unfolding MultE_def using ma
   by pf_mono_prover
 
-lemma pngi_MultE:
+lemma pngi_MultE[PASI_PNGI_intros]:
   assumes "PNGI (parse E)"
   shows "PNGI (parse (MultE E))"
   apply (insert assms)
@@ -469,6 +469,10 @@ lemma MultE_can_drop_leftover:
               sorry
             subgoal using pngi_E by pasi_pngi
             done
+          done
+        done
+      done
+    done
   oops
 
 
@@ -747,14 +751,31 @@ lemma Expression_can_drop_leftover:
           subgoal for cMany
             apply (rule exI[of _ \<open>cMany @ l\<close>]; rule conjI)
             subgoal
-              
+              \<comment> \<open>Blocked on MultE_can_drop_leftover, which is dropped on NOE can drop leftover on error\<close>
               sorry
             subgoal
-              
-              sorry
-          
-        \<comment> \<open>Looks like we need PNGI here.\<close>
-    sorry
+              apply (rule many_can_drop_leftover; assumption?)
+              subgoal
+                apply (rule then_can_drop_leftover; assumption?)
+                subgoal using ws_char_ws_can_drop_past_lefover[of \<open>CHR ''+''\<close>] by force
+                subgoal by pasi_pngi
+                subgoal
+                  \<comment> \<open>Blocked on MultE_can_drop_leftover, which is dropped on NOE can drop leftover on error\<close>
+                  sorry
+                subgoal by (rule pngi_MultE; rule E_pngi)
+                done
+              subgoal
+                \<comment> \<open>Blocked on then can drop leftover on error.\<close>
+                sorry
+              subgoal apply (insert E_pngi)
+                apply pasi_pngi back \<comment> \<open>Again, solved with a 'back', how do we make it do this without the back?\<close>
+                done
+              done
+            done
+          done
+        done
+      done
+    done
   oops
 
 lemma Expression_pngi_induct:
@@ -764,10 +785,38 @@ lemma Expression_pngi_induct:
   by pasi_pngi
 
 
+lemma paren_E_well_formed:
+	assumes fpci_E_no_ws: "\<And>i c. first_printed_chari (print (E ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+  assumes E_no_print_empty: "\<forall>i. \<not> p_has_result (print (E ())) i []"
+  shows "bidef_well_formed (ws_parenthesised (E ()))"
+  unfolding ws_parenthesised_def
+  apply (rule transform_well_formed4)
+  subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
+  apply (rule b_then_well_formed)
+  subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
+  subgoal
+    \<comment> \<open>This is there we need to create something like "chars can be taken from start of input"\<close>
+    \<comment> \<open>Because the inner parser (Expression) may end in ws)ws, which will eat into ws)ws (by eating away the ws.)\<close>
+    \<comment> \<open>But, of course, this does not matter for the parse result.\<close>
+    \<comment> \<open>Note that I'm fairly sure that we can resolve this in the creation of the bidefs,
+         but I purposefully did not to surface this issue.\<close>
+    sorry
+  subgoal
+    apply (rule first_printed_does_not_eat_into3)
+    subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
+    subgoal
+      apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, OF expression_punctuation_charsets(9)])
+      apply (subst then_fpci)
+      by (clarsimp simp add: E_no_print_empty fpci_E_no_ws)
+    done
+  oops
+
 lemma expression_well_formed_induct:
 	assumes wf_E: "bidef_well_formed (E ())"
 	assumes fpci_E_no_ws: "\<And>i c. first_printed_chari (print (E ())) i c \<longrightarrow> c \<notin> whitespace_chars"
   assumes E_no_print_empty: "\<forall>i. \<not> p_has_result (print (E ())) i []"
+  assumes E_drop_leftover: "\<forall>c l l' r. has_result (parse (E ())) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse (E ())) (c @ l) r l"
+  assumes E_pngi: "PNGI (parse (E ()))"
 	shows "bidef_well_formed (ftransform Some (\<lambda>x. case x of Additive a \<Rightarrow> Some (Additive a) | _ \<Rightarrow> None) (AddE (E ())))"
   apply (rule ftransform_well_formed2)
   subgoal by (auto simp add: NER_simps fp_NER AddE_def well_formed_ftransform_funcs_def split: Ex.splits)
@@ -789,27 +838,9 @@ lemma expression_well_formed_induct:
     apply (rule or_well_formed)
     subgoal by (rule Number_well_formed)
     subgoal \<comment> \<open>bidef_well_formed (ws_parenthesised (f_ ()))\<close>
-      unfolding ws_parenthesised_def
-      apply (rule transform_well_formed4)
-      subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
-      apply (rule b_then_well_formed)
-      subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
-      subgoal
-        \<comment> \<open>This is there we need to create something like "chars can be taken from start of input"\<close>
-        \<comment> \<open>Because the inner parser (Expression) may end in ws)ws, which will eat into ws)ws (by eating away the ws.)\<close>
-        \<comment> \<open>But, of course, this does not matter for the parse result.\<close>
-        \<comment> \<open>Note that I'm fairly sure that we can resolve this in the creation of the bidefs,
-             but I purposefully did not to surface this issue.\<close>
-        sorry
-      subgoal
-        apply (rule first_printed_does_not_eat_into3)
-        subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
-        subgoal
-          apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, OF expression_punctuation_charsets(9)])
-          apply (subst then_fpci)
-          by (clarsimp simp add: E_no_print_empty fpci_E_no_ws)
-        done
-      done
+      \<comment> \<open>Blocked on paren_E_well_formed\<close>
+      \<comment> \<open>Which needs E no eat into ws_char_ws ), which it does, so we need the better system there.\<close>
+      sorry
     subgoal by (clarsimp simp add: fp_NER NER_simps well_formed_or_pair_def)
     done
     apply (rule b_then_well_formed) 
@@ -822,8 +853,8 @@ lemma expression_well_formed_induct:
       subgoal \<comment> \<open>bidef_well_formed (ws_parenthesised (f_ ())) is already a subgoal above.\<close> sorry
       subgoal by (clarsimp simp add: well_formed_or_pair_def NER_simps fp_NER)
       done
-    subgoal
-      
+    subgoal \<comment> \<open>bidef_well_formed (many (b_then star (NOE (E ()))))\<close>
+      thm WF_many_then
       sorry
     subgoal
       apply (rule first_printed_does_not_eat_into3)
@@ -832,15 +863,11 @@ lemma expression_well_formed_induct:
         apply (subst many_fpci)
         apply (clarsimp simp add: fp_NER fpci_simps split: list.splits)
         apply (rule NOE_no_consume_past_star)
-        subgoal for pri pri' prt prt' c l l' r
-          \<comment> \<open>Can drop leftover after leftover blocker\<close>
-          sorry
+        subgoal for pri pri' prt prt' c l l' r by (rule E_drop_leftover[rule_format, of c l l' r])
         subgoal for pri pri' prt prt' c l l' l'' r
           \<comment> \<open>Can change leftover after nonempty tail of c\<close>
           sorry
-        subgoal
-          \<comment> \<open>PNGI E\<close>
-          sorry
+        subgoal by (rule E_pngi)
         done
       done
   apply (rule b_then_well_formed)
@@ -850,11 +877,11 @@ lemma expression_well_formed_induct:
     \<comment> \<open>bidef_well_formed (separated_by1 (NOE (E ())) star ()) (already a subgoal above)\<close>
     sorry
   subgoal
-    \<comment> \<open>Maybe a specialisation for WF many b_then can be made?\<close>
-    \<comment> \<open>Like first does not eat into second and second does not eat into first?\<close>
+    \<comment> \<open>WF many then plus, ftrans sepby1 NOE star\<close>
+    thm WF_many_then
     sorry
   subgoal
-    
+    \<comment> \<open>Probably solvable via this\<close> thm first_printed_does_not_eat_into3
     sorry
   oops
 
@@ -881,7 +908,10 @@ lemma expression_well_formed:
     subgoal
       by (rule Expression_no_print_empty)
     subgoal
-      \<comment> \<open>Can drop leftover\<close>
+      \<comment> \<open>Blocked on Expression_can_drop_leftover\<close>
+      \<comment> \<open>Which is blocked on MultE can drop leftover\<close>
+      \<comment> \<open>Which is blocked on b_then can drop leftover on error and NOE can drop leftover\<close>
+      \<comment> \<open>Which is blocked on b_then can drop leftover on errror.\<close>
       sorry
     subgoal
       by (rule Expression_pngi_induct)
