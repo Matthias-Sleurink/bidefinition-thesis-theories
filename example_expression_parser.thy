@@ -240,15 +240,13 @@ lemma PASI_NOE[PASI_PNGI_intros]:
   by pasi_pngi
 
 
-find_theorems "(\<nexists>_. _) \<longleftrightarrow> (\<forall>_. _)"
-lemmas [print_empty,simp] = ws_parenthesised_never_print_empty[unfolded not_ex]
+\<comment> \<open>TODO: solve this properly\<close>
+lemmas [print_empty] = ws_parenthesised_never_print_empty[unfolded not_ex]
 
 lemma NOE_never_print_empty[print_empty]:
   "\<nexists>i. p_has_result (print (NOE E)) i []"
   unfolding NOE_def
-  apply (clarsimp simp add: print_empty split: Ex.splits)
-  using ws_parenthesised_never_print_empty \<comment> \<open>This is in print_empty.\<close>
-  by force
+  by (clarsimp simp add: print_empty split: Ex.splits)
 
 
 \<comment> \<open>Some quick tests to see how this 'else' case in case expressions works.\<close>
