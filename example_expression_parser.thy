@@ -239,6 +239,10 @@ lemma PASI_NOE[PASI_PNGI_intros]:
   using assms unfolding NOE_def Number_def ws_parenthesised_def
   by pasi_pngi
 
+
+find_theorems "(\<nexists>_. _) \<longleftrightarrow> (\<forall>_. _)"
+lemmas [print_empty,simp] = ws_parenthesised_never_print_empty[unfolded not_ex]
+
 lemma NOE_never_print_empty[print_empty]:
   "\<nexists>i. p_has_result (print (NOE E)) i []"
   unfolding NOE_def
@@ -451,8 +455,8 @@ lemma pngi_MultE[PASI_PNGI_intros]:
   shows "PNGI (parse (MultE E))"
   apply (insert assms)
   unfolding MultE_def NOE_def ws_parenthesised_def Number_def
-  apply pasi_pngi back back \<comment> \<open>Solution found with back, how do we make it do this without back?\<close>
-  done \<comment> \<open>This can be solved by using by pasi_pngi, is that the canonical solution here?\<close>
+  by pasi_pngi
+
 
 \<comment> \<open>We can drag in assms from Expression can drop leftover\<close>
 lemma MultE_can_drop_leftover:
@@ -772,6 +776,11 @@ lemma Expression_can_drop_leftover:
         apply (insert pngi_MultE[OF E_pngi, unfolded PNGI_def, rule_format, of \<open>c@l@l'\<close> r' l'a]; clarsimp)
         subgoal for cMultE
           \<comment> \<open>Why do I need to add the result in the insert here to get clarsimp to work?\<close>
+          using many_PNGI[of \<open>b_then example_expression_parser.plus (MultE (E ()))\<close>,
+                          OF then_PASI_from_pasi_pngi[OF ws_char_ws_PASI pngi_MultE[OF E_pngi]],
+                          unfolded PNGI_def, rule_format, of l'a \<open>zip (replicate (length rs) ()) rs\<close> \<open>l@l'\<close>]
+          apply -
+          apply clarsimp
           apply (insert many_PNGI[of \<open>b_then example_expression_parser.plus (MultE (E ()))\<close>,
                           OF then_PASI_from_pasi_pngi[OF ws_char_ws_PASI pngi_MultE[OF E_pngi]],
                           unfolded PNGI_def, rule_format, of l'a \<open>zip (replicate (length rs) ()) rs\<close> \<open>l@l'\<close>]; clarsimp)
