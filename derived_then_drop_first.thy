@@ -9,6 +9,13 @@ definition then_drop_first :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Ri
                               ((\<lambda> b. (a, b)) :: '\<beta> \<Rightarrow> ('\<alpha>\<times>'\<beta>))
                               (b_then ab bb :: ('\<alpha>\<times>'\<beta>) bidef)"
 
+lemma mono_then_drop_first[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  shows "mono_bd (\<lambda>f. then_drop_first (A f) (B f) a)"
+  unfolding then_drop_first_def using ma mb
+  by pf_mono_prover
+
 
 
 \<comment> \<open>NER\<close>
