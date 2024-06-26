@@ -9,6 +9,12 @@ definition optional :: "'\<alpha> bidef \<Rightarrow> '\<alpha> option bidef" wh
                   (\<lambda>r. case r of None \<Rightarrow> Inr () | Some v \<Rightarrow> Inl v)
                   (if_then_else b (return :: '\<alpha> \<Rightarrow> '\<alpha> bidef) (return ()) id)"
 
+lemma mono_optional[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  shows "mono_bd (\<lambda>f. optional (A f))"
+  unfolding optional_def using ma
+  by pf_mono_prover
+
 
 
 \<comment> \<open>NER\<close>
