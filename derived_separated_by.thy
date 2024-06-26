@@ -17,6 +17,13 @@ definition separated_by :: "'b bd \<Rightarrow> 'a bd \<Rightarrow> 'b \<Rightar
         \<comment> \<open>('a \<times> ('b \<times> 'a) list) option bd\<close>
         (optional (separated_byBase sep elem))
 "
+lemma mono_separated_by[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  shows "mono_bd (\<lambda>f. separated_by (A f) (B f) b)"
+  unfolding separated_by_def separated_byBase_def using ma mb
+  by pf_mono_prover
+
 
 
 
