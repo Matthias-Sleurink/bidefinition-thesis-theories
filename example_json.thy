@@ -83,6 +83,10 @@ value "is_error (parse str_literal) ''apples\"''"
 value "is_error (parse str_literal) ''\"apples''"
 
 
+lemma str_literal_no_parse_empty[NER_simps]:
+  "has_result (parse str_literal) [] r l \<longleftrightarrow> False"
+  by (clarsimp simp add: NER_simps str_literal_def takeMiddle_def quot_def)
+
 lemma str_literal_print_empty[fp_NER, print_empty]:
   "p_has_result (print (str_literal)) i [] \<longleftrightarrow> False"
   unfolding str_literal_def
@@ -131,6 +135,7 @@ definition JsonString :: "JSON bidef" where
                  str_literal"
 
 lemma has_result_JsonString[NER_simps]:
+  "has_result (parse (JsonString)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonString)) i (String str) l \<longleftrightarrow> has_result (parse str_literal) i str l"
   "has_result (parse (JsonString)) i (Number n) l \<longleftrightarrow> False"
   "has_result (parse (JsonString)) i (Object od) l \<longleftrightarrow> False"
@@ -139,6 +144,11 @@ lemma has_result_JsonString[NER_simps]:
   "has_result (parse (JsonString)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonString)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonString_def NER_simps)+
+
+lemma is_error_empty_JsonString[NER_simps]:
+  "is_error (parse (JsonString)) []"
+  by (clarsimp simp add: JsonString_def NER_simps str_literal_def takeMiddle_def quot_def)
+
 
 lemma JsonString_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonString)) i [] \<longleftrightarrow> False"
@@ -167,6 +177,7 @@ definition JsonNumber :: "JSON bidef" where
                  int_b"
 
 lemma has_result_JsonNumber[NER_simps]:
+  "has_result (parse (JsonNumber)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonNumber)) i (String str) l \<longleftrightarrow> False"
   "has_result (parse (JsonNumber)) i (Number n) l \<longleftrightarrow> has_result (parse int_b) i n l"
   "has_result (parse (JsonNumber)) i (Object od) l \<longleftrightarrow> False"
@@ -175,6 +186,10 @@ lemma has_result_JsonNumber[NER_simps]:
   "has_result (parse (JsonNumber)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonNumber)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonNumber_def NER_simps)+
+
+lemma is_error_empty_JsonNumber[NER_simps]:
+  "is_error (parse (JsonNumber)) []"
+  by (clarsimp simp add: JsonNumber_def NER_simps)
 
 lemma JsonNumber_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonNumber)) i [] \<longleftrightarrow> False"
@@ -214,6 +229,7 @@ definition JsonObject :: "JSON bidef \<Rightarrow> JSON bidef" where
                     (betweenBraces (separated_by (ws_char_ws CHR '','') (JsonNameColonObject i) ()))"
 
 lemma has_result_JsonObject[NER_simps]:
+  "has_result (parse (JsonObject I)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonObject I)) i (String str) l \<longleftrightarrow> False"
   "has_result (parse (JsonObject I)) i (Number n) l \<longleftrightarrow> False"
   "has_result (parse (JsonObject I)) i (Object od) l \<longleftrightarrow> has_result (parse (betweenBraces (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()))) i od l"
@@ -221,7 +237,11 @@ lemma has_result_JsonObject[NER_simps]:
   "has_result (parse (JsonObject I)) i JTrue l \<longleftrightarrow> False"
   "has_result (parse (JsonObject I)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonObject I)) i JNull l \<longleftrightarrow> False"
-  by (clarsimp simp add: JsonObject_def NER_simps)+
+  by (clarsimp simp add: JsonObject_def NER_simps takeMiddle_def)+
+
+lemma is_error_empty_JsonObject[NER_simps]:
+  "is_error (parse (JsonObject I)) []"
+  by (clarsimp simp add: JsonObject_def NER_simps takeMiddle_def)
 
 lemma JsonObject_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonObject I)) i [] \<longleftrightarrow> False"
@@ -258,6 +278,7 @@ lemma PASI_PNGI_JsonList[PASI_PNGI_intros]:
   by pasi_pngi+
 
 lemma has_result_JsonList[NER_simps]:
+  "has_result (parse (JsonList I)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonList I)) i (String str) l \<longleftrightarrow> False"
   "has_result (parse (JsonList I)) i (Number n) l \<longleftrightarrow> False"
   "has_result (parse (JsonList I)) i (Object od) l \<longleftrightarrow> False"
@@ -265,7 +286,11 @@ lemma has_result_JsonList[NER_simps]:
   "has_result (parse (JsonList I)) i JTrue l \<longleftrightarrow> False"
   "has_result (parse (JsonList I)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonList I)) i JNull l \<longleftrightarrow> False"
-  by (clarsimp simp add: JsonList_def NER_simps)+
+  by (clarsimp simp add: JsonList_def NER_simps takeMiddle_def)+
+
+lemma is_error_empty_JsonList[NER_simps]:
+  "is_error (parse (JsonList I)) []"
+  by (clarsimp simp add: JsonList_def NER_simps takeMiddle_def)
 
 lemma JsonList_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonList I)) i [] \<longleftrightarrow> False"
@@ -288,6 +313,7 @@ definition JsonTrue :: "JSON bidef" where
                   (this_string ''true'')"
 
 lemma has_result_JsonTrue[NER_simps]:
+  "has_result (parse (JsonTrue)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonTrue)) i (String str) l \<longleftrightarrow> False"
   "has_result (parse (JsonTrue)) i (Number n) l \<longleftrightarrow> False"
   "has_result (parse (JsonTrue)) i (Object od) l \<longleftrightarrow> False"
@@ -296,6 +322,10 @@ lemma has_result_JsonTrue[NER_simps]:
   "has_result (parse (JsonTrue)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonTrue)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonTrue_def NER_simps)+
+
+lemma is_error_empty_JsonTrue[NER_simps]:
+  "is_error (parse (JsonTrue)) []"
+  by (clarsimp simp add: JsonTrue_def NER_simps)
 
 lemma JsonTrue_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonTrue)) i [] \<longleftrightarrow> False"
@@ -317,6 +347,7 @@ definition JsonFalse :: "JSON bidef" where
                   (this_string ''false'')"
 
 lemma has_result_JsonFalse[NER_simps]:
+  "has_result (parse (JsonFalse)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonFalse)) i (String str) l \<longleftrightarrow> False"
   "has_result (parse (JsonFalse)) i (Number n) l \<longleftrightarrow> False"
   "has_result (parse (JsonFalse)) i (Object od) l \<longleftrightarrow> False"
@@ -325,6 +356,10 @@ lemma has_result_JsonFalse[NER_simps]:
   "has_result (parse (JsonFalse)) i JFalse l \<longleftrightarrow> has_result (parse (this_string ''false'')) i ''false'' l"
   "has_result (parse (JsonFalse)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonFalse_def NER_simps)+
+
+lemma is_error_empty_JsonFalse[NER_simps]:
+  "is_error (parse (JsonFalse)) []"
+  by (clarsimp simp add: JsonFalse_def NER_simps)
 
 lemma JsonFalse_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonFalse)) i [] \<longleftrightarrow> False"
@@ -346,6 +381,7 @@ definition JsonNull :: "JSON bidef" where
                   (this_string ''null'')"
 
 lemma has_result_JsonNull[NER_simps]:
+  "has_result (parse (JsonNull)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonNull)) i (String str) l \<longleftrightarrow> False"
   "has_result (parse (JsonNull)) i (Number n) l \<longleftrightarrow> False"
   "has_result (parse (JsonNull)) i (Object od) l \<longleftrightarrow> False"
@@ -354,6 +390,10 @@ lemma has_result_JsonNull[NER_simps]:
   "has_result (parse (JsonNull)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonNull)) i JNull l \<longleftrightarrow> has_result (parse (this_string ''null'')) i ''null'' l"
   by (clarsimp simp add: JsonNull_def NER_simps)+
+
+lemma is_error_empty_JsonNull[NER_simps]:
+  "is_error (parse (JsonNull)) []"
+  by (clarsimp simp add: JsonNull_def NER_simps)
 
 lemma JsonNull_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonNull)) i [] \<longleftrightarrow> False"
