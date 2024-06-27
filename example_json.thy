@@ -83,6 +83,12 @@ value "is_error (parse str_literal) ''apples\"''"
 value "is_error (parse str_literal) ''\"apples''"
 
 
+lemma str_literal_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (str_literal)) i [] \<longleftrightarrow> False"
+  unfolding str_literal_def
+  by (clarsimp simp add: print_empty takeMiddle_def quot_def)
+
+
 lemma PNGI_str_literal[PASI_PNGI_intros]:
   shows "PNGI (parse str_literal)"
   unfolding str_literal_def
@@ -134,6 +140,11 @@ lemma has_result_JsonString[NER_simps]:
   "has_result (parse (JsonString)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonString_def NER_simps)+
 
+lemma JsonString_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (JsonString)) i [] \<longleftrightarrow> False"
+  unfolding JsonString_def
+  by (clarsimp simp add: print_empty)
+
 lemma PASI_PNGI_JsonString[PASI_PNGI_intros]:
   shows "PASI (parse JsonString)"
         "PNGI (parse JsonString)"
@@ -164,6 +175,11 @@ lemma has_result_JsonNumber[NER_simps]:
   "has_result (parse (JsonNumber)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonNumber)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonNumber_def NER_simps)+
+
+lemma JsonNumber_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (JsonNumber)) i [] \<longleftrightarrow> False"
+  unfolding JsonNumber_def
+  by (clarsimp simp add: print_empty)
 
 lemma PASI_PNGI_JsonNumber[PASI_PNGI_intros]:
   shows "PASI (parse JsonNumber)"
@@ -207,6 +223,11 @@ lemma has_result_JsonObject[NER_simps]:
   "has_result (parse (JsonObject I)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonObject_def NER_simps)+
 
+lemma JsonObject_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (JsonObject I)) i [] \<longleftrightarrow> False"
+  unfolding JsonObject_def
+  by (clarsimp simp add: print_empty takeMiddle_def)
+
 lemma PASI_PNGI_JsonObject[PASI_PNGI_intros]:
   assumes "PNGI (parse I)"
   shows "PASI (parse (JsonObject I))"
@@ -246,6 +267,11 @@ lemma has_result_JsonList[NER_simps]:
   "has_result (parse (JsonList I)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonList_def NER_simps)+
 
+lemma JsonList_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (JsonList I)) i [] \<longleftrightarrow> False"
+  unfolding JsonList_def
+  by (clarsimp simp add: print_empty takeMiddle_def)
+
 lemma mono_JsonList[partial_function_mono]:
   assumes ma: "mono_bd A"
   shows "mono_bd (\<lambda>f. JsonList (A f))"
@@ -271,6 +297,11 @@ lemma has_result_JsonTrue[NER_simps]:
   "has_result (parse (JsonTrue)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonTrue_def NER_simps)+
 
+lemma JsonTrue_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (JsonTrue)) i [] \<longleftrightarrow> False"
+  unfolding JsonTrue_def
+  by (clarsimp simp add: print_empty)
+
 lemma PASI_PNGI_JsonTrue[PASI_PNGI_intros]:
   shows "PASI (parse JsonTrue)"
         "PNGI (parse JsonTrue)"
@@ -295,6 +326,11 @@ lemma has_result_JsonFalse[NER_simps]:
   "has_result (parse (JsonFalse)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonFalse_def NER_simps)+
 
+lemma JsonFalse_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (JsonFalse)) i [] \<longleftrightarrow> False"
+  unfolding JsonFalse_def
+  by (clarsimp simp add: print_empty)
+
 lemma PASI_PNGI_JsonFalse[PASI_PNGI_intros]:
   shows "PASI (parse JsonFalse)"
         "PNGI (parse JsonFalse)"
@@ -318,6 +354,11 @@ lemma has_result_JsonNull[NER_simps]:
   "has_result (parse (JsonNull)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonNull)) i JNull l \<longleftrightarrow> has_result (parse (this_string ''null'')) i ''null'' l"
   by (clarsimp simp add: JsonNull_def NER_simps)+
+
+lemma JsonNull_print_empty[fp_NER, print_empty]:
+  "p_has_result (print (JsonNull)) i [] \<longleftrightarrow> False"
+  unfolding JsonNull_def
+  by (clarsimp simp add: print_empty)
 
 lemma PASI_PNGI_JsonNull[PASI_PNGI_intros]:
   shows "PASI (parse JsonNull)"
