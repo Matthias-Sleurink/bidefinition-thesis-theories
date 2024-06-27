@@ -209,6 +209,14 @@ lemma fpci_JsonNumber[fpci_simps]:
   unfolding JsonNumber_def
   by (clarsimp simp add: fpci_simps split: JSON.splits if_splits)
 
+lemma wf_JsonNumber:
+  "bidef_well_formed JsonNumber"
+  unfolding JsonNumber_def
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: JSON.splits)
+  subgoal by (rule int_b_well_formed)
+  done
+
 
 
 definition JsonNameColonObject :: "JSON bidef \<Rightarrow> (string \<times> JSON) bidef" where
