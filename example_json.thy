@@ -140,6 +140,13 @@ lemma PASI_PNGI_JsonString[PASI_PNGI_intros]:
   unfolding JsonString_def
   by pasi_pngi+
 
+lemma JsonString_well_formed:
+  "bidef_well_formed JsonString"
+  unfolding JsonString_def
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def ftransform_p_has_result split: JSON.splits)
+  subgoal by (rule str_literal_well_formed)
+  done
 
 definition JsonNumber :: "JSON bidef" where
   "JsonNumber = ftransform
