@@ -17,7 +17,16 @@ lemma PNGI_until[PASI_PNGI_intros]:
   by pasi_pngi
 
 
-definition end_str where "end_str = until one_char (this_char CHR ''\"'')"
+abbreviation "quot_chr \<equiv> CHR ''\"''"
+definition quot :: "char bidef" where
+  "quot = this_char quot_chr"
+lemma quot_PASI_PNGI[PASI_PNGI_intros]:
+  "PNGI (parse quot)"
+  "PASI (parse quot)"
+  unfolding quot_def by pasi_pngi+
+
+
+definition end_str where "end_str = until one_char (quot)"
 lemma until_examples:
   "has_result (parse end_str) ''apples'' ''apples'' []" \<comment> \<open>Perhaps somewhat unfortunate, could be solvable if we choose to also consume the stopper.\<close>
   "has_result (parse end_str) ''\"apples'' '''' ''\"apples''"
@@ -67,17 +76,8 @@ datatype JSON
   | JNull
 
 
-abbreviation "quot_chr \<equiv> CHR ''\"''"
-definition quot :: "char bidef" where
-  "quot = this_char quot_chr"
-lemma quot_PASI_PNGI[PASI_PNGI_intros]:
-  "PNGI (parse quot)"
-  "PASI (parse quot)"
-  unfolding quot_def by pasi_pngi+
-
-
 definition str_literal :: "string bidef" where
-  "str_literal = takeMiddle quot (until one_char quot) quot quot_chr quot_chr"
+  "str_literal = takeMiddle quot ((many (char_not_in_set {quot_chr}))) quot quot_chr quot_chr"
 value "has_result (parse str_literal) ''\"apples\"'' ''apples'' []"
 value "is_error (parse str_literal) ''apples\"''"
 value "is_error (parse str_literal) ''\"apples''"
