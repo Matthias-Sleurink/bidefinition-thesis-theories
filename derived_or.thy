@@ -73,7 +73,7 @@ lemma or_print_empty_safe[print_empty, fp_NER]:
   "p_has_result (print (or A B)) (Inr ri) [] \<longleftrightarrow> p_has_result (print B) ri []"
   by (clarsimp simp add: or_def print_empty)+
 
-lemma or_print_empty:
+lemma or_print_empty[print_empty]:
   "p_has_result (print (or A B)) i [] \<longleftrightarrow>(
     case i of
       Inl li \<Rightarrow> p_has_result (print A) li []
