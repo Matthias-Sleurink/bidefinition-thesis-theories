@@ -510,7 +510,24 @@ lemma Json_well_formed_inductive:
       done
     subgoal for pr t by (cases t; auto simp add: NER_simps)
     done
-  
+  apply (rule or_well_formed)
+  subgoal by (rule JsonString_well_formed)
+  subgoal
+    \<comment> \<open>Pausing this just to look at if the below or proof is doable.\<close>
+    sorry
+  subgoal
+    apply (rule wf_or_pair_from_fpci)
+    subgoal
+      apply (auto simp add: fpci_simps NER_simps split: sum.splits)
+      subgoal using fpci_JsonNumber is_error_JsonString by blast
+      subgoal using fpci_JsonObject is_error_JsonString by blast
+      subgoal using fpci_JsonList is_error_JsonString by blast
+      subgoal using fpci_JsonTrue is_error_JsonString by blast
+      subgoal using fpci_JsonFalse is_error_JsonString by blast
+      subgoal using fpci_JsonNull is_error_JsonString by blast
+      done
+    subgoal by (clarsimp simp add: print_empty NER_simps split: sum.splits)
+    done
   oops
 
 
