@@ -331,6 +331,39 @@ partial_function (bd) JsonR :: "unit \<Rightarrow> JSON bidef" where
              ))))))"
 abbreviation "Json \<equiv> JsonR ()"
 
+lemma Json_well_formed_inductive:
+  assumes J_wf: "bidef_well_formed (J ())"
+  assumes J_pngi: "PNGI (parse (J ()))"
+  shows "bidef_well_formed
+          (transform
+             sum_take_many
+             sum_untake_many 
+            (or JsonString
+            (or JsonNumber
+            (or (JsonObject (J ()))
+            (or (JsonList (J ()))
+            (or JsonTrue
+            (or JsonFalse
+                JsonNull)))))))"
+  apply (rule transform_well_formed4)
+  subgoal
+    apply (auto simp add: well_formed_transform_funcs4_def)
+    subgoal for i v l
+      apply (cases v rule: sum_take_many.cases; auto simp add: NER_simps)
+      subgoal for a by (cases a; clarsimp simp add: NER_simps)
+      subgoal for a by (cases a; clarsimp simp add: NER_simps)
+      subgoal for a by (cases a; clarsimp simp add: NER_simps)
+      subgoal for a by (cases a; clarsimp simp add: NER_simps)
+      subgoal for a by (cases a; clarsimp simp add: NER_simps)
+      subgoal for a by (cases a; clarsimp simp add: NER_simps)
+      subgoal for a by (cases a; clarsimp simp add: NER_simps)
+      done
+    subgoal for pr t by (cases t; auto simp add: NER_simps)
+    done
+  
+  oops
+
+
 lemma Json_well_formed:
   "bidef_well_formed Json \<and>
    (PNGI (parse Json))"
