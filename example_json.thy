@@ -9,6 +9,14 @@ begin
 definition until :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> 'a list bidef" where
   "until a s = many (ftransform (\<lambda>Inl l \<Rightarrow> None | Inr r \<Rightarrow> Some r) (Some o Inr) (or s a))"
 
+lemma PNGI_until[PASI_PNGI_intros]:
+  assumes "PASI (parse A)"
+  assumes "PASI (parse B)"
+  shows "PNGI (parse (until A B))"
+  unfolding until_def apply (insert assms)
+  by pasi_pngi
+
+
 definition end_str where "end_str = until one_char (this_char CHR ''\"'')"
 lemma until_examples:
   "has_result (parse end_str) ''apples'' ''apples'' []" \<comment> \<open>Perhaps somewhat unfortunate, could be solvable if we choose to also consume the stopper.\<close>
@@ -21,6 +29,24 @@ definition takeMiddle :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> 'c bidef
                               (fst o snd)
                               (\<lambda>b. (a, b, c))
                               (b_then ab (b_then bb cb))"
+
+lemma PNGI_takeMiddle[PASI_PNGI_intros]:
+  assumes "PNGI (parse A)"
+  assumes "PNGI (parse B)"
+  assumes "PNGI (parse C)"
+  shows "PNGI (parse (takeMiddle A B C a c))"
+  unfolding takeMiddle_def apply (insert assms)
+  by pasi_pngi
+
+lemma PASI_takeMiddle[PASI_PNGI_intros]: \<comment> \<open>Probably the most common usage, where the outer ones are a mandatory character.\<close>
+  assumes "PASI (parse A)"
+  assumes "PNGI (parse B)"
+  assumes "PNGI (parse C)"
+  shows "PASI (parse (takeMiddle A B C a c))"
+  unfolding takeMiddle_def apply (insert assms)
+  by pasi_pngi
+
+
 
 lemma mono_takeMiddle[partial_function_mono]:
   assumes ma: "mono_bd A"
@@ -44,6 +70,11 @@ datatype JSON
 abbreviation "quot_chr \<equiv> CHR ''\"''"
 definition quot :: "char bidef" where
   "quot = this_char quot_chr"
+lemma quot_PASI_PNGI[PASI_PNGI_intros]:
+  "PNGI (parse quot)"
+  "PASI (parse quot)"
+  unfolding quot_def by pasi_pngi+
+
 
 definition str_literal :: "string bidef" where
   "str_literal = takeMiddle quot (until one_char quot) quot quot_chr quot_chr"
@@ -51,12 +82,29 @@ value "has_result (parse str_literal) ''\"apples\"'' ''apples'' []"
 value "is_error (parse str_literal) ''apples\"''"
 value "is_error (parse str_literal) ''\"apples''"
 
+
+lemma PNGI_str_literal[PASI_PNGI_intros]:
+  shows "PNGI (parse str_literal)"
+  unfolding str_literal_def
+  by pasi_pngi
+lemma PASI_str_literal[PASI_PNGI_intros]:
+  shows "PASI (parse str_literal)"
+  unfolding str_literal_def takeMiddle_def
+  by pasi_pngi
+
+
 definition JsonString :: "JSON bidef" where
   "JsonString = ftransform
                  (Some o String)
                  (\<lambda>String s \<Rightarrow> Some s
                   | _ \<Rightarrow> None)
                  str_literal"
+
+lemma PASI_PNGI_JsonString[PASI_PNGI_intros]:
+  shows "PASI (parse JsonString)"
+        "PNGI (parse JsonString)"
+  unfolding JsonString_def
+  by pasi_pngi+
 
 
 definition JsonNumber :: "JSON bidef" where
@@ -66,8 +114,22 @@ definition JsonNumber :: "JSON bidef" where
                   | _ \<Rightarrow> None)
                  int_b"
 
+lemma PASI_PNGI_JsonNumber[PASI_PNGI_intros]:
+  shows "PASI (parse JsonNumber)"
+        "PNGI (parse JsonNumber)"
+  unfolding JsonNumber_def
+  by pasi_pngi+
+
+
 definition JsonNameColonObject :: "JSON bidef \<Rightarrow> (string \<times> JSON) bidef" where
   "JsonNameColonObject i = b_then str_literal (then_drop_first (ws_char_ws CHR ''\"'') i ())"
+
+lemma PASI_PNGI_JsonNameColonObject[PASI_PNGI_intros]:
+  assumes "PNGI (parse I)"
+  shows "PASI (parse (JsonNameColonObject I))"
+        "PNGI (parse (JsonNameColonObject I))"
+  unfolding JsonNameColonObject_def apply (insert assms)
+  by pasi_pngi+
 
 lemma mono_JsonNameColonObject[partial_function_mono]:
   assumes ma: "mono_bd A"
@@ -84,6 +146,13 @@ definition JsonObject :: "JSON bidef \<Rightarrow> JSON bidef" where
                      | _ \<Rightarrow> None)
                     (betweenBraces (separated_by (ws_char_ws CHR '','') (JsonNameColonObject i) ()))"
 
+lemma PASI_PNGI_JsonObject[PASI_PNGI_intros]:
+  assumes "PNGI (parse I)"
+  shows "PASI (parse (JsonObject I))"
+        "PNGI (parse (JsonObject I))"
+  unfolding JsonObject_def apply (insert assms)
+  by pasi_pngi+
+
 lemma mono_JsonObject[partial_function_mono]:
   assumes ma: "mono_bd A"
   shows "mono_bd (\<lambda>f. JsonObject (A f))"
@@ -98,6 +167,13 @@ definition JsonList :: "JSON bidef \<Rightarrow> JSON bidef" where
                   (\<lambda>List l \<Rightarrow> Some l
                    | _ \<Rightarrow> None)
                   (betweenSquareBrackets (separated_by (ws_char_ws CHR '','') i ()))"
+
+lemma PASI_PNGI_JsonList[PASI_PNGI_intros]:
+  assumes "PNGI (parse I)"
+  shows "PASI (parse (JsonList I))"
+        "PNGI (parse (JsonList I))"
+  unfolding JsonList_def apply (insert assms)
+  by pasi_pngi+
 
 lemma mono_JsonList[partial_function_mono]:
   assumes ma: "mono_bd A"
@@ -114,6 +190,13 @@ definition JsonTrue :: "JSON bidef" where
                    | _ \<Rightarrow> None)
                   (this_string ''true'')"
 
+lemma PASI_PNGI_JsonTrue[PASI_PNGI_intros]:
+  shows "PASI (parse JsonTrue)"
+        "PNGI (parse JsonTrue)"
+  unfolding JsonTrue_def
+  by pasi_pngi+
+
+
 definition JsonFalse :: "JSON bidef" where
   "JsonFalse = ftransform
                   (Some o (const False))
@@ -121,12 +204,26 @@ definition JsonFalse :: "JSON bidef" where
                    | _ \<Rightarrow> None)
                   (this_string ''false'')"
 
+lemma PASI_PNGI_JsonFalse[PASI_PNGI_intros]:
+  shows "PASI (parse JsonFalse)"
+        "PNGI (parse JsonFalse)"
+  unfolding JsonFalse_def
+  by pasi_pngi+
+
+
 definition JsonNull :: "JSON bidef" where
   "JsonNull = ftransform
                   (Some o (const Null))
                   (\<lambda>True \<Rightarrow> Some ''null''
                    | _ \<Rightarrow> None)
                   (this_string ''null'')"
+
+lemma PASI_PNGI_JsonNull[PASI_PNGI_intros]:
+  shows "PASI (parse JsonNull)"
+        "PNGI (parse JsonNull)"
+  unfolding JsonNull_def
+  by pasi_pngi+
+
 
 \<comment> \<open>Seems to me like this could be done better?\<close>
 fun sum_take_many :: "JSON + JSON + JSON + JSON + JSON + JSON + JSON \<Rightarrow> JSON" where
@@ -176,10 +273,7 @@ lemma Json_well_formed:
     subgoal
       \<comment> \<open>WF\<close>
       sorry
-    subgoal
-      \<comment> \<open>PNGI\<close>
-      \<comment> \<open>Need to do PNGI proofs for all the sub bidefs\<close>
-      sorry
+    subgoal by pasi_pngi
     done
   oops
 
