@@ -553,11 +553,47 @@ lemma Json_well_formed_inductive:
     subgoal
       apply (rule or_well_formed)
       subgoal
-        
+        \<comment> \<open>Well formed JsonObject\<close>
         sorry
       subgoal
-        
-        sorry
+        apply (rule or_well_formed)
+        subgoal
+          \<comment> \<open>Well formed JsonList\<close>
+          sorry
+        subgoal
+          apply (rule or_well_formed)
+          subgoal by (rule wf_JsonTrue)
+          subgoal
+            apply (rule or_well_formed)
+            subgoal by (rule wf_JsonFalse)
+            subgoal by (rule wf_JsonNull)
+            subgoal
+              apply (rule wf_or_pair_from_fpci)
+              subgoal using fpci_JsonNull is_error_JsonFalse by blast
+              subgoal by (clarsimp simp add: print_empty)
+              done
+            done
+          subgoal
+            apply (rule wf_or_pair_from_fpci)
+            subgoal for i i' c
+              apply (auto simp add: fpci_simps NER_simps split: sum.splits)
+              subgoal for x by (insert fpci_JsonFalse[of x c]; clarsimp simp add: is_error_JsonTrue)
+              subgoal for x by (insert fpci_JsonNull[of x c]; clarsimp simp add: is_error_JsonTrue)
+              done
+            subgoal by (clarsimp simp add: print_empty NER_simps split: sum.splits)
+            done
+          done
+        subgoal
+          apply (rule wf_or_pair_from_fpci)
+          subgoal for i i' c
+            apply (auto simp add: fpci_simps NER_simps split: sum.splits)
+            subgoal for x by (insert fpci_JsonTrue[of x c]; clarsimp simp add: is_error_JsonList)
+            subgoal for x by (insert fpci_JsonFalse[of x c]; clarsimp simp add: is_error_JsonList)
+            subgoal for x by (insert fpci_JsonNull[of x c]; clarsimp simp add: is_error_JsonList)
+            done
+          subgoal by (clarsimp simp add: print_empty NER_simps split: sum.splits)
+          done
+        done
       subgoal
         apply (rule wf_or_pair_from_fpci)
         subgoal for i i' c
