@@ -69,17 +69,42 @@ lemma charset_example:
   done
 
 
+lemma expression_punctuation_charsets[simp]:
+  "CHR ''*'' \<notin> digit_chars"
+  "CHR ''+'' \<notin> digit_chars"
+  "CHR ''('' \<notin> digit_chars"
+  "CHR '')'' \<notin> digit_chars"
+  "CHR ''{'' \<notin> digit_chars"
+  "CHR ''}'' \<notin> digit_chars"
+  "CHR ''['' \<notin> digit_chars"
+  "CHR '']'' \<notin> digit_chars"
+  "CHR ''t'' \<notin> digit_chars"
+  "CHR ''f'' \<notin> digit_chars"
+  "CHR ''n'' \<notin> digit_chars"
 
+  "CHR ''*'' \<notin> derived_digit_char.digit_chars"
+  "CHR ''+'' \<notin> derived_digit_char.digit_chars"
+  "CHR ''t'' \<notin> derived_digit_char.digit_chars"
+  "CHR ''f'' \<notin> derived_digit_char.digit_chars"
+  "CHR ''n'' \<notin> derived_digit_char.digit_chars"
 
+  "CHR ''*'' \<notin> whitespace_chars"
+  "CHR ''+'' \<notin> whitespace_chars"
+  "CHR ''('' \<notin> whitespace_chars"
+  "CHR '')'' \<notin> whitespace_chars"
+  unfolding derived_digit_char.digit_chars_def whitespace_chars_def
+  by blast+
 
-definition counter_example:
-  "counter_example = ftransform (\<lambda>pr. if (length pr = 2) then None else Some pr) (Some) (many (this_char CHR ''A''))"
-
-lemma test:
-  "is_error (parse counter_example) (i @ i' @ i'') \<Longrightarrow> is_error (parse counter_example) (i@i')"
-  quickcheck
-  oops
-
+lemma chars_not_in_whitespace[simp]:
+  "c \<in> digit_chars \<longrightarrow> c\<notin>whitespace_chars"
+  "c \<in> derived_digit_char.digit_chars \<longrightarrow> c\<notin>whitespace_chars"
+  unfolding derived_digit_char.digit_chars_def whitespace_chars_def
+  by blast+
+lemma in_ws_and_digits_eq_false[simp]:
+  "c \<in> digit_chars                    \<and> c \<in> whitespace_chars \<longleftrightarrow> False"
+  "c \<in> derived_digit_char.digit_chars \<and> c \<in> whitespace_chars \<longleftrightarrow> False"
+  unfolding derived_digit_char.digit_chars_def whitespace_chars_def
+  by blast+
 
 
 

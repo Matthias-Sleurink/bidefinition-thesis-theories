@@ -45,32 +45,6 @@ abbreviation star :: "unit bidef" where
   "star \<equiv> ws_char_ws CHR ''*''"
 abbreviation plus :: "unit bidef" where
   "plus \<equiv> ws_char_ws CHR ''+''"
-lemma expression_punctuation_charsets[simp]:
-  "CHR ''*'' \<notin> digit_chars"
-  "CHR ''+'' \<notin> digit_chars"
-  "CHR ''('' \<notin> digit_chars"
-  "CHR '')'' \<notin> digit_chars"
-
-  "CHR ''*'' \<notin> derived_digit_char.digit_chars"
-  "CHR ''+'' \<notin> derived_digit_char.digit_chars"
-
-  "CHR ''*'' \<notin> whitespace_chars"
-  "CHR ''+'' \<notin> whitespace_chars"
-  "CHR ''('' \<notin> whitespace_chars"
-  "CHR '')'' \<notin> whitespace_chars"
-  unfolding derived_digit_char.digit_chars_def whitespace_chars_def
-  by blast+
-lemma chars_not_in_whitespace[simp]:
-  "c \<in> digit_chars \<longrightarrow> c\<notin>whitespace_chars"
-  "c \<in> derived_digit_char.digit_chars \<longrightarrow> c\<notin>whitespace_chars"
-  unfolding derived_digit_char.digit_chars_def whitespace_chars_def
-  by blast+
-lemma in_ws_and_digits_eq_false[simp]:
-  "c \<in> digit_chars                    \<and> c \<in> whitespace_chars \<longleftrightarrow> False"
-  "c \<in> derived_digit_char.digit_chars \<and> c \<in> whitespace_chars \<longleftrightarrow> False"
-  unfolding derived_digit_char.digit_chars_def whitespace_chars_def
-  by blast+
-
 
 
 abbreviation triple :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> 'c bidef \<Rightarrow> ('a \<times> 'b \<times> 'c) bidef" where
