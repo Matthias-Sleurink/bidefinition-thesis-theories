@@ -100,6 +100,16 @@ definition JsonString :: "JSON bidef" where
                   | _ \<Rightarrow> None)
                  str_literal"
 
+lemma has_result_JsonString[NER_simps]:
+  "has_result (parse (JsonString)) i (String str) l \<longleftrightarrow> has_result (parse str_literal) i str l"
+  "has_result (parse (JsonString)) i (Number n) l \<longleftrightarrow> False"
+  "has_result (parse (JsonString)) i (Object od) l \<longleftrightarrow> False"
+  "has_result (parse (JsonString)) i (List ld) l \<longleftrightarrow> False"
+  "has_result (parse (JsonString)) i JTrue l \<longleftrightarrow> False"
+  "has_result (parse (JsonString)) i JFalse l \<longleftrightarrow> False"
+  "has_result (parse (JsonString)) i JNull l \<longleftrightarrow> False"
+  by (clarsimp simp add: JsonString_def NER_simps)+
+
 lemma PASI_PNGI_JsonString[PASI_PNGI_intros]:
   shows "PASI (parse JsonString)"
         "PNGI (parse JsonString)"
@@ -113,6 +123,16 @@ definition JsonNumber :: "JSON bidef" where
                  (\<lambda>Number n \<Rightarrow> Some n
                   | _ \<Rightarrow> None)
                  int_b"
+
+lemma has_result_JsonNumber[NER_simps]:
+  "has_result (parse (JsonNumber)) i (String str) l \<longleftrightarrow> False"
+  "has_result (parse (JsonNumber)) i (Number n) l \<longleftrightarrow> has_result (parse int_b) i n l"
+  "has_result (parse (JsonNumber)) i (Object od) l \<longleftrightarrow> False"
+  "has_result (parse (JsonNumber)) i (List ld) l \<longleftrightarrow> False"
+  "has_result (parse (JsonNumber)) i JTrue l \<longleftrightarrow> False"
+  "has_result (parse (JsonNumber)) i JFalse l \<longleftrightarrow> False"
+  "has_result (parse (JsonNumber)) i JNull l \<longleftrightarrow> False"
+  by (clarsimp simp add: JsonNumber_def NER_simps)+
 
 lemma PASI_PNGI_JsonNumber[PASI_PNGI_intros]:
   shows "PASI (parse JsonNumber)"
@@ -146,6 +166,16 @@ definition JsonObject :: "JSON bidef \<Rightarrow> JSON bidef" where
                      | _ \<Rightarrow> None)
                     (betweenBraces (separated_by (ws_char_ws CHR '','') (JsonNameColonObject i) ()))"
 
+lemma has_result_JsonObject[NER_simps]:
+  "has_result (parse (JsonObject I)) i (String str) l \<longleftrightarrow> False"
+  "has_result (parse (JsonObject I)) i (Number n) l \<longleftrightarrow> False"
+  "has_result (parse (JsonObject I)) i (Object od) l \<longleftrightarrow> has_result (parse (betweenBraces (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()))) i od l"
+  "has_result (parse (JsonObject I)) i (List ld) l \<longleftrightarrow> False"
+  "has_result (parse (JsonObject I)) i JTrue l \<longleftrightarrow> False"
+  "has_result (parse (JsonObject I)) i JFalse l \<longleftrightarrow> False"
+  "has_result (parse (JsonObject I)) i JNull l \<longleftrightarrow> False"
+  by (clarsimp simp add: JsonObject_def NER_simps)+
+
 lemma PASI_PNGI_JsonObject[PASI_PNGI_intros]:
   assumes "PNGI (parse I)"
   shows "PASI (parse (JsonObject I))"
@@ -175,6 +205,16 @@ lemma PASI_PNGI_JsonList[PASI_PNGI_intros]:
   unfolding JsonList_def apply (insert assms)
   by pasi_pngi+
 
+lemma has_result_JsonList[NER_simps]:
+  "has_result (parse (JsonList I)) i (String str) l \<longleftrightarrow> False"
+  "has_result (parse (JsonList I)) i (Number n) l \<longleftrightarrow> False"
+  "has_result (parse (JsonList I)) i (Object od) l \<longleftrightarrow> False"
+  "has_result (parse (JsonList I)) i (List ld) l \<longleftrightarrow> has_result (parse (betweenSquareBrackets (separated_by (ws_char_ws CHR '','') I ()))) i ld l"
+  "has_result (parse (JsonList I)) i JTrue l \<longleftrightarrow> False"
+  "has_result (parse (JsonList I)) i JFalse l \<longleftrightarrow> False"
+  "has_result (parse (JsonList I)) i JNull l \<longleftrightarrow> False"
+  by (clarsimp simp add: JsonList_def NER_simps)+
+
 lemma mono_JsonList[partial_function_mono]:
   assumes ma: "mono_bd A"
   shows "mono_bd (\<lambda>f. JsonList (A f))"
@@ -190,6 +230,16 @@ definition JsonTrue :: "JSON bidef" where
                    | _ \<Rightarrow> None)
                   (this_string ''true'')"
 
+lemma has_result_JsonTrue[NER_simps]:
+  "has_result (parse (JsonTrue)) i (String str) l \<longleftrightarrow> False"
+  "has_result (parse (JsonTrue)) i (Number n) l \<longleftrightarrow> False"
+  "has_result (parse (JsonTrue)) i (Object od) l \<longleftrightarrow> False"
+  "has_result (parse (JsonTrue)) i (List ld) l \<longleftrightarrow> False"
+  "has_result (parse (JsonTrue)) i JTrue l \<longleftrightarrow> has_result (parse (this_string ''true'')) i ''true'' l"
+  "has_result (parse (JsonTrue)) i JFalse l \<longleftrightarrow> False"
+  "has_result (parse (JsonTrue)) i JNull l \<longleftrightarrow> False"
+  by (clarsimp simp add: JsonTrue_def NER_simps)+
+
 lemma PASI_PNGI_JsonTrue[PASI_PNGI_intros]:
   shows "PASI (parse JsonTrue)"
         "PNGI (parse JsonTrue)"
@@ -204,6 +254,16 @@ definition JsonFalse :: "JSON bidef" where
                    | _ \<Rightarrow> None)
                   (this_string ''false'')"
 
+lemma has_result_JsonFalse[NER_simps]:
+  "has_result (parse (JsonFalse)) i (String str) l \<longleftrightarrow> False"
+  "has_result (parse (JsonFalse)) i (Number n) l \<longleftrightarrow> False"
+  "has_result (parse (JsonFalse)) i (Object od) l \<longleftrightarrow> False"
+  "has_result (parse (JsonFalse)) i (List ld) l \<longleftrightarrow> False"
+  "has_result (parse (JsonFalse)) i JTrue l \<longleftrightarrow> False"
+  "has_result (parse (JsonFalse)) i JFalse l \<longleftrightarrow> has_result (parse (this_string ''false'')) i ''false'' l"
+  "has_result (parse (JsonFalse)) i JNull l \<longleftrightarrow> False"
+  by (clarsimp simp add: JsonFalse_def NER_simps)+
+
 lemma PASI_PNGI_JsonFalse[PASI_PNGI_intros]:
   shows "PASI (parse JsonFalse)"
         "PNGI (parse JsonFalse)"
@@ -217,6 +277,16 @@ definition JsonNull :: "JSON bidef" where
                   (\<lambda>JNull \<Rightarrow> Some ''null''
                    | _ \<Rightarrow> None)
                   (this_string ''null'')"
+
+lemma has_result_JsonNull[NER_simps]:
+  "has_result (parse (JsonNull)) i (String str) l \<longleftrightarrow> False"
+  "has_result (parse (JsonNull)) i (Number n) l \<longleftrightarrow> False"
+  "has_result (parse (JsonNull)) i (Object od) l \<longleftrightarrow> False"
+  "has_result (parse (JsonNull)) i (List ld) l \<longleftrightarrow> False"
+  "has_result (parse (JsonNull)) i JTrue l \<longleftrightarrow> False"
+  "has_result (parse (JsonNull)) i JFalse l \<longleftrightarrow> False"
+  "has_result (parse (JsonNull)) i JNull l \<longleftrightarrow> has_result (parse (this_string ''null'')) i ''null'' l"
+  by (clarsimp simp add: JsonNull_def NER_simps)+
 
 lemma PASI_PNGI_JsonNull[PASI_PNGI_intros]:
   shows "PASI (parse JsonNull)"
