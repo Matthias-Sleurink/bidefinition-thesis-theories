@@ -524,8 +524,25 @@ lemma Json_well_formed_inductive:
     apply (rule or_well_formed)
     subgoal by (rule wf_JsonNumber)
     subgoal
-      
-      sorry
+      apply (rule or_well_formed)
+      subgoal
+        
+        sorry
+      subgoal
+        
+        sorry
+      subgoal
+        apply (rule wf_or_pair_from_fpci)
+        subgoal for i i' c
+          apply (auto simp add: fpci_simps NER_simps split: sum.splits)
+          subgoal for x by (insert fpci_JsonList[of \<open>J ()\<close> x c]; clarsimp simp add: is_error_JsonObject)
+          subgoal for x by (insert fpci_JsonTrue[of x c]; clarsimp simp add: is_error_JsonObject)
+          subgoal for x by (insert fpci_JsonFalse[of x c]; clarsimp simp add: is_error_JsonObject)
+          subgoal for x by (insert fpci_JsonNull[of x c]; clarsimp simp add: is_error_JsonObject)
+          done
+        subgoal by (clarsimp simp add: print_empty NER_simps split: sum.splits)
+        done
+      done
     subgoal
       apply (rule wf_or_pair_from_fpci)
       subgoal for i i' c
