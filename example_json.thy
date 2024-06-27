@@ -62,9 +62,9 @@ datatype JSON
   | Number "int"
   | Object "(string \<times> JSON) list"
   | List "JSON list"
-  | True
-  | False
-  | Null
+  | JTrue
+  | JFalse
+  | JNull
 
 
 abbreviation "quot_chr \<equiv> CHR ''\"''"
@@ -185,8 +185,8 @@ lemma mono_JsonList[partial_function_mono]:
 
 definition JsonTrue :: "JSON bidef" where
   "JsonTrue = ftransform
-                  (Some o (const True))
-                  (\<lambda>True \<Rightarrow> Some ''true''
+                  (Some o (const JTrue))
+                  (\<lambda>JTrue \<Rightarrow> Some ''true''
                    | _ \<Rightarrow> None)
                   (this_string ''true'')"
 
@@ -199,8 +199,8 @@ lemma PASI_PNGI_JsonTrue[PASI_PNGI_intros]:
 
 definition JsonFalse :: "JSON bidef" where
   "JsonFalse = ftransform
-                  (Some o (const False))
-                  (\<lambda>True \<Rightarrow> Some ''false''
+                  (Some o (const JFalse))
+                  (\<lambda>JFalse \<Rightarrow> Some ''false''
                    | _ \<Rightarrow> None)
                   (this_string ''false'')"
 
@@ -213,8 +213,8 @@ lemma PASI_PNGI_JsonFalse[PASI_PNGI_intros]:
 
 definition JsonNull :: "JSON bidef" where
   "JsonNull = ftransform
-                  (Some o (const Null))
-                  (\<lambda>True \<Rightarrow> Some ''null''
+                  (Some o (const JNull))
+                  (\<lambda>JNull \<Rightarrow> Some ''null''
                    | _ \<Rightarrow> None)
                   (this_string ''null'')"
 
@@ -241,9 +241,9 @@ fun sum_untake_many :: "JSON \<Rightarrow> JSON + JSON + JSON + JSON + JSON + JS
 | "sum_untake_many (Number s) = Inr (Inl (Number s))"
 | "sum_untake_many (Object s) = Inr (Inr (Inl (Object s)))"
 | "sum_untake_many (List s)   = Inr (Inr (Inr (Inl (List s))))"
-| "sum_untake_many True       = Inr (Inr (Inr (Inr (Inl True))))"
-| "sum_untake_many False      = Inr (Inr (Inr (Inr (Inr (Inl False)))))"
-| "sum_untake_many Null       = Inr (Inr (Inr (Inr (Inr (Inr Null)))))"
+| "sum_untake_many JTrue      = Inr (Inr (Inr (Inr (Inl JTrue))))"
+| "sum_untake_many JFalse     = Inr (Inr (Inr (Inr (Inr (Inl JFalse)))))"
+| "sum_untake_many JNull      = Inr (Inr (Inr (Inr (Inr (Inr JNull)))))"
 
 
 \<comment> \<open>Strictly speaking JSON is only correct\<close>
