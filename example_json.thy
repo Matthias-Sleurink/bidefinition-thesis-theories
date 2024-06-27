@@ -92,6 +92,30 @@ lemma PASI_str_literal[PASI_PNGI_intros]:
   unfolding str_literal_def takeMiddle_def
   by pasi_pngi
 
+lemma str_literal_well_formed:
+  "bidef_well_formed str_literal"
+  unfolding str_literal_def takeMiddle_def
+  apply (rule transform_well_formed4)
+  subgoal by (clarsimp simp add: well_formed_transform_funcs4_def NER_simps quot_def)
+  apply (rule b_then_well_formed_does_not_peek_past)
+  subgoal by (clarsimp simp add: quot_def this_char_well_formed)
+  subgoal
+    apply (rule b_then_well_formed)
+    subgoal unfolding char_not_in_set_def by (rule many_char_for_predicate_well_formed)
+    subgoal by (clarsimp simp add: quot_def this_char_well_formed)
+    subgoal
+      apply (rule first_printed_does_not_eat_into3; clarsimp?)
+      subgoal
+        unfolding char_not_in_set_def
+        by (rule many_char_for_predicate_well_formed)
+      subgoal
+        by (clarsimp simp add: fpci_simps quot_def char_not_in_set_def many_char_for_predicate_does_not_consume_past_char3)
+      done
+    done
+  subgoal unfolding quot_def by (rule this_char_does_not_peek_past_end)
+  done
+
+
 
 definition JsonString :: "JSON bidef" where
   "JsonString = ftransform
