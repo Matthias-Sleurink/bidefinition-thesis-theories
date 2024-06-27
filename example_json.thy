@@ -521,19 +521,31 @@ lemma Json_well_formed_inductive:
   apply (rule or_well_formed)
   subgoal by (rule JsonString_well_formed)
   subgoal
-    \<comment> \<open>Pausing this just to look at if the below or proof is doable.\<close>
-    sorry
+    apply (rule or_well_formed)
+    subgoal by (rule wf_JsonNumber)
+    subgoal
+      
+      sorry
+    subgoal
+      apply (rule wf_or_pair_from_fpci)
+      subgoal for i i' c
+        apply (auto simp add: fpci_simps NER_simps split: sum.splits)
+        subgoal for x by (insert fpci_JsonObject[of \<open>J ()\<close> x c]; clarsimp simp add: is_error_JsonNumber)
+        subgoal for x by (insert fpci_JsonList[of \<open>J ()\<close> x c]; clarsimp simp add: is_error_JsonNumber)
+        subgoal for x by (insert fpci_JsonTrue[of x c]; clarsimp simp add: is_error_JsonNumber)
+        subgoal for x by (insert fpci_JsonFalse[of x c]; clarsimp simp add: is_error_JsonNumber)
+        subgoal for x by (insert fpci_JsonNull[of x c]; clarsimp simp add: is_error_JsonNumber)
+        done
+      subgoal by (clarsimp simp add: print_empty NER_simps split: sum.splits)
+      done
+    done
   subgoal
     apply (rule wf_or_pair_from_fpci)
     subgoal
       apply (auto simp add: fpci_simps NER_simps split: sum.splits)
-      subgoal using fpci_JsonNumber is_error_JsonString by blast
-      subgoal using fpci_JsonObject is_error_JsonString by blast
-      subgoal using fpci_JsonList is_error_JsonString by blast
-      subgoal using fpci_JsonTrue is_error_JsonString by blast
-      subgoal using fpci_JsonFalse is_error_JsonString by blast
-      subgoal using fpci_JsonNull is_error_JsonString by blast
-      done
+      using fpci_JsonNumber fpci_JsonObject fpci_JsonList fpci_JsonTrue fpci_JsonFalse fpci_JsonNull
+            is_error_JsonString
+      by blast+
     subgoal by (clarsimp simp add: print_empty NER_simps split: sum.splits)
     done
   oops
