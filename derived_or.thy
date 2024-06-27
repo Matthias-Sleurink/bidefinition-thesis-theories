@@ -188,4 +188,18 @@ lemma wf_or_pair_eq_wf_or:
   by (auto simp add: fp_NER NER_simps split: sum.splits)
 
 
+\<comment> \<open>WF or pair can be dispatched with these combinator-buildable predicates\<close>
+lemma wf_or_pair_from_fpci:
+  assumes "\<And> i i' c. first_printed_chari (print B) i c \<Longrightarrow> is_error (parse A) (c#i')"
+  assumes "\<exists>i. p_has_result (print B) i [] \<Longrightarrow> is_error (parse A) []"
+  shows "well_formed_or_pair A B"
+  using assms unfolding well_formed_or_pair_def first_printed_chari_def
+  apply (clarsimp)
+  subgoal for v t
+    apply (cases t; clarsimp)
+    subgoal by blast
+    subgoal by fastforce
+    done
+  done
+
 end
