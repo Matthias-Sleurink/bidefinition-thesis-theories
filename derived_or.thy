@@ -118,10 +118,15 @@ lemma or_does_not_peek_past_end[peek_past_end_simps]:
 \<comment> \<open>First printed char\<close>
 lemma or_fpci[fpci_simps]:
   "first_printed_chari (print (or A B)) (Inl i) c \<longleftrightarrow> first_printed_chari (print A) i c"
-  "first_printed_chari (print (or A B)) (Inr i) c \<longleftrightarrow> first_printed_chari (print B) i c"
+  "first_printed_chari (print (or A B)) (Inr i') c \<longleftrightarrow> first_printed_chari (print B) i' c"
   unfolding or_def
   apply (metis eq_id_iff if_then_else_fpci_li_iff if_then_else_fpci_li_nonempty_A return_fpci(2) return_p_has_result(1))
   by (simp add: if_then_else_fpci_ri_iff)
+
+lemma or_fpci2[fpci_simps]:
+  "first_printed_chari (print (or A B)) i c \<longleftrightarrow> (case i of Inl i \<Rightarrow> first_printed_chari (print A) i c
+                                                         | Inr i \<Rightarrow> first_printed_chari (print B) i c)"
+  by (cases i; clarsimp simp add: or_fpci)
 
 
 
