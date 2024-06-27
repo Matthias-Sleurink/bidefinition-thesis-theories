@@ -145,9 +145,10 @@ lemma has_result_JsonString[NER_simps]:
   "has_result (parse (JsonString)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonString_def NER_simps)+
 
-lemma is_error_empty_JsonString[NER_simps]:
+lemma is_error_JsonString[NER_simps]:
   "is_error (parse (JsonString)) []"
-  by (clarsimp simp add: JsonString_def NER_simps str_literal_def takeMiddle_def quot_def)
+  "c \<noteq> quot_chr \<Longrightarrow> is_error (parse JsonString) (c # i)"
+  by (clarsimp simp add: JsonString_def NER_simps str_literal_def takeMiddle_def quot_def)+
 
 
 lemma JsonString_print_empty[fp_NER, print_empty]:
@@ -187,9 +188,10 @@ lemma has_result_JsonNumber[NER_simps]:
   "has_result (parse (JsonNumber)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonNumber_def NER_simps)+
 
-lemma is_error_empty_JsonNumber[NER_simps]:
+lemma is_error_JsonNumber[NER_simps]:
   "is_error (parse (JsonNumber)) []"
-  by (clarsimp simp add: JsonNumber_def NER_simps)
+  "c \<notin> ({CHR ''-''} \<union> digit_chars) \<Longrightarrow> is_error (parse JsonNumber) (c # i)"
+  by (clarsimp simp add: JsonNumber_def NER_simps)+
 
 lemma JsonNumber_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonNumber)) i [] \<longleftrightarrow> False"
@@ -245,9 +247,10 @@ lemma has_result_JsonObject[NER_simps]:
   "has_result (parse (JsonObject I)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonObject_def NER_simps takeMiddle_def)+
 
-lemma is_error_empty_JsonObject[NER_simps]:
+lemma is_error_JsonObject[NER_simps]:
   "is_error (parse (JsonObject I)) []"
-  by (clarsimp simp add: JsonObject_def NER_simps takeMiddle_def)
+  "c \<noteq> CHR ''{'' \<Longrightarrow> is_error (parse (JsonObject I)) (c # i)"
+  by (clarsimp simp add: JsonObject_def NER_simps takeMiddle_def)+
 
 lemma JsonObject_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonObject I)) i [] \<longleftrightarrow> False"
@@ -299,9 +302,10 @@ lemma has_result_JsonList[NER_simps]:
   "has_result (parse (JsonList I)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonList_def NER_simps takeMiddle_def)+
 
-lemma is_error_empty_JsonList[NER_simps]:
+lemma is_error_JsonList[NER_simps]:
   "is_error (parse (JsonList I)) []"
-  by (clarsimp simp add: JsonList_def NER_simps takeMiddle_def)
+  "c \<noteq> CHR ''['' \<Longrightarrow> is_error (parse (JsonList I)) (c # i)"
+  by (clarsimp simp add: JsonList_def NER_simps takeMiddle_def)+
 
 lemma JsonList_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonList I)) i [] \<longleftrightarrow> False"
@@ -339,9 +343,10 @@ lemma has_result_JsonTrue[NER_simps]:
   "has_result (parse (JsonTrue)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonTrue_def NER_simps)+
 
-lemma is_error_empty_JsonTrue[NER_simps]:
+lemma is_error_JsonTrue[NER_simps]:
   "is_error (parse (JsonTrue)) []"
-  by (clarsimp simp add: JsonTrue_def NER_simps)
+  "c \<noteq> CHR ''t'' \<Longrightarrow> is_error (parse (JsonTrue)) (c # i)"
+  by (clarsimp simp add: JsonTrue_def NER_simps)+
 
 lemma JsonTrue_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonTrue)) i [] \<longleftrightarrow> False"
@@ -378,9 +383,10 @@ lemma has_result_JsonFalse[NER_simps]:
   "has_result (parse (JsonFalse)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonFalse_def NER_simps)+
 
-lemma is_error_empty_JsonFalse[NER_simps]:
+lemma is_error_JsonFalse[NER_simps]:
   "is_error (parse (JsonFalse)) []"
-  by (clarsimp simp add: JsonFalse_def NER_simps)
+  "c \<noteq> CHR ''f'' \<Longrightarrow> is_error (parse (JsonFalse)) (c # i)"
+  by (clarsimp simp add: JsonFalse_def NER_simps)+
 
 lemma JsonFalse_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonFalse)) i [] \<longleftrightarrow> False"
@@ -417,9 +423,10 @@ lemma has_result_JsonNull[NER_simps]:
   "has_result (parse (JsonNull)) i JNull l \<longleftrightarrow> has_result (parse (this_string ''null'')) i ''null'' l"
   by (clarsimp simp add: JsonNull_def NER_simps)+
 
-lemma is_error_empty_JsonNull[NER_simps]:
+lemma is_error_JsonNull[NER_simps]:
   "is_error (parse (JsonNull)) []"
-  by (clarsimp simp add: JsonNull_def NER_simps)
+  "c \<noteq> CHR ''n'' \<Longrightarrow> is_error (parse (JsonNull)) (c # i)"
+  by (clarsimp simp add: JsonNull_def NER_simps)+
 
 lemma JsonNull_print_empty[fp_NER, print_empty]:
   "p_has_result (print (JsonNull)) i [] \<longleftrightarrow> False"
