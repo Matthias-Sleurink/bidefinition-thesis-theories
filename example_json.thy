@@ -202,6 +202,12 @@ lemma PASI_PNGI_JsonNumber[PASI_PNGI_intros]:
   unfolding JsonNumber_def
   by pasi_pngi+
 
+lemma fpci_JsonNumber[fpci_simps]:
+  "first_printed_chari (print JsonNumber) i c \<Longrightarrow> c \<in> digit_chars \<or> c = CHR ''-''"
+  unfolding JsonNumber_def
+  by (clarsimp simp add: fpci_simps split: JSON.splits if_splits)
+
+
 
 definition JsonNameColonObject :: "JSON bidef \<Rightarrow> (string \<times> JSON) bidef" where
   "JsonNameColonObject i = b_then str_literal (then_drop_first (ws_char_ws CHR ''\"'') i ())"
@@ -260,6 +266,11 @@ lemma mono_JsonObject[partial_function_mono]:
   shows "mono_bd (\<lambda>f. JsonObject (A f))"
   unfolding JsonObject_def using ma
   by pf_mono_prover
+
+lemma fpci_JsonObject[fpci_simps]:
+  "first_printed_chari (print (JsonObject I )) i c \<Longrightarrow> c = CHR ''{''"
+  unfolding JsonObject_def
+  by (clarsimp simp add: fpci_simps takeMiddle_def print_empty split: JSON.splits if_splits)
   
 
 abbreviation "betweenSquareBrackets bd \<equiv> takeMiddle (char_ws CHR ''['') bd (ws_char CHR '']'') () ()"
@@ -303,6 +314,11 @@ lemma mono_JsonList[partial_function_mono]:
   unfolding JsonList_def using ma
   by pf_mono_prover
 
+lemma fpci_JsonList[fpci_simps]:
+  "first_printed_chari (print (JsonList I )) i c \<Longrightarrow> c = CHR ''[''"
+  unfolding JsonList_def
+  by (clarsimp simp add: fpci_simps takeMiddle_def print_empty split: JSON.splits)
+
 
 
 definition JsonTrue :: "JSON bidef" where
@@ -338,6 +354,11 @@ lemma PASI_PNGI_JsonTrue[PASI_PNGI_intros]:
   unfolding JsonTrue_def
   by pasi_pngi+
 
+lemma fpci_JsonTrue[fpci_simps]:
+  "first_printed_chari (print (JsonTrue)) i c \<Longrightarrow> c = CHR ''t''"
+  unfolding JsonTrue_def
+  by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
+
 
 definition JsonFalse :: "JSON bidef" where
   "JsonFalse = ftransform
@@ -372,6 +393,11 @@ lemma PASI_PNGI_JsonFalse[PASI_PNGI_intros]:
   unfolding JsonFalse_def
   by pasi_pngi+
 
+lemma fpci_JsonFalse[fpci_simps]:
+  "first_printed_chari (print (JsonFalse)) i c \<Longrightarrow> c = CHR ''f''"
+  unfolding JsonFalse_def
+  by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
+
 
 definition JsonNull :: "JSON bidef" where
   "JsonNull = ftransform
@@ -405,6 +431,11 @@ lemma PASI_PNGI_JsonNull[PASI_PNGI_intros]:
         "PNGI (parse JsonNull)"
   unfolding JsonNull_def
   by pasi_pngi+
+
+lemma fpci_JsonNull[fpci_simps]:
+  "first_printed_chari (print (JsonNull)) i c \<Longrightarrow> c = CHR ''n''"
+  unfolding JsonNull_def
+  by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
 
 
 \<comment> \<open>Seems to me like this could be done better?\<close>
