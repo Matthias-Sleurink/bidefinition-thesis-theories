@@ -421,6 +421,15 @@ lemma fpci_JsonFalse[fpci_simps]:
   unfolding JsonFalse_def
   by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
 
+lemma wf_JsonFalse:
+  "bidef_well_formed JsonFalse"
+  unfolding JsonFalse_def
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def NER_simps fp_NER split: JSON.splits)
+  subgoal by (rule this_string_wf)
+  done
+
+
 
 definition JsonNull :: "JSON bidef" where
   "JsonNull = ftransform
