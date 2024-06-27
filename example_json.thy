@@ -470,6 +470,15 @@ lemma fpci_JsonNull[fpci_simps]:
   unfolding JsonNull_def
   by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
 
+lemma wf_JsonNull:
+  "bidef_well_formed JsonNull"
+  unfolding JsonNull_def
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def NER_simps fp_NER split: JSON.splits)
+  subgoal by (rule this_string_wf)
+  done
+
+
 
 \<comment> \<open>Seems to me like this could be done better?\<close>
 fun sum_take_many :: "JSON + JSON + JSON + JSON + JSON + JSON + JSON \<Rightarrow> JSON" where
