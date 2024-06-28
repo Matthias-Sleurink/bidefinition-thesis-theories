@@ -1008,7 +1008,7 @@ lemma strict_PASI[cont_intro]:
   by (simp add: PASI_def has_result_def)
 
 
-lemma admissible_no_empty_result[cont_intro]:
+lemma admissible_no_empty_print_result[cont_intro]:
   "bd.admissible (\<lambda>r. \<not> p_has_result (print (r ())) e [])"
   unfolding p_has_result_def
   by simp
@@ -1055,5 +1055,17 @@ lemma admissible_can_drop_leftover[cont_intro]:
   "bd.admissible (\<lambda>expressionR. (\<forall>c l l' r. has_result (parse (expressionR ())) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse (expressionR ())) (c @ l) r l))"
   unfolding has_result_def
   by simp
+
+lemma bottom_no_empty_result[cont_intro]:
+  "\<And>r x. has_result (\<lambda>a. None) [] r x \<Longrightarrow> False"
+  unfolding has_result_def
+  by clarsimp
+
+lemma admissible_no_empty_parse_result[cont_intro]:
+  "bd.admissible (\<lambda>JsonR. \<forall>r x. \<not> has_result (parse (JsonR ())) [] r x)"
+  unfolding has_result_def
+  by clarsimp
+
+
 
 end
