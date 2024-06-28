@@ -87,11 +87,14 @@ lemma str_literal_no_parse_empty[NER_simps]:
   "has_result (parse str_literal) [] r l \<longleftrightarrow> False"
   by (clarsimp simp add: NER_simps str_literal_def takeMiddle_def quot_def)
 
+lemma is_error_str_literal[NER_simps]:
+  "is_error (parse str_literal) []"
+  by (clarsimp simp add: str_literal_def NER_simps takeMiddle_def quot_def)
+
 lemma str_literal_print_empty[fp_NER, print_empty]:
   "p_has_result (print (str_literal)) i [] \<longleftrightarrow> False"
   unfolding str_literal_def
   by (clarsimp simp add: print_empty takeMiddle_def quot_def)
-
 
 lemma PNGI_str_literal[PASI_PNGI_intros]:
   shows "PNGI (parse str_literal)"
@@ -246,6 +249,11 @@ lemma p_has_result_JsonNameColonObject[print_empty, fp_NER]:
 lemma fpci_JsonNameColonObject[fpci_simps]:
   "first_printed_chari (print (JsonNameColonObject J)) t c \<Longrightarrow> c = quot_chr"
   by (clarsimp simp add: JsonNameColonObject_def fpci_simps print_empty split: if_splits)
+
+lemma is_error_JsonNameColonObject[NER_simps]:
+  "is_error (parse (JsonNameColonObject J)) []"
+  by (clarsimp simp add: JsonNameColonObject_def NER_simps)
+
 
 
 abbreviation "betweenBraces bd \<equiv> takeMiddle (char_ws CHR ''{'') bd (ws_char CHR ''}'') () ()"
