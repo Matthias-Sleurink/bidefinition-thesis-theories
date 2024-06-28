@@ -652,6 +652,73 @@ lemma JsonNameColonObject_no_consume_past_closing_brace:
   subgoal using J_pngi by pasi_pngi
   done
 
+lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
+  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  assumes jnco_wf: "bidef_well_formed (JsonNameColonObject J)"
+  assumes many_comma_then_jcno_wf: "bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))"
+  assumes inner_wf: "bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())"
+  shows "pa_does_not_eat_into_pb_nondep (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ()) (ws_char CHR ''}'')"
+  apply (rule first_printed_does_not_eat_into3)
+  subgoal by (rule inner_wf)
+  apply (clarsimp simp add: fpci_simps separated_by_def)
+  apply (rule transform_does_not_consume_past_char3)
+  apply (rule optional_does_not_consume_past_char3)
+  subgoal by (clarsimp simp add: separated_byBase_def NER_simps)
+  subgoal by (clarsimp simp add: separated_byBase_def NER_simps)
+  subgoal
+    apply (clarsimp simp add: separated_byBase_def)
+    apply (rule then_does_not_consume_past3_from_can_drop_leftover)
+    subgoal by (rule jnco_wf)
+    subgoal by (rule many_comma_then_jcno_wf)
+    subgoal
+      
+      sorry
+    subgoal for i c \<comment> \<open>Need to do an fpc many rule\<close> sorry
+    subgoal
+      apply (rule JsonNameColonObject_no_consume_past_closing_brace)
+      subgoal by (rule J_pngi)
+      subgoal by (rule J_wf)
+      subgoal by (rule J_no_consume_past_closing_brace)
+      subgoal by (rule J_fpc_no_ws)
+      subgoal by (rule J_no_parse_empty)
+      done
+    subgoal sorry
+    done
+  oops
+
+
+lemma WF_JsonObject:
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_pngi: "PNGI (parse J)"
+  shows "bidef_well_formed (JsonObject J)"
+  unfolding JsonObject_def
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: JSON.splits)
+  subgoal
+    unfolding takeMiddle_def
+    apply (rule transform_well_formed4)
+    subgoal by (clarsimp simp add: well_formed_transform_funcs4_def)
+    subgoal
+      apply (rule b_then_well_formed[rotated, rotated])
+      subgoal by (rule char_ws_not_eat_into_object)
+      subgoal by (rule char_ws_well_formed; clarsimp)
+      subgoal
+        apply (rule b_then_well_formed)
+        subgoal
+          
+          sorry
+        subgoal by (rule ws_char_well_formed; clarsimp)
+        subgoal
+          
+          sorry
+        done
+      done
+    done
+  oops
 
 
 lemma Json_well_formed_inductive:
