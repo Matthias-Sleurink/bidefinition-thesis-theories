@@ -516,6 +516,57 @@ lemma then_does_not_consume_past3:
   done
 
 
+lemma then_does_not_consume_past3_from_can_drop_leftover:
+  assumes wf_A: "bidef_well_formed A"
+  assumes wf_B: "bidef_well_formed B"
+  assumes dncpc_B_c: "does_not_consume_past_char3 (parse B) c"
+  assumes fpc_B_dncpc_A: "\<And>i c. fpc (parse B) i c \<longrightarrow> does_not_consume_past_char3 (parse A) c"
+  assumes dncpc_A_c: "does_not_consume_past_char3 (parse A) c"
+  assumes A_drop_leftover_after: "\<And>c c' l a. has_result (parse A) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse A) (c @ c') a c'"
+  shows "does_not_consume_past_char3 (parse (b_then A B)) c"
+  unfolding does_not_consume_past_char3_def
+  apply auto
+  subgoal for c'' a b l
+    apply (clarsimp simp add: NER_simps)
+    subgoal for l'
+      using wf_B[THEN get_pngi_unfold, rule_format, of l' b l]
+      apply clarsimp
+      subgoal for c'
+        using wf_A[THEN get_pngi_unfold, rule_format, of \<open>c''@l\<close> a \<open>c'@l\<close>]
+        apply clarsimp
+        subgoal for c
+          apply (rule exI[of _ c']; rule conjI)
+          subgoal by (rule A_drop_leftover_after)
+          subgoal using dncpc_B_c[unfolded does_not_consume_past_char3_def] by fastforce
+          done
+        done
+      done
+    done
+  subgoal for cs a b l l'
+    apply (clarsimp simp add: NER_simps)
+    subgoal for l''
+      using wf_A[THEN get_pngi_unfold, rule_format, of \<open>cs@l\<close> a l'']
+      using wf_B[THEN get_pngi_unfold, rule_format, of l'' b l]
+      apply clarsimp
+      subgoal for c' c''
+        apply (rule exI[of _ \<open>c'' @ c # l'\<close>])
+        apply (rule conjI)
+        subgoal
+          \<comment> \<open>\<^term>\<open>does_not_peek_past_end (parse A)\<close> would solve it.\<close>
+          using dncpc_B_c[unfolded does_not_consume_past_char3_def]
+          apply (cases c''; clarsimp)
+          subgoal
+            using dncpc_A_c[unfolded does_not_consume_past_char3_def] by fast
+          subgoal using fpc_B_dncpc_A[unfolded does_not_consume_past_char3_def fpc_def] by fastforce
+          done
+        subgoal using dncpc_B_c[unfolded does_not_consume_past_char3_def] by fastforce
+        done
+      done
+    done
+  done
+
+
+
 \<comment> \<open>well formed\<close>
 
 lemma does_not_peek_past_end_implies_does_not_eat_into:
