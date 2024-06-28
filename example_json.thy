@@ -89,7 +89,8 @@ lemma str_literal_no_parse_empty[NER_simps]:
 
 lemma is_error_str_literal[NER_simps]:
   "is_error (parse str_literal) []"
-  by (clarsimp simp add: str_literal_def NER_simps takeMiddle_def quot_def)
+  "c \<noteq> quot_chr \<Longrightarrow> is_error (parse str_literal) (c # l)"
+  by (clarsimp simp add: str_literal_def NER_simps takeMiddle_def quot_def)+
 
 lemma str_literal_print_empty[fp_NER, print_empty]:
   "p_has_result (print (str_literal)) i [] \<longleftrightarrow> False"
@@ -252,7 +253,8 @@ lemma fpci_JsonNameColonObject[fpci_simps]:
 
 lemma is_error_JsonNameColonObject[NER_simps]:
   "is_error (parse (JsonNameColonObject J)) []"
-  by (clarsimp simp add: JsonNameColonObject_def NER_simps)
+  "c \<noteq> quot_chr \<Longrightarrow> is_error (parse (JsonNameColonObject J)) (c # l)"
+  by (clarsimp simp add: JsonNameColonObject_def NER_simps)+
 
 
 
