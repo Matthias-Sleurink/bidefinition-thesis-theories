@@ -901,6 +901,27 @@ lemma inductive_Json_fpc_not_ws:
     done
   done
 
+lemma inductive_Json_no_consume_past_closing_brace:
+  assumes J_wf: "bidef_well_formed (J ())"
+  assumes J_pngi: "PNGI (parse (J ()))"
+  assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
+  assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+  shows "does_not_consume_past_char3
+          (parse
+            (transform sum_take_many sum_untake_many
+              (derived_or.or JsonString
+              (derived_or.or JsonNumber
+              (derived_or.or (JsonObject (J ()))
+              (derived_or.or (JsonList (J ()))
+              (derived_or.or JsonTrue
+              (derived_or.or JsonFalse
+                             JsonNull))))))))
+          CHR ''}''"
+  apply (rule transform_does_not_consume_past_char3)
+  \<comment> \<open>Seems to me that we can make a rule for or, unfold it a few times, and then proof for each separately\<close>
+  oops
+
+
 
 \<comment> \<open>Other needed premises:
 
@@ -913,10 +934,14 @@ lemma Json_well_formed:
   \<and> (PNGI (parse Json))
   \<and> (\<nexists>r l. has_result (parse Json) [] r l)
   \<and> (\<forall> i c. fpc (parse Json) i c \<longrightarrow> c \<notin> whitespace_chars)
+  \<and> (does_not_consume_past_char3 (parse Json) CHR ''}'')
 "
   apply (induction rule: JsonR.fixp_induct)
   subgoal by clarsimp
-  subgoal apply (clarsimp simp add: strict_WF strict_PNGI) using bottom_no_empty_result bottom_has_no_fpc by fast
+  subgoal
+    apply (clarsimp simp add: strict_WF strict_PNGI)
+    using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3
+    by fast
   subgoal for J
     apply clarsimp
     apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>
@@ -926,6 +951,9 @@ lemma Json_well_formed:
     subgoal by pasi_pngi
     subgoal using inductive_Json_no_empty_result by blast
     subgoal by (rule inductive_Json_fpc_not_ws)
+    subgoal
+      \<comment> \<open>Does not consume past closing brace\<close>
+      sorry
     done
   oops
 

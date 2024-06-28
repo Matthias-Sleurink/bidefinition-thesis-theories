@@ -1075,5 +1075,15 @@ lemma admissible_fpc_not_in_set[cont_intro]:
   "bd.admissible (\<lambda>JsonR. \<forall>i c. fpc (parse (JsonR ())) i c \<longrightarrow> c \<notin> S)"
   unfolding fpc_def has_result_def by fastforce
 
+lemma admissible_no_consume_past_char3[cont_intro]:
+  "bd.admissible (\<lambda>JsonR. does_not_consume_past_char3 (parse (JsonR ())) C)"
+  unfolding does_not_consume_past_char3_def has_result_def
+  by clarsimp
+
+lemma bottom_no_consume_past_char3[cont_intro]:
+  "does_not_consume_past_char3 (\<lambda>a. None) C"
+  unfolding does_not_consume_past_char3_def
+  by (clarsimp simp add: NER_simps)
+
 
 end
