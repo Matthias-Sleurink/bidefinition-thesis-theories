@@ -1066,6 +1066,14 @@ lemma admissible_no_empty_parse_result[cont_intro]:
   unfolding has_result_def
   by clarsimp
 
+lemma bottom_has_no_fpc[cont_intro]:
+  "\<not>fpc (\<lambda>a. None) i c"
+  unfolding fpc_def has_result_def
+  by fastforce
+
+lemma admissible_fpc_not_in_set[cont_intro]:
+  "bd.admissible (\<lambda>JsonR. \<forall>i c. fpc (parse (JsonR ())) i c \<longrightarrow> c \<notin> S)"
+  unfolding fpc_def has_result_def by fastforce
 
 
 end
