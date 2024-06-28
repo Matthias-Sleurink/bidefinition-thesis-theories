@@ -118,7 +118,7 @@ lemma b_then_print_empty_safe[print_empty, fp_NER]:
   "p_has_result (print (b_then A B)) (ia, ib) [] \<longleftrightarrow> p_has_result (print A) ia [] \<and> p_has_result (print B) ib []"
   by (clarsimp simp add: b_then_def print_empty)
 
-lemma b_then_print_empty:
+lemma b_then_print_empty[print_empty]:
   "p_has_result (print (b_then A B)) i [] \<longleftrightarrow> p_has_result (print A) (fst i) [] \<and> p_has_result (print B) (snd i) []"
   by (clarsimp simp add: b_then_def print_empty)
 
