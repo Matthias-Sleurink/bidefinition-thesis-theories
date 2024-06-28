@@ -752,11 +752,66 @@ lemma inductive_Json_no_empty_result:
                   [] r x"
   by (clarsimp simp add: NER_simps split: sum.splits)
 
+\<comment> \<open>wew\<close>
+lemma inductive_Json_fpc_not_ws:
+  "\<forall>i c. fpc (parse (transform
+                       sum_take_many
+                       sum_untake_many
+                       (derived_or.or JsonString (derived_or.or JsonNumber (derived_or.or (JsonObject (J ())) (derived_or.or (JsonList (J ())) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull))))))))
+                i c \<longrightarrow>
+               c \<notin> whitespace_chars"
+  apply (clarsimp simp add: transform_fpc)
+  subgoal for c i
+    apply (cases i; clarsimp)
+    subgoal for a
+      apply (insert fpc_or_safe(1)[of JsonString \<open>derived_or.or JsonNumber (derived_or.or (JsonObject (J ())) (derived_or.or (JsonList (J ())) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull))))\<close> a c])
+      apply clarsimp
+      using fpc_JsonString[of a c]
+      by simp
+    subgoal for b
+      apply (cases b; clarsimp)
+      subgoal for c'
+        apply (insert fpc_or[of JsonString \<open>derived_or.or JsonNumber (derived_or.or (JsonObject (J ())) (derived_or.or (JsonList (J ())) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull))))\<close> \<open>Inr b\<close> c])
+        apply clarsimp
+        apply (insert fpc_or[of JsonNumber \<open>derived_or.or (JsonObject (J ())) (derived_or.or (JsonList (J ())) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull)))\<close> \<open>Inl c'\<close> c])
+        apply clarsimp
+        by (insert fpc_JsonNumber[of c' c]; auto)
+      subgoal for c'
+        apply (insert fpc_or_safe(2)[THEN fpc_or_safe(2), of JsonString JsonNumber \<open>derived_or.or (JsonObject (J ())) (derived_or.or (JsonList (J ())) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull)))\<close> c' c]; clarsimp)
+        apply (cases c'; clarsimp)
+        subgoal for d
+          apply (insert fpc_or_safe(1)[of \<open>JsonObject (J ())\<close> \<open>derived_or.or (JsonList (J ())) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull))\<close> d c]; clarsimp)
+          by (insert fpc_JsonObject[of \<open>J ()\<close> d c]; clarsimp)
+        subgoal for d
+          apply (cases d; clarsimp)
+          subgoal for e
+            apply (insert fpc_or_safe(2)[THEN fpc_or_safe(1), of \<open>JsonObject (J ())\<close> \<open>JsonList (J ())\<close> \<open>derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull)\<close> e c]; clarsimp)
+            by (insert fpc_JsonList[of \<open>J ()\<close> e c]; clarsimp)
+          subgoal for e
+            apply (cases e; clarsimp)
+            subgoal for f
+              apply (insert fpc_or_safe(2)[THEN fpc_or_safe(2)[THEN fpc_or_safe(1)], of \<open>JsonObject (J ())\<close> \<open>JsonList (J ())\<close> JsonTrue \<open>derived_or.or JsonFalse JsonNull\<close> f c]; clarsimp)
+              by (insert fpc_JsonTrue[of f c]; clarsimp)
+            subgoal for f
+              apply (cases f; clarsimp)
+              subgoal for g
+                apply (insert fpc_or_safe(2)[THEN fpc_or_safe(2)[THEN fpc_or_safe(2)[THEN fpc_or_safe(1)]], of \<open>JsonObject (J ())\<close> \<open>JsonList (J ())\<close> JsonTrue JsonFalse JsonNull g c]; clarsimp)
+                by (insert fpc_JsonFalse[of g c]; clarsimp)
+              subgoal for g
+                apply (insert fpc_or_safe(2)[THEN fpc_or_safe(2)[THEN fpc_or_safe(2)[THEN fpc_or_safe(2)]], of \<open>JsonObject (J ())\<close> \<open>JsonList (J ())\<close> JsonTrue JsonFalse JsonNull g c]; clarsimp)
+                by (insert fpc_JsonNull[of g c]; clarsimp)
+              done
+            done
+          done
+        done
+      done
+    done
+  done
+
 
 \<comment> \<open>Other needed premises:
 
   J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
-  J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
 
 \<close>
 
@@ -764,10 +819,11 @@ lemma Json_well_formed:
   "bidef_well_formed Json
   \<and> (PNGI (parse Json))
   \<and> (\<nexists>r l. has_result (parse Json) [] r l)
+  \<and> (\<forall> i c. fpc (parse Json) i c \<longrightarrow> c \<notin> whitespace_chars)
 "
   apply (induction rule: JsonR.fixp_induct)
   subgoal by clarsimp
-  subgoal apply (clarsimp simp add: strict_WF strict_PNGI) using bottom_no_empty_result by fast
+  subgoal apply (clarsimp simp add: strict_WF strict_PNGI) using bottom_no_empty_result bottom_has_no_fpc by fast
   subgoal for J
     apply clarsimp
     apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>
@@ -776,6 +832,7 @@ lemma Json_well_formed:
       sorry
     subgoal by pasi_pngi
     subgoal using inductive_Json_no_empty_result by blast
+    subgoal by (rule inductive_Json_fpc_not_ws)
     done
   oops
 
