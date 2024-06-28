@@ -528,6 +528,22 @@ partial_function (bd) JsonR :: "unit \<Rightarrow> JSON bidef" where
              ))))))"
 abbreviation "Json \<equiv> JsonR ()"
 
+lemma char_ws_not_eat_into_object:
+  shows "pa_does_not_eat_into_pb_nondep
+           (char_ws CHR ''{'')
+           (b_then (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ()) (ws_char CHR ''}''))"
+  apply (rule first_printed_does_not_eat_into3)
+  subgoal by (rule char_ws_well_formed; clarsimp)
+  apply (auto simp add: fpci_simps print_empty split: list.splits)
+  subgoal by (clarsimp simp add: char_ws_does_not_consume_past_char3)
+  subgoal for c a b
+    \<comment> \<open>Why did this not apply in auto?\<close>
+    apply (insert fpci_JsonNameColonObject[of J \<open>(a,b)\<close> c]; clarsimp)
+    by (clarsimp simp add: char_ws_does_not_consume_past_char3)
+  done
+
+
+
 lemma Json_well_formed_inductive:
   assumes J_wf: "bidef_well_formed (J ())"
   assumes J_pngi: "PNGI (parse (J ()))"
