@@ -102,6 +102,10 @@ lemma PASI_str_literal[PASI_PNGI_intros]:
   unfolding str_literal_def takeMiddle_def
   by pasi_pngi
 
+lemma fpci_str_literal[fpci_simps]:
+  "first_printed_chari (print str_literal) t c \<Longrightarrow> c = quot_chr"
+  by (clarsimp simp add: str_literal_def fpci_simps takeMiddle_def print_empty quot_def split: if_splits)
+
 lemma str_literal_well_formed:
   "bidef_well_formed str_literal"
   unfolding str_literal_def takeMiddle_def
