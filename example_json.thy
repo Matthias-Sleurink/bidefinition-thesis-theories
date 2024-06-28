@@ -133,6 +133,39 @@ lemma str_literal_well_formed:
   subgoal unfolding quot_def by (rule this_char_does_not_peek_past_end)
   done
 
+lemma t:
+  assumes A_pngi: "PNGI (parse A)"
+  assumes B_pngi: "PNGI (parse B)"
+  assumes B_fpc_dncpcA: "\<And>i c. fpc (parse B) i c \<Longrightarrow> does_not_consume_past_char3 (parse A) c"
+  assumes B_dncpc: "does_not_peek_past_end (parse B)"
+  shows "does_not_peek_past_end (parse (b_then A B))"
+  apply (clarsimp simp add: does_not_peek_past_end_def NER_simps)
+  \<comment> \<open>Worth a try in the future\<close>
+  oops
+
+lemma dropWhile_cons_l_eq_char_cons_l:
+  "dropWhile (\<lambda>found. found \<noteq> chr) (l @ l') = chr # l' \<Longrightarrow> (\<exists>ls. l = ls@[chr])"
+  apply (induction l; clarsimp)
+  subgoal by (clarsimp simp add: length_dropWhile_le[of _ l'] impossible_Cons)
+  subgoal by (clarsimp split: if_splits)
+  done
+
+lemma str_literal_no_peek_past_end:
+  "does_not_peek_past_end (parse str_literal)"
+  unfolding str_literal_def takeMiddle_def
+  apply (rule transform_does_not_peek_past_end)
+  apply (rule then_does_not_peek_past_end)
+  subgoal by (clarsimp simp add: quot_def this_char_does_not_peek_past_end)
+  subgoal by pasi_pngi
+  subgoal
+    apply (clarsimp simp add: does_not_peek_past_end_def)
+    subgoal for c a b l l'
+      apply (insert dropWhile_cons_l_eq_char_cons_l[of quot_chr c l])
+      by (auto simp add: NER_simps char_not_in_set_def quot_def takeWhile_tail dropWhile_append3)
+    done
+  subgoal by pasi_pngi
+  done
+
 
 
 definition JsonString :: "JSON bidef" where
