@@ -176,6 +176,19 @@ lemma optional_fpci[fpci_simps]:
 
 
 
+\<comment> \<open>No peek past char\<close>
+lemma optional_does_not_consume_past_char3:
+  assumes I_error_empty: "is_error (parse I) []"
+  assumes I_fail_if_first_char: "\<And>l. is_error (parse I) (c # l)"
+  assumes I_ncpc: "does_not_consume_past_char3 (parse I) c"
+  shows "does_not_consume_past_char3 (parse (optional I)) c"
+  unfolding optional_def
+  apply (rule transform_does_not_consume_past_char3)
+  using I_ncpc unfolding does_not_consume_past_char3_def
+  by (auto simp add: NER_simps I_error_empty I_fail_if_first_char split: sum.splits)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma optional_well_formed:
   assumes "is_error (parse b) []"
