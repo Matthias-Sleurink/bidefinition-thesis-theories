@@ -82,6 +82,7 @@ lemma expression_punctuation_charsets[simp]:
   "CHR ''f'' \<notin> digit_chars"
   "CHR ''n'' \<notin> digit_chars"
   "CHR ''\"'' \<notin> digit_chars"
+  "CHR '':'' \<notin> digit_chars"
 
   "CHR ''*'' \<notin> derived_digit_char.digit_chars"
   "CHR ''+'' \<notin> derived_digit_char.digit_chars"
@@ -89,6 +90,7 @@ lemma expression_punctuation_charsets[simp]:
   "CHR ''f'' \<notin> derived_digit_char.digit_chars"
   "CHR ''n'' \<notin> derived_digit_char.digit_chars"
   "CHR ''\"'' \<notin> derived_digit_char.digit_chars"
+  "CHR '':'' \<notin> derived_digit_char.digit_chars"
 
   "CHR ''*'' \<notin> whitespace_chars"
   "CHR ''+'' \<notin> whitespace_chars"
@@ -102,6 +104,7 @@ lemma expression_punctuation_charsets[simp]:
   "CHR ''f'' \<notin> whitespace_chars"
   "CHR ''n'' \<notin> whitespace_chars"
   "CHR ''\"'' \<notin> whitespace_chars"
+  "CHR '':'' \<notin> whitespace_chars"
   unfolding derived_digit_char.digit_chars_def whitespace_chars_def
   by blast+
 
