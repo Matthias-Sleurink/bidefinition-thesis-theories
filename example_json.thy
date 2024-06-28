@@ -724,6 +724,8 @@ lemma WF_JsonObject:
 lemma Json_well_formed_inductive:
   assumes J_wf: "bidef_well_formed (J ())"
   assumes J_pngi: "PNGI (parse (J ()))"
+  assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
+  assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
   shows "bidef_well_formed
           (transform
              sum_take_many
