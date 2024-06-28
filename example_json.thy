@@ -701,13 +701,30 @@ lemma Json_well_formed_inductive:
     done
   oops
 
+lemma inductive_Json_no_empty_result:
+  shows "\<not> has_result
+                  (parse
+                    (transform sum_take_many sum_untake_many
+                      (derived_or.or JsonString (derived_or.or JsonNumber (derived_or.or (JsonObject (J ())) (derived_or.or (JsonList (J ())) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull))))))))
+                  [] r x"
+  by (clarsimp simp add: NER_simps split: sum.splits)
+
+
+\<comment> \<open>Other needed premises:
+
+  J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
+  J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+
+\<close>
 
 lemma Json_well_formed:
-  "bidef_well_formed Json \<and>
-   (PNGI (parse Json))"
+  "bidef_well_formed Json
+  \<and> (PNGI (parse Json))
+  \<and> (\<nexists>r l. has_result (parse Json) [] r l)
+"
   apply (induction rule: JsonR.fixp_induct)
   subgoal by clarsimp
-  subgoal by (clarsimp simp add: strict_WF strict_PNGI)
+  subgoal apply (clarsimp simp add: strict_WF strict_PNGI) using bottom_no_empty_result by fast
   subgoal for J
     apply clarsimp
     apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>
@@ -715,6 +732,7 @@ lemma Json_well_formed:
       \<comment> \<open>WF\<close>
       sorry
     subgoal by pasi_pngi
+    subgoal using inductive_Json_no_empty_result by blast
     done
   oops
 
