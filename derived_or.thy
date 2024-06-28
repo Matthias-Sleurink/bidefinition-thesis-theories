@@ -147,6 +147,24 @@ lemma or_can_drop_leftover:
   done
 
 
+
+\<comment> \<open>First Parsed Char\<close>
+\<comment> \<open>Note that these two cannot go into the fpc simps set as they seem to be applicable in way too many places.\<close>
+\<comment> \<open>Might want to change these rules so that that does not happen.\<close>
+lemma fpc_or:
+  "fpc (parse (or A B)) i c \<Longrightarrow> (
+    case i of Inl i' \<Rightarrow> fpc (parse A) i' c
+            | Inr i' \<Rightarrow> fpc (parse B) i' c)"
+  by (auto simp add: fpc_def NER_simps split: sum.splits)
+
+lemma fpc_or_safe:
+  "fpc (parse (or A B)) (Inl a) c \<Longrightarrow> fpc (parse A) a c"
+  "fpc (parse (or A B)) (Inr b) c \<Longrightarrow> fpc (parse B) b c"
+  by (auto simp add: fpc_def NER_simps split: sum.splits)
+
+
+
+
 \<comment> \<open>Well Formed\<close>
 \<comment> \<open>A print result of b2 must not be parsable by b1\<close>
 definition well_formed_or_pair :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where

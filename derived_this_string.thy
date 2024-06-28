@@ -91,6 +91,13 @@ lemma this_string_fpci[fpci_simps]:
 
 
 
+\<comment> \<open>First Parsed Char\<close>
+lemma fpc_this_string[fpc_simps]:
+  "fpc (parse (this_string (sc#s))) i c \<Longrightarrow> c = sc"
+  by (clarsimp simp add: fpc_def NER_simps)
+
+
+
 \<comment> \<open>Well formed\<close>
 lemma this_string_wf:
   "bidef_well_formed (this_string s)"
