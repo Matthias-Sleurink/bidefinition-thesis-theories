@@ -110,6 +110,12 @@ lemma fpci_str_literal[fpci_simps]:
   "first_printed_chari (print str_literal) t c \<Longrightarrow> c = quot_chr"
   by (clarsimp simp add: str_literal_def fpci_simps takeMiddle_def print_empty quot_def split: if_splits)
 
+lemma fpc_str_literal[fpc_simps]:
+  "fpc (parse str_literal) a c \<Longrightarrow> c = quot_chr"
+  apply (clarsimp simp add: str_literal_def fpc_simps takeMiddle_def)
+  by (clarsimp simp add: fpc_def NER_simps quot_def)
+
+
 lemma str_literal_well_formed:
   "bidef_well_formed str_literal"
   unfolding str_literal_def takeMiddle_def
@@ -203,6 +209,10 @@ lemma PASI_PNGI_JsonString[PASI_PNGI_intros]:
   unfolding JsonString_def
   by pasi_pngi+
 
+lemma fpc_JsonString[fpc_simps]:
+  "fpc (parse JsonString) a c \<Longrightarrow> c = quot_chr"
+  by (clarsimp simp add: JsonString_def fpc_simps)
+
 lemma JsonString_well_formed:
   "bidef_well_formed JsonString"
   unfolding JsonString_def
@@ -210,6 +220,8 @@ lemma JsonString_well_formed:
   subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def ftransform_p_has_result split: JSON.splits)
   subgoal by (rule str_literal_well_formed)
   done
+
+
 
 definition JsonNumber :: "JSON bidef" where
   "JsonNumber = ftransform
@@ -250,6 +262,10 @@ lemma fpci_JsonNumber[fpci_simps]:
   unfolding JsonNumber_def
   by (clarsimp simp add: fpci_simps split: JSON.splits if_splits)
 
+lemma fpc_JsonNumber[fpc_simps]:
+  "fpc (parse JsonNumber) a c \<Longrightarrow> c \<in> digit_chars \<or> c = CHR ''-''"
+  by (auto simp add: JsonNumber_def fpc_simps split: if_splits)
+
 lemma wf_JsonNumber:
   "bidef_well_formed JsonNumber"
   unfolding JsonNumber_def
@@ -288,6 +304,11 @@ lemma is_error_JsonNameColonObject[NER_simps]:
   "is_error (parse (JsonNameColonObject J)) []"
   "c \<noteq> quot_chr \<Longrightarrow> is_error (parse (JsonNameColonObject J)) (c # l)"
   by (clarsimp simp add: JsonNameColonObject_def NER_simps)+
+
+lemma fpc_JsonNameColonObject[fpc_simps]:
+  "fpc (parse (JsonNameColonObject I)) a c \<Longrightarrow> c = quot_chr"
+  apply (clarsimp simp add: JsonNameColonObject_def fpc_simps)
+  by (clarsimp simp add: fpc_def NER_simps str_literal_def takeMiddle_def quot_def)
 
 
 
@@ -337,6 +358,11 @@ lemma fpci_JsonObject[fpci_simps]:
   "first_printed_chari (print (JsonObject I )) i c \<Longrightarrow> c = CHR ''{''"
   unfolding JsonObject_def
   by (clarsimp simp add: fpci_simps takeMiddle_def print_empty split: JSON.splits if_splits)
+
+lemma fpc_JsonObject[fpc_simps]:
+  "fpc (parse (JsonObject I)) a c \<Longrightarrow> c = CHR ''{''"
+  apply (clarsimp simp add: JsonObject_def fpc_simps)
+  by (clarsimp simp add: fpc_def NER_simps str_literal_def takeMiddle_def)
   
 
 abbreviation "betweenSquareBrackets bd \<equiv> takeMiddle (char_ws CHR ''['') bd (ws_char CHR '']'') () ()"
@@ -386,6 +412,11 @@ lemma fpci_JsonList[fpci_simps]:
   unfolding JsonList_def
   by (clarsimp simp add: fpci_simps takeMiddle_def print_empty split: JSON.splits)
 
+lemma fpc_JsonList[fpc_simps]:
+  "fpc (parse (JsonList I)) a c \<Longrightarrow> c = CHR ''[''"
+  apply (clarsimp simp add: JsonList_def fpc_simps)
+  by (clarsimp simp add: fpc_def NER_simps takeMiddle_def)
+
 
 
 definition JsonTrue :: "JSON bidef" where
@@ -426,6 +457,10 @@ lemma fpci_JsonTrue[fpci_simps]:
   "first_printed_chari (print (JsonTrue)) i c \<Longrightarrow> c = CHR ''t''"
   unfolding JsonTrue_def
   by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
+
+lemma fpc_JsonTrue[fpc_simps]:
+  "fpc (parse (JsonTrue)) a c \<Longrightarrow> c = CHR ''t''"
+  by (clarsimp simp add: JsonTrue_def fpc_simps)
 
 lemma wf_JsonTrue:
   "bidef_well_formed JsonTrue"
@@ -476,6 +511,10 @@ lemma fpci_JsonFalse[fpci_simps]:
   unfolding JsonFalse_def
   by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
 
+lemma fpc_JsonFalse[fpc_simps]:
+  "fpc (parse (JsonFalse)) a c \<Longrightarrow> c = CHR ''f''"
+  by (clarsimp simp add: JsonFalse_def fpc_simps)
+
 lemma wf_JsonFalse:
   "bidef_well_formed JsonFalse"
   unfolding JsonFalse_def
@@ -524,6 +563,10 @@ lemma fpci_JsonNull[fpci_simps]:
   "first_printed_chari (print (JsonNull)) i c \<Longrightarrow> c = CHR ''n''"
   unfolding JsonNull_def
   by (clarsimp simp add: fpci_simps print_empty split: JSON.splits)
+
+lemma fpc_JsonNull[fpc_simps]:
+  "fpc (parse (JsonNull)) a c \<Longrightarrow> c = CHR ''n''"
+  by (clarsimp simp add: JsonNull_def fpc_simps)
 
 lemma wf_JsonNull:
   "bidef_well_formed JsonNull"
