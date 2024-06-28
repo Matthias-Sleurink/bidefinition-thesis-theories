@@ -239,6 +239,14 @@ lemma mono_JsonNameColonObject[partial_function_mono]:
   unfolding JsonNameColonObject_def using ma
   by pf_mono_prover
 
+lemma p_has_result_JsonNameColonObject[print_empty, fp_NER]:
+  "p_has_result (print (JsonNameColonObject J)) t [] \<longleftrightarrow> False"
+  by (clarsimp simp add: JsonNameColonObject_def print_empty)
+
+lemma fpci_JsonNameColonObject[fpci_simps]:
+  "first_printed_chari (print (JsonNameColonObject J)) t c \<Longrightarrow> c = quot_chr"
+  by (clarsimp simp add: JsonNameColonObject_def fpci_simps print_empty split: if_splits)
+
 
 abbreviation "betweenBraces bd \<equiv> takeMiddle (char_ws CHR ''{'') bd (ws_char CHR ''}'') () ()"
 definition JsonObject :: "JSON bidef \<Rightarrow> JSON bidef" where
