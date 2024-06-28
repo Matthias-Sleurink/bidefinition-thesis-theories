@@ -224,7 +224,7 @@ lemma wf_JsonNumber:
 
 
 definition JsonNameColonObject :: "JSON bidef \<Rightarrow> (string \<times> JSON) bidef" where
-  "JsonNameColonObject i = b_then str_literal (then_drop_first (ws_char_ws CHR ''\"'') i ())"
+  "JsonNameColonObject i = b_then str_literal (then_drop_first (ws_char_ws CHR '':'') i ())"
 
 lemma PASI_PNGI_JsonNameColonObject[PASI_PNGI_intros]:
   assumes "PNGI (parse I)"
