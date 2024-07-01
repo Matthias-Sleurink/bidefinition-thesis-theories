@@ -1022,7 +1022,13 @@ lemma inductive_Json_no_consume_past_closing_brace:
     done
   subgoal by (rule JsonString_no_consume_past_any_char)
   apply (rule or_no_consume_past_char[rotated, rotated])
-  \<comment> \<open>And so on...\<close>
+  subgoal by (rule JsonNumber_can_drop_leftover_on_error)
+  subgoal for c l by (rule JsonNumber_stays_error_with_injected_char[of c l \<open>CHR ''}''\<close>, simplified])
+  subgoal by (rule JsonNumber_no_consume_past_non_digit_chars[of \<open>CHR ''}''\<close>, simplified])
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  
+
+
   oops
 
 
