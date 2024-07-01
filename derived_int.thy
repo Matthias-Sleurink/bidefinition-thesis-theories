@@ -224,6 +224,15 @@ lemma int_b_leftover_can_be_dropped_gen:
     done
   done
 
+lemma int_b_can_drop_leftover_on_error:
+  assumes "is_error (parse int_b) (c @ l)"
+  shows "is_error (parse int_b) c"
+  using assms
+  apply (cases c; clarsimp simp add: NER_simps)
+  subgoal for l'
+    by (induction l'; clarsimp)
+  done
+
 
 
 section \<open>Does not peek past end\<close>
