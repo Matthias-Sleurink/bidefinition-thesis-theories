@@ -185,7 +185,7 @@ lemma then_does_not_peek_past_end[peek_past_end_simps]:
   qed
 
 
-lemma then_does_not_peek_past_end_with_inner_conflic[peek_past_end_simps]:
+lemma then_does_not_peek_past_end_with_inner_conflict[peek_past_end_simps]:
   assumes A_pngi: "PNGI (parse A)"
   assumes B_pngi: "PNGI (parse B)"
   assumes exist_leftover_a: "\<And>ca cb a l b l''. \<lbrakk>has_result (parse A) (ca @ cb @ l) a (cb @ l); has_result (parse B) (cb @ l) b l\<rbrakk> \<Longrightarrow> \<exists>l'. has_result (parse A) (ca @ cb @ l'') a l' \<and> has_result (parse B) l' b l''"
