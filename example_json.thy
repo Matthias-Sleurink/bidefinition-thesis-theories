@@ -534,6 +534,12 @@ lemma fpc_JsonTrue[fpc_simps]:
   "fpc (parse (JsonTrue)) a c \<Longrightarrow> c = CHR ''t''"
   by (clarsimp simp add: JsonTrue_def fpc_simps)
 
+lemma JsonTrue_can_drop_leftover_on_error:
+  assumes "is_error (parse JsonTrue) (c @ l)"
+  shows "is_error (parse JsonTrue) c"
+  using assms
+  by (clarsimp simp add: NER_simps JsonTrue_def)
+
 lemma wf_JsonTrue:
   "bidef_well_formed JsonTrue"
   unfolding JsonTrue_def
@@ -591,6 +597,12 @@ lemma fpc_JsonFalse[fpc_simps]:
   "fpc (parse (JsonFalse)) a c \<Longrightarrow> c = CHR ''f''"
   by (clarsimp simp add: JsonFalse_def fpc_simps)
 
+lemma JsonFalse_can_drop_leftover_on_error:
+  assumes "is_error (parse JsonFalse) (c @ l)"
+  shows "is_error (parse JsonFalse) c"
+  using assms
+  by (clarsimp simp add: NER_simps JsonFalse_def)
+
 lemma wf_JsonFalse:
   "bidef_well_formed JsonFalse"
   unfolding JsonFalse_def
@@ -647,6 +659,12 @@ lemma fpci_JsonNull[fpci_simps]:
 lemma fpc_JsonNull[fpc_simps]:
   "fpc (parse (JsonNull)) a c \<Longrightarrow> c = CHR ''n''"
   by (clarsimp simp add: JsonNull_def fpc_simps)
+
+lemma JsonNull_can_drop_leftover_on_error:
+  assumes "is_error (parse JsonNull) (c @ l)"
+  shows "is_error (parse JsonNull) c"
+  using assms
+  by (clarsimp simp add: NER_simps JsonNull_def)
 
 lemma wf_JsonNull:
   "bidef_well_formed JsonNull"
