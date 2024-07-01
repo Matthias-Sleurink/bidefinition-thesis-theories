@@ -185,6 +185,27 @@ lemma then_does_not_peek_past_end[peek_past_end_simps]:
   qed
 
 
+lemma then_does_not_peek_past_end_with_inner_conflic[peek_past_end_simps]:
+  assumes A_pngi: "PNGI (parse A)"
+  assumes B_pngi: "PNGI (parse B)"
+  assumes exist_leftover_a: "\<And>ca cb a l b l''. \<lbrakk>has_result (parse A) (ca @ cb @ l) a (cb @ l); has_result (parse B) (cb @ l) b l\<rbrakk> \<Longrightarrow> \<exists>l'. has_result (parse A) (ca @ cb @ l'') a l' \<and> has_result (parse B) l' b l''"
+  shows "does_not_peek_past_end (parse (b_then A B))"
+  unfolding does_not_peek_past_end_def
+  apply (clarsimp simp add: NER_simps)
+  subgoal for c a b l l' l''
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>c@l\<close> a l']; clarsimp)
+    subgoal for ca
+      apply (insert B_pngi[unfolded PNGI_def, rule_format, of \<open>l'\<close> b l]; clarsimp)
+      subgoal for cb
+        \<comment> \<open>If there is conflict inside we don't know how to resolve it.\<close>
+        \<comment> \<open>We might be able to create a few more primitives to resolve that conflict\<close>
+        \<comment> \<open>But it makes more sense to give it back to where this is applied, and just ask them to resolve it.\<close>
+        by (rule exist_leftover_a)
+      done
+    done
+  done
+
+
 
 lemma then_does_not_peek_past_end_from_fpc[peek_past_end_simps]:
   assumes fpc_B_dncpc_A:  "\<And>i c. fpc (parse B) i c \<Longrightarrow> does_not_consume_past_char3 (parse A) c"
