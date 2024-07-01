@@ -235,6 +235,18 @@ lemma JsonString_drop_leftover_on_error:
   shows "is_error (parse JsonString) c"
   by (cases c; insert assms; auto simp add: NER_simps JsonString_def)
 
+lemma JsonString_no_peek_past_end:
+  "does_not_peek_past_end (parse JsonString)"
+  unfolding JsonString_def
+  apply (rule ftrans_does_not_peek_past_end)
+  by (rule str_literal_no_peek_past_end)
+
+lemma JsonString_no_consume_past_any_char:
+  "does_not_consume_past_char3 (parse JsonString) c"
+  using does_not_consume_past_any_char3_eq_not_peek_past_end[of \<open>parse JsonString\<close>]
+        JsonString_no_peek_past_end
+  by blast
+
 
 lemma JsonString_well_formed:
   "bidef_well_formed JsonString"
