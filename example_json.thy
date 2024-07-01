@@ -540,6 +540,12 @@ lemma JsonTrue_can_drop_leftover_on_error:
   using assms
   by (clarsimp simp add: NER_simps JsonTrue_def)
 
+lemma JsonTrue_no_peek_past_end:
+  "does_not_peek_past_end (parse JsonTrue)"
+  unfolding JsonTrue_def
+  apply (rule ftrans_does_not_peek_past_end)
+  by (rule this_string_does_not_peek_past_end)
+
 lemma wf_JsonTrue:
   "bidef_well_formed JsonTrue"
   unfolding JsonTrue_def
@@ -603,6 +609,12 @@ lemma JsonFalse_can_drop_leftover_on_error:
   using assms
   by (clarsimp simp add: NER_simps JsonFalse_def)
 
+lemma JsonFalse_no_peek_past_end:
+  "does_not_peek_past_end (parse JsonFalse)"
+  unfolding JsonFalse_def
+  apply (rule ftrans_does_not_peek_past_end)
+  by (rule this_string_does_not_peek_past_end)
+
 lemma wf_JsonFalse:
   "bidef_well_formed JsonFalse"
   unfolding JsonFalse_def
@@ -665,6 +677,12 @@ lemma JsonNull_can_drop_leftover_on_error:
   shows "is_error (parse JsonNull) c"
   using assms
   by (clarsimp simp add: NER_simps JsonNull_def)
+
+lemma JsonNull_no_peek_past_end:
+  "does_not_peek_past_end (parse JsonNull)"
+  unfolding JsonNull_def
+  apply (rule ftrans_does_not_peek_past_end)
+  by (rule this_string_does_not_peek_past_end)
 
 lemma wf_JsonNull:
   "bidef_well_formed JsonNull"
