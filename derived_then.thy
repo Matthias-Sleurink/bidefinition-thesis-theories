@@ -185,6 +185,39 @@ lemma then_does_not_peek_past_end[peek_past_end_simps]:
   qed
 
 
+
+lemma then_does_not_peek_past_end_from_fpc[peek_past_end_simps]:
+  assumes fpc_B_dncpc_A:  "\<And>i c. fpc (parse B) i c \<Longrightarrow> does_not_consume_past_char3 (parse A) c"
+  assumes b_parse_empty_case: "\<And> ca l a b l'. \<lbrakk>has_result (parse A) (ca @ l) a l; has_result (parse B) l b l\<rbrakk> \<Longrightarrow> has_result (parse A) (ca @ l') a l'"
+  assumes A_pngi: "PNGI (parse A)"
+
+  assumes B_dnppe: "does_not_peek_past_end (parse B)"
+  assumes B_pngi: "PNGI (parse B)"
+  shows "does_not_peek_past_end (parse (b_then A B))"
+  unfolding does_not_peek_past_end_def
+  apply (clarsimp simp add: NER_simps)
+  subgoal for c a b l l' l''
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>c@l\<close> a l']; clarsimp)
+    subgoal for ca
+      apply (insert B_pngi[unfolded PNGI_def, rule_format, of \<open>l'\<close> b l]; clarsimp)
+      subgoal for cb
+        apply (rule exI[of _ \<open>cb@l''\<close>]; auto)
+        subgoal
+          apply (cases cb; clarsimp)
+          subgoal \<comment> \<open>empty\<close> by (rule b_parse_empty_case)
+          subgoal for cb' cbs \<comment> \<open>nonEmpty\<close>
+            using fpc_B_dncpc_A[unfolded fpc_def does_not_consume_past_char3_def,
+                                rule_format, of cb' b ca \<open>cb@l\<close> a \<open>cbs@l''\<close>,
+                                OF exI[of _ cbs], OF exI[of _ l]]
+            by fastforce
+          done
+        subgoal by (rule B_dnppe[unfolded does_not_peek_past_end_def, rule_format])
+        done
+      done
+    done
+  done
+
+
 \<comment> \<open>Mainly for WF\<close>
 definition pa_does_not_eat_into_pb_nondep :: "'\<alpha> bidef \<Rightarrow> '\<beta> bidef \<Rightarrow> bool" where
   "pa_does_not_eat_into_pb_nondep ba bb \<longleftrightarrow> (
