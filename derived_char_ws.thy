@@ -110,8 +110,16 @@ lemma char_ws_does_not_peek_past_end[peek_past_end_simps]:
 
 section \<open>Does not consume past char\<close>
 lemma char_ws_does_not_consume_past_char3:
-  assumes "c \<notin> whitespace_chars"
+  assumes "c \<notin> whitespace_chars" \<comment> \<open>This can be removed!\<close>
   shows "does_not_consume_past_char3 (parse (char_ws c)) ch \<longleftrightarrow> ch \<notin> whitespace_chars"
+  unfolding does_not_consume_past_char3_def
+  apply (auto simp add: NER_simps)
+  subgoal by (rule exI[of _ \<open>'' ''\<close>]; clarsimp)
+  subgoal by (rule exI[of _ \<open>''''\<close>]; clarsimp)
+  done
+
+lemma char_ws_does_not_consume_past_char3_rev:
+  shows "ch \<notin> whitespace_chars \<longleftrightarrow> does_not_consume_past_char3 (parse (char_ws c)) ch"
   unfolding does_not_consume_past_char3_def
   apply (auto simp add: NER_simps)
   subgoal by (rule exI[of _ \<open>'' ''\<close>]; clarsimp)
