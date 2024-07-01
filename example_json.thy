@@ -977,7 +977,31 @@ lemma inductive_Json_no_consume_past_closing_brace:
                              JsonNull))))))))
           CHR ''}''"
   apply (rule transform_does_not_consume_past_char3)
-  \<comment> \<open>Seems to me that we can make a rule for or, unfold it a few times, and then proof for each separately\<close>
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal by (rule JsonString_drop_leftover_on_error)
+  subgoal for c l l' r
+    \<comment> \<open>This holds, if we fail on c@l and the rest of Json succeeds then it cannot start with quot_chr anyways\<close>
+    \<comment> \<open>So that should be the direction we take this proof.\<close>
+    \<comment> \<open>And if c is empty then we fail too.\<close>
+    apply (cases c; clarsimp)
+    subgoal \<comment> \<open>Empty, proof is trivial because JsonString errors when not start with "\<close> by (clarsimp simp add: NER_simps)
+    subgoal for c' cs \<comment> \<open>Nonempty\<close>
+      \<comment> \<open>For the rest of Json to succeed c' cannot be ", so JsonString fails.\<close>
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x
+        apply (insert JsonNumber_first_char_result[of c' \<open>cs@l\<close> x l]; auto simp add: is_error_JsonString(2))
+        apply (insert is_error_JsonString(2)[of c' \<open>cs @ CHR ''}'' # l'\<close>])
+        by fastforce
+      subgoal for x by (insert JsonObject_first_char_result[of \<open>J ()\<close> c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonList_first_char_result[of \<open>J ()\<close> c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonTrue_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal by (rule JsonString_no_consume_past_any_char)
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  \<comment> \<open>And so on...\<close>
   oops
 
 
