@@ -318,6 +318,14 @@ lemma JsonNumber_stays_error_with_injected_char:
   using assms
   by (clarsimp simp add: NER_simps JsonNumber_def int_b_stays_error_with_injected_char)
 
+lemma JsonNumber_no_consume_past_non_digit_chars:
+  assumes "c \<notin> digit_chars"
+  shows "does_not_consume_past_char3 (parse JsonNumber) c"
+  unfolding JsonNumber_def
+  apply (rule ftransform_does_not_consume_past_char3)
+  using assms by (rule int_b_does_not_consume_past_char3)
+
+
 lemma wf_JsonNumber:
   "bidef_well_formed JsonNumber"
   unfolding JsonNumber_def
