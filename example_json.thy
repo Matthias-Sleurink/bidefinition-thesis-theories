@@ -305,6 +305,13 @@ lemma fpc_JsonNumber[fpc_simps]:
   "fpc (parse JsonNumber) a c \<Longrightarrow> c \<in> digit_chars \<or> c = CHR ''-''"
   by (auto simp add: JsonNumber_def fpc_simps split: if_splits)
 
+lemma JsonNumber_can_drop_leftover_on_error:
+  assumes "is_error (parse JsonNumber) (c @ l)"
+  shows "is_error (parse JsonNumber) c"
+  using assms
+  by (clarsimp simp add: NER_simps JsonNumber_def int_b_can_drop_leftover_on_error)
+
+
 lemma wf_JsonNumber:
   "bidef_well_formed JsonNumber"
   unfolding JsonNumber_def
