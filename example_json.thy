@@ -84,8 +84,12 @@ value "is_error (parse str_literal) ''\"apples''"
 value "is_error (parse str_literal) ''\"''"
 
 
-lemma str_literal_no_parse_empty[NER_simps]:
+lemma str_literal_has_result[NER_simps]:
   "has_result (parse str_literal) [] r l \<longleftrightarrow> False"
+  by (clarsimp simp add: NER_simps str_literal_def takeMiddle_def quot_def)
+
+lemma str_literal_first_char:
+  "has_result (parse str_literal) (c # cs) r l \<Longrightarrow> c = quot_chr"
   by (clarsimp simp add: NER_simps str_literal_def takeMiddle_def quot_def)
 
 lemma is_error_str_literal[NER_simps]:
@@ -200,6 +204,10 @@ lemma has_result_JsonString[NER_simps]:
   "has_result (parse (JsonString)) i JFalse l \<longleftrightarrow> False"
   "has_result (parse (JsonString)) i JNull l \<longleftrightarrow> False"
   by (clarsimp simp add: JsonString_def NER_simps)+
+
+lemma JsonString_first_char_result:
+  "has_result (parse (JsonString)) (c # cs) r l \<Longrightarrow> c = quot_chr"
+  by (clarsimp simp add: NER_simps JsonString_def str_literal_first_char)
 
 lemma is_error_JsonString[NER_simps]:
   "is_error (parse (JsonString)) []"
