@@ -233,6 +233,16 @@ lemma int_b_can_drop_leftover_on_error:
     by (induction l'; clarsimp)
   done
 
+lemma int_b_stays_error_with_injected_char:
+  assumes "is_error (parse int_b) (c @ l)"
+  assumes "c' \<noteq> CHR ''-'' \<and> c' \<notin> digit_chars" \<comment> \<open>Too strong but good for our uses here.\<close>
+  shows "is_error (parse int_b) (c @ c' # l)"
+  using assms
+  apply (cases c; clarsimp simp add: NER_simps)
+  subgoal for l'
+    by (induction l'; clarsimp)
+  done
+
 
 
 section \<open>Does not peek past end\<close>
