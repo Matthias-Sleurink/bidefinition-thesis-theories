@@ -1062,9 +1062,70 @@ lemma inductive_Json_no_consume_past_closing_brace:
   subgoal for c l by (rule JsonNumber_stays_error_with_injected_char[of c l \<open>CHR ''}''\<close>, simplified])
   subgoal by (rule JsonNumber_no_consume_past_non_digit_chars[of \<open>CHR ''}''\<close>, simplified])
   apply (rule or_no_consume_past_char[rotated, rotated])
-  
-
-
+  subgoal for c l r
+    \<comment> \<open>If the other Json parsers have result then JsonObject can never succeed\<close>
+    apply (cases c; clarsimp simp add: NER_simps) \<comment> \<open>Empty case is trivially true\<close>
+    subgoal for c' cs
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x by (insert JsonList_first_char_result[of \<open>J ()\<close> c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonTrue_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal for c l r
+    \<comment> \<open>If the other Json parsers have result then JsonObject can never succeed\<close>
+    apply (cases c; clarsimp simp add: NER_simps) \<comment> \<open>Empty case is trivially true\<close>
+    subgoal for c' cs
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x by (insert JsonList_first_char_result[of \<open>J ()\<close> c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonTrue_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal
+    \<comment> \<open>I believe we should be able to get does not peek past end for this even.\<close>
+    sorry
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal for c l r
+    \<comment> \<open>If the other Json parsers have result then JsonList can never succeed\<close>
+    apply (cases c; clarsimp simp add: NER_simps) \<comment> \<open>Empty case is trivially true\<close>
+    subgoal for c' cs
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x by (insert JsonTrue_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal for c l r
+    \<comment> \<open>If the other Json parsers have result then JsonList can never succeed\<close>
+    apply (cases c; clarsimp simp add: NER_simps) \<comment> \<open>Empty case is trivially true\<close>
+    subgoal for c' cs
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x by (insert JsonTrue_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c' \<open>cs@l\<close> x l]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal
+    \<comment> \<open>I believe we should be able to get does not peek past end for this even.\<close>
+    sorry
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal by (rule JsonTrue_can_drop_leftover_on_error)
+  subgoal for c by (cases c; clarsimp simp add: NER_simps JsonFalse_def JsonNull_def split: sum.splits)
+  subgoal
+    using JsonTrue_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
+    by blast
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal by (rule JsonFalse_can_drop_leftover_on_error)
+  subgoal for c by (cases c; clarsimp simp add: NER_simps JsonNull_def)
+  subgoal
+    using JsonFalse_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
+    by blast
+  subgoal
+    using JsonNull_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
+    by blast
   oops
 
 
