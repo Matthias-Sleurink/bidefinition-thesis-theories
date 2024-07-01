@@ -427,6 +427,56 @@ lemma fpc_JsonObject[fpc_simps]:
   "fpc (parse (JsonObject I)) a c \<Longrightarrow> c = CHR ''{''"
   apply (clarsimp simp add: JsonObject_def fpc_simps)
   by (clarsimp simp add: fpc_def NER_simps str_literal_def takeMiddle_def)
+
+
+lemma JsonObject_no_peek_past_end:
+  assumes I_pngi: "PNGI (parse I)"
+  shows "does_not_peek_past_end (parse (JsonObject I))"
+  unfolding JsonObject_def
+  apply (rule ftrans_does_not_peek_past_end)
+  unfolding takeMiddle_def
+  apply (rule transform_does_not_peek_past_end)
+  apply (rule then_does_not_peek_past_end_with_inner_conflict)
+  subgoal using I_pngi by pasi_pngi
+  subgoal using I_pngi by pasi_pngi
+  subgoal for ca cb a l b l''
+    apply (rule exI[of _ \<open>cb @ l''\<close>]; rule conjI; clarsimp)
+    subgoal
+      apply (cases cb; clarsimp)
+      subgoal
+        using then_PASI_from_pngi_pasi[of \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()\<close> \<open>ws_char CHR ''}''\<close>,
+                                       OF separated_by_PNGI ws_char_PASI, OF PASI_PNGI_JsonNameColonObject(2), OF I_pngi,
+                                       OF then_PASI_from_pasi_pngi, OF ws_char_ws_PASI, OF PASI_PNGI_JsonNameColonObject(2), OF I_pngi,
+                                       \<comment> \<open>Wew\<close>
+                                       unfolded PASI_def, rule_format, of l b l, simplified]
+        by blast
+      subgoal for cb' cbs
+        apply (insert char_ws_has_result_implies_leftover_head[of \<open>CHR ''{''\<close> \<open>ca @ cb' # cbs @ l\<close> \<open>()\<close> \<open>cb' # cbs @ l\<close>]; clarsimp)
+        apply (insert char_ws_does_not_consume_past_char3_rev[of cb' \<open>CHR ''{''\<close>, unfolded does_not_consume_past_char3_def]; clarsimp)
+        by fast
+      done
+    subgoal
+      apply (rule then_does_not_peek_past_end_from_fpc[of \<open>ws_char CHR ''}''\<close> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()\<close>,
+              unfolded does_not_peek_past_end_def[of \<open>parse (b_then (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()) (ws_char CHR ''}''))\<close>],
+              rule_format, of cb l b l'']; assumption?; clarsimp?)
+      subgoal for c
+        \<comment> \<open>sepby , jsonnamecolonobject does not consume past char c\<close>
+        apply (insert ws_char_fpc[of \<open>CHR ''}''\<close> \<open>()\<close> c]; auto)
+        subgoal sorry
+        subgoal
+          \<comment> \<open>I feel like this isn't true. As we do peek past whitespace chars. Just not ws }. So we'll need the conflict one here too?\<close>
+          \<comment> \<open>Or maybe we can do something smarter here? Make a new combinator for b_then?\<close>
+          \<comment> \<open>I think we can make a generalised thing here by saying that the sep fails for this extra stuff and the element does not consume it?\<close>
+          find_theorems does_not_consume_past_char3 separated_by
+           sorry
+        sorry
+      subgoal using ws_char_no_result_same_leftover by blast
+      subgoal using I_pngi by pasi_pngi
+      subgoal by (rule ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, simplified])
+      subgoal by pasi_pngi
+      done
+    done
+  oops
   
 
 abbreviation "betweenSquareBrackets bd \<equiv> takeMiddle (char_ws CHR ''['') bd (ws_char CHR '']'') () ()"
