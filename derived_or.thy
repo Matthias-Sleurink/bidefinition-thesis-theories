@@ -115,6 +115,24 @@ lemma or_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>No consume past char\<close>
+lemma or_no_consume_past_char:
+  assumes A: "does_not_consume_past_char3 (parse A) c"
+  assumes B: "does_not_consume_past_char3 (parse B) c"
+  assumes A_error_drop_leftover_if_B_succeeds: "\<And>c' l x. \<lbrakk>is_error (parse A) (c' @ l); has_result (parse B) (c' @ l) x l\<rbrakk> \<Longrightarrow> is_error (parse A) c'"
+  assumes A_error_drop_leftover_past_c_if_B_succeeds: "\<And>c' l l' x. \<lbrakk>is_error (parse A) (c' @ l); has_result (parse B) (c' @ l) x l\<rbrakk> \<Longrightarrow> is_error (parse A) (c' @ c # l')"
+  shows "does_not_consume_past_char3 (parse (or A B)) c"
+  using A B unfolding does_not_consume_past_char3_def
+  apply (auto simp add: NER_simps split: sum.splits)
+  subgoal by (rule A_error_drop_leftover_if_B_succeeds)
+  subgoal by blast
+  subgoal by (rule A_error_drop_leftover_past_c_if_B_succeeds)
+  subgoal by blast
+  done
+
+
+
+
 \<comment> \<open>First printed char\<close>
 lemma or_fpci[fpci_simps]:
   "first_printed_chari (print (or A B)) (Inl i) c \<longleftrightarrow> first_printed_chari (print A) i c"
