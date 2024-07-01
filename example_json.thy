@@ -81,6 +81,7 @@ definition str_literal :: "string bidef" where
 value "has_result (parse str_literal) ''\"apples\"'' ''apples'' []"
 value "is_error (parse str_literal) ''apples\"''"
 value "is_error (parse str_literal) ''\"apples''"
+value "is_error (parse str_literal) ''\"''"
 
 
 lemma str_literal_no_parse_empty[NER_simps]:
@@ -91,6 +92,14 @@ lemma is_error_str_literal[NER_simps]:
   "is_error (parse str_literal) []"
   "c \<noteq> quot_chr \<Longrightarrow> is_error (parse str_literal) (c # l)"
   by (clarsimp simp add: str_literal_def NER_simps takeMiddle_def quot_def)+
+
+lemma is_error_str_literal2[NER_simps]:
+  "is_error (parse str_literal) (i#is) \<longleftrightarrow> i \<noteq> quot_chr \<or> is = [] \<or> (is \<noteq> [] \<and> dropWhile (\<lambda>c. c \<noteq> quot_chr) is = [])"
+  apply (auto simp add: str_literal_def NER_simps takeMiddle_def quot_def char_not_in_set_def)
+  apply (induction \<open>is\<close>; clarsimp)
+  apply (auto split: if_splits)
+  by fastforce
+
 
 lemma str_literal_print_empty[fp_NER, print_empty]:
   "p_has_result (print (str_literal)) i [] \<longleftrightarrow> False"
@@ -212,6 +221,12 @@ lemma PASI_PNGI_JsonString[PASI_PNGI_intros]:
 lemma fpc_JsonString[fpc_simps]:
   "fpc (parse JsonString) a c \<Longrightarrow> c = quot_chr"
   by (clarsimp simp add: JsonString_def fpc_simps)
+
+lemma JsonString_drop_leftover_on_error:
+  assumes "is_error (parse JsonString) (c @ l)"
+  shows "is_error (parse JsonString) c"
+  by (cases c; insert assms; auto simp add: NER_simps JsonString_def)
+
 
 lemma JsonString_well_formed:
   "bidef_well_formed JsonString"
