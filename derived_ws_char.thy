@@ -34,10 +34,16 @@ lemma ws_char_has_result[NER_simps]:
       \<and> hd (dropWhile (\<lambda>x. x \<in>whitespace_chars) i) = c"
   apply (auto simp add: ws_char_def NER_simps whitespace_char_def any_from_set_def)
   by (metis dropWhile_eq_Nil_conv hd_Cons_tl)
+
 lemma ws_char_no_result_same_leftover[NER_simps]:
   "has_result (parse (ws_char c)) i r i \<longleftrightarrow> False"
   apply (clarsimp simp add: NER_simps)
   by (metis hd_Cons_tl impossible_Cons length_dropWhile_le length_greater_0_conv length_pos_if_in_set list.sel(2))
+
+lemma ws_char_first_char_result:
+  "has_result (parse (ws_char c)) (i#is) r l \<Longrightarrow> i \<in> whitespace_chars \<or> i = c"
+  by (clarsimp simp add: NER_simps split: if_splits)
+
 
 lemma ws_char_has_result_c[NER_simps]:
   "has_result_c (parse (ws_char c)) i r l \<longleftrightarrow>
