@@ -865,7 +865,27 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
     subgoal
       
       sorry
-    subgoal for i c \<comment> \<open>Need to do an fpc many rule\<close> sorry
+    subgoal for i c \<comment> \<open>Need to do an fpc many rule\<close>
+      apply (cases i; clarsimp simp add: fpc_simps) \<comment> \<open>Empty case is dispatched\<close>
+      subgoal for a b abs
+        apply (auto simp add: fpc_def many_has_result_safe(2) b_then_has_result ws_char_ws_has_result split: if_splits)
+        subgoal
+          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) (whitespace_char)\<close>
+          sorry
+        subgoal
+          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) (whitespace_char)\<close>
+          sorry
+        subgoal
+          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) '',''\<close>
+          sorry
+        subgoal
+          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) '',''\<close>
+          sorry
+        subgoal
+          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) '',''\<close>
+          sorry
+        done
+      done
     subgoal
       apply (rule JsonNameColonObject_no_consume_past_closing_brace)
       subgoal by (rule J_pngi)
