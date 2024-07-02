@@ -371,6 +371,57 @@ lemma fpc_JsonNameColonObject[fpc_simps]:
   by (clarsimp simp add: fpc_def NER_simps str_literal_def takeMiddle_def quot_def)
 
 
+lemma JsonNameColonObject_no_consume_past_closing_brace:
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
+  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  shows "does_not_consume_past_char3 (parse (JsonNameColonObject J)) CHR ''}''"
+  unfolding JsonNameColonObject_def
+  apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+  subgoal by (rule str_literal_no_peek_past_end)
+  subgoal by pasi_pngi
+  subgoal
+    unfolding then_drop_first_def
+    apply (rule transform_does_not_consume_past_char3)
+    apply (rule then_does_not_consume_past3) \<comment> \<open>or do: then_does_not_consume_past3_from_can_drop_leftover\<close>
+    subgoal by (clarsimp simp add: ws_char_ws_well_formed)
+    subgoal by (rule J_wf)
+    subgoal by (rule J_no_consume_past_closing_brace)
+    subgoal by (clarsimp simp add: J_fpc_no_ws ws_char_ws_does_not_consume_past_char3)
+    subgoal by (rule J_no_parse_empty)
+    done
+  subgoal using J_pngi by pasi_pngi
+  done
+
+lemma JsonNameColonObject_no_consume_past_ws:
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_no_consume_past_ws: "\<And>c . c\<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
+  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  assumes c_in_ws: "c \<in> whitespace_chars"
+  shows "does_not_consume_past_char3 (parse (JsonNameColonObject J)) c"
+  unfolding JsonNameColonObject_def
+  apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+  subgoal by (rule str_literal_no_peek_past_end)
+  subgoal by pasi_pngi
+  subgoal
+    unfolding then_drop_first_def
+    apply (rule transform_does_not_consume_past_char3)
+    apply (rule then_does_not_consume_past3) \<comment> \<open>or do: then_does_not_consume_past3_from_can_drop_leftover\<close>
+    subgoal by (clarsimp simp add: ws_char_ws_well_formed)
+    subgoal by (rule J_wf)
+    subgoal by (rule J_no_consume_past_ws[OF c_in_ws])
+    subgoal by (clarsimp simp add: J_fpc_no_ws ws_char_ws_does_not_consume_past_char3)
+    subgoal by (rule J_no_parse_empty)
+    done
+  subgoal using J_pngi by pasi_pngi
+  done
+
+
+
 
 abbreviation "betweenBraces bd \<equiv> takeMiddle (char_ws CHR ''{'') bd (ws_char CHR ''}'') () ()"
 definition JsonObject :: "JSON bidef \<Rightarrow> JSON bidef" where
@@ -429,8 +480,17 @@ lemma fpc_JsonObject[fpc_simps]:
   by (clarsimp simp add: fpc_def NER_simps str_literal_def takeMiddle_def)
 
 
+lemma imply_and_eq_imply_one:
+  "(a \<Longrightarrow> (A \<and> B)) \<Longrightarrow> (a \<Longrightarrow> B)"
+  by blast
+
 lemma JsonObject_no_peek_past_end:
   assumes I_pngi: "PNGI (parse I)"
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_dncp_b: "does_not_consume_past_char3 (parse I) CHR ''}''"
+  assumes I_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_fpc_no_ws: "\<And>i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
   shows "does_not_peek_past_end (parse (JsonObject I))"
   unfolding JsonObject_def
   apply (rule ftrans_does_not_peek_past_end)
@@ -461,7 +521,46 @@ lemma JsonObject_no_peek_past_end:
       subgoal using I_pngi by pasi_pngi
       subgoal for ca' cb' a l' l''
         apply (rule exI[of _ \<open> cb' @ l''\<close>]; rule conjI)
-        subgoal
+        subgoal 
+          apply (induction a arbitrary: ca' cb' l' l'' rule: induct_list012; clarsimp?)
+          subgoal for ca' cb' l' l'' \<comment> \<open>Empty\<close>
+            apply (clarsimp simp add: separated_by_has_result_safe_Nil)
+            apply (cases \<open>cb'\<close>; clarsimp)
+            subgoal \<comment> \<open>Empty\<close> using ws_char_no_result_same_leftover[of \<open>CHR ''}''\<close> l' \<open>()\<close>] by argo
+            subgoal for cb'_' cb's
+              apply (rule is_error_JsonNameColonObject(2))
+              by (insert ws_char_first_char_result[of \<open>CHR ''}''\<close> cb'_' \<open>cb's @ l'\<close> \<open>()\<close> l']; clarsimp)
+            done
+          subgoal for an ao ca' cb' l' l'' \<comment> \<open>One element\<close>
+            apply (clarsimp simp add: separated_by_has_result_safe_one; rule conjI)
+            subgoal
+              apply (cases cb'; clarsimp)
+              subgoal \<comment> \<open>Empty\<close> using ws_char_no_result_same_leftover[of \<open>CHR ''}''\<close> l' \<open>()\<close>] by argo
+              subgoal for cb'_' cb's \<comment> \<open>Has a first char\<close>
+                apply (insert ws_char_first_char_result[of \<open>CHR ''}''\<close> cb'_' \<open>cb's@l'\<close> \<open>()\<close> l']; auto)
+                subgoal premises p \<comment> \<open>cb'_' : whitespace_chars\<close>
+                  using JsonNameColonObject_no_consume_past_ws[
+                          OF I_pngi I_wf _ _ I_no_empty_parse,
+                          unfolded does_not_consume_past_char3_def[of \<open>parse (JsonNameColonObject I)\<close>], rule_format,
+                          OF _ _ p(7) p(4), of \<open>cb's @ l''\<close>]
+                          I_dncp_ws I_fpc_no_ws
+                  by blast
+                subgoal \<comment> \<open>cb'_' = ''}''\<close>
+                  using JsonNameColonObject_no_consume_past_closing_brace[
+                            OF I_pngi I_wf I_dncp_b _ I_no_empty_parse,
+                            unfolded does_not_consume_past_char3_def, rule_format,
+                            of ca' \<open>CHR ''}'' # cb's @ l'\<close> \<open>(an, ao)\<close> \<open>cb's @ l''\<close>]
+                        imply_and_eq_imply_one[of _ _ \<open>has_result (parse (JsonNameColonObject I)) (ca' @ CHR ''}'' # cb's @ l'') (an, ao) (CHR ''}'' # cb's @ l'')\<close>]
+                        I_fpc_no_ws by fastforce
+                done
+              done
+            subgoal
+              
+              sorry
+            done
+          subgoal \<comment> \<open>Induction where there is always an element behind it.\<close>
+            sorry
+        (* subgoal
           apply (induction a arbitrary: ca' cb' l' l''; clarsimp?)
           subgoal for ca' cb' l' l'' \<comment> \<open>Empty\<close>
             apply (clarsimp simp add: separated_by_has_result_safe_Nil)
@@ -472,6 +571,7 @@ lemma JsonObject_no_peek_past_end:
               by (insert ws_char_first_char_result[of \<open>CHR ''}''\<close> cb'_' \<open>cb's @ l'\<close> \<open>()\<close> l']; clarsimp)
             done
           subgoal for a b abs ca' cb' l' l''  \<comment> \<open>NonEmpty\<close>
+            
             \<comment> \<open>This might not be a smart technique, we need some has_result for sepBy that shows that adding one element in front means adding an element and separator as text.\<close>
             apply (clarsimp simp add: separated_by_has_result_safe_Cons)
             subgoal for l'jsnco
@@ -491,8 +591,8 @@ lemma JsonObject_no_peek_past_end:
                   done
                 done
               done
-            done
-          done 
+            done*)
+          done
         subgoal
           by (rule ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, unfolded does_not_peek_past_end_def, rule_format, simplified])
         done
@@ -816,30 +916,6 @@ lemma char_ws_not_eat_into_object:
     by (clarsimp simp add: char_ws_does_not_consume_past_char3)
   done
 
-lemma JsonNameColonObject_no_consume_past_closing_brace:
-  assumes J_pngi: "PNGI (parse J)"
-  assumes J_wf: "bidef_well_formed J"
-  assumes J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
-  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
-  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
-  shows "does_not_consume_past_char3 (parse (JsonNameColonObject J)) CHR ''}''"
-  unfolding JsonNameColonObject_def
-  apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
-  subgoal by (rule str_literal_no_peek_past_end)
-  subgoal by pasi_pngi
-  subgoal
-    unfolding then_drop_first_def
-    apply (rule transform_does_not_consume_past_char3)
-    apply (rule then_does_not_consume_past3) \<comment> \<open>or do: then_does_not_consume_past3_from_can_drop_leftover\<close>
-    subgoal by (clarsimp simp add: ws_char_ws_well_formed)
-    subgoal by (rule J_wf)
-    subgoal by (rule J_no_consume_past_closing_brace)
-    subgoal by (clarsimp simp add: J_fpc_no_ws ws_char_ws_does_not_consume_past_char3)
-    subgoal by (rule J_no_parse_empty)
-    done
-  subgoal using J_pngi by pasi_pngi
-  done
-
 lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
   assumes J_pngi: "PNGI (parse J)"
   assumes J_wf: "bidef_well_formed J"
@@ -894,7 +970,9 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
       subgoal by (rule J_fpc_no_ws)
       subgoal by (rule J_no_parse_empty)
       done
-    subgoal sorry
+    subgoal for c l l' a
+      \<comment> \<open>JsonNameColonObject can drop leftover.\<close>
+      sorry
     done
   oops
 
@@ -1223,9 +1301,7 @@ lemma inductive_Json_no_consume_past_closing_brace:
 
 
 \<comment> \<open>Other needed premises:
-
-  J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
-
+  \<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c
 \<close>
 
 lemma Json_well_formed:
