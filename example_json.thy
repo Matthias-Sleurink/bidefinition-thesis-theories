@@ -456,24 +456,46 @@ lemma JsonObject_no_peek_past_end:
         by fast
       done
     subgoal
-      apply (rule then_does_not_peek_past_end_from_fpc[of \<open>ws_char CHR ''}''\<close> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()\<close>,
-              unfolded does_not_peek_past_end_def[of \<open>parse (b_then (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()) (ws_char CHR ''}''))\<close>],
-              rule_format, of cb l b l'']; assumption?; clarsimp?)
-      subgoal for c
-        \<comment> \<open>sepby , jsonnamecolonobject does not consume past char c\<close>
-        apply (insert ws_char_fpc[of \<open>CHR ''}''\<close> \<open>()\<close> c]; auto)
-        subgoal sorry
-        subgoal
-          \<comment> \<open>I feel like this isn't true. As we do peek past whitespace chars. Just not ws }. So we'll need the conflict one here too?\<close>
-          \<comment> \<open>Or maybe we can do something smarter here? Make a new combinator for b_then?\<close>
-          \<comment> \<open>I think we can make a generalised thing here by saying that the sep fails for this extra stuff and the element does not consume it?\<close>
-          find_theorems does_not_consume_past_char3 separated_by
-           sorry
-        sorry
-      subgoal using ws_char_no_result_same_leftover by blast
+      apply (rule then_does_not_peek_past_end_with_inner_conflict[unfolded does_not_peek_past_end_def, rule_format, of _ _ cb l b l'']; assumption?; clarsimp?)
       subgoal using I_pngi by pasi_pngi
-      subgoal by (rule ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, simplified])
-      subgoal by pasi_pngi
+      subgoal using I_pngi by pasi_pngi
+      subgoal for ca' cb' a l' l''
+        apply (rule exI[of _ \<open> cb' @ l''\<close>]; rule conjI)
+        subgoal
+          apply (induction a arbitrary: ca' cb' l' l''; clarsimp?)
+          subgoal for ca' cb' l' l'' \<comment> \<open>Empty\<close>
+            apply (clarsimp simp add: separated_by_has_result_safe_Nil)
+            apply (cases \<open>cb'\<close>; clarsimp)
+            subgoal \<comment> \<open>Empty\<close> using ws_char_no_result_same_leftover[of \<open>CHR ''}''\<close> l' \<open>()\<close>] by argo
+            subgoal for cb'_' cb's
+              apply (rule is_error_JsonNameColonObject(2))
+              by (insert ws_char_first_char_result[of \<open>CHR ''}''\<close> cb'_' \<open>cb's @ l'\<close> \<open>()\<close> l']; clarsimp)
+            done
+          subgoal for a b abs ca' cb' l' l''  \<comment> \<open>NonEmpty\<close>
+            \<comment> \<open>This might not be a smart technique, we need some has_result for sepBy that shows that adding one element in front means adding an element and separator as text.\<close>
+            apply (clarsimp simp add: separated_by_has_result_safe_Cons)
+            subgoal for l'jsnco
+              apply (insert many_PNGI[of \<open>b_then (ws_char_ws CHR '','') (JsonNameColonObject I)\<close>, OF then_PASI_from_pasi_pngi,
+                                      OF ws_char_ws_PASI PASI_PNGI_JsonNameColonObject(2)[OF I_pngi],
+                                      unfolded PNGI_def, rule_format, of l'jsnco \<open>(zip (replicate (length abs) ()) abs)\<close> \<open>cb'@l'\<close>]; clarsimp)
+              subgoal for caa
+                apply (insert PASI_PNGI_JsonNameColonObject(2)[OF I_pngi, unfolded PNGI_def, rule_format, of \<open>ca'@cb'@l'\<close> \<open>(a,b)\<close> \<open>caa@cb'@l'\<close>]; clarsimp)
+                subgoal for c_jnco
+                  apply (rule exI[of _ \<open>caa @ cb' @ l''\<close>]; rule conjI)
+                  subgoal
+                    
+                    sorry
+                  subgoal
+                    
+                    sorry
+                  done
+                done
+              done
+            done
+          done 
+        subgoal
+          by (rule ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, unfolded does_not_peek_past_end_def, rule_format, simplified])
+        done
       done
     done
   oops
