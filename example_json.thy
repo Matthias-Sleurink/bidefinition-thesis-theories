@@ -1318,6 +1318,78 @@ lemma inductive_Json_no_consume_past_closing_brace:
   oops
 
 
+lemma inductive_Json_no_consume_past_ws:
+  assumes J_wf: "bidef_well_formed (J ())"
+  assumes J_pngi: "PNGI (parse (J ()))"
+  assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
+  assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+  shows "\<forall>c. c \<in> whitespace_chars \<longrightarrow>
+          does_not_consume_past_char3
+            (parse
+              (transform sum_take_many sum_untake_many
+                (derived_or.or JsonString
+                (derived_or.or JsonNumber
+                (derived_or.or (JsonObject (J ()))
+                (derived_or.or (JsonList (J ()))
+                (derived_or.or JsonTrue
+                (derived_or.or JsonFalse
+                               JsonNull))))))))
+            c"
+  apply clarsimp
+  apply (rule transform_does_not_consume_past_char3)
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal by (rule JsonString_drop_leftover_on_error)
+  subgoal for c c' l l' r
+    \<comment> \<open>If the others have a result then c' cannot start with quot_chr\<close>
+    apply (cases c'; clarsimp)
+    subgoal \<comment> \<open>Empty, proof is trivial because JsonString errors when not start with "\<close>
+      by (rule is_error_JsonString(2); clarsimp)
+    subgoal for c'' c's \<comment> \<open>Nonempty\<close>
+      \<comment> \<open>For the rest of Json to succeed c'' cannot be ", so JsonString fails.\<close>
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x
+        apply (insert JsonNumber_first_char_result[of c'' \<open>c's@l\<close> x l]; auto simp add: is_error_JsonString(2))
+        apply (insert is_error_JsonString(2)[of c'' \<open>c's @ c # l'\<close>])
+        by fastforce
+      subgoal for x by (insert JsonObject_first_char_result[of \<open>J ()\<close> c'' \<open>c's @ l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonList_first_char_result[of \<open>J ()\<close> c'' \<open>c's @ l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonTrue_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal by (rule JsonString_no_consume_past_any_char)
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal by (rule JsonNumber_can_drop_leftover_on_error)
+  subgoal for c'' l l' by (rule JsonNumber_stays_error_with_injected_char[of l l' c'', simplified]; assumption?; fastforce)
+  subgoal by (rule JsonNumber_no_consume_past_non_digit_chars; clarsimp)
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal for c c' l r
+    apply (cases c'; clarsimp)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal for c'' c's
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x by (insert JsonList_first_char_result[of \<open>J ()\<close> c'' \<open>c's @ l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonTrue_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal for c c' l l' r
+    apply (cases c'; clarsimp)
+    subgoal by (auto simp add: NER_simps J_pngi split: sum.splits)
+    subgoal
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal sorry
+      subgoal sorry
+      subgoal sorry
+      subgoal sorry
+      done
+    done
+  subgoal
+    
+    sorry
+  oops
 
 \<comment> \<open>Other needed premises:
   \<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c
@@ -1329,6 +1401,7 @@ lemma Json_well_formed:
   \<and> (\<nexists>r l. has_result (parse Json) [] r l)
   \<and> (\<forall> i c. fpc (parse Json) i c \<longrightarrow> c \<notin> whitespace_chars)
   \<and> (does_not_consume_past_char3 (parse Json) CHR ''}'')
+  \<and> (\<forall>c. c \<in>whitespace_chars \<longrightarrow> does_not_consume_past_char3 (parse Json) c)
 "
   apply (induction rule: JsonR.fixp_induct)
   subgoal by clarsimp
@@ -1347,6 +1420,9 @@ lemma Json_well_formed:
     subgoal by (rule inductive_Json_fpc_not_ws)
     subgoal
       \<comment> \<open>Does not consume past closing brace\<close>
+      sorry
+    subgoal
+      \<comment> \<open>Does not consume past whitespace chars\<close>
       sorry
     done
   oops
