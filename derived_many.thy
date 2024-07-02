@@ -354,6 +354,10 @@ lemma many_fpci:
   by (clarsimp simp add: many_fpci_nil many_fpci_cons split: list.splits)
 
 
+lemma many_fpc_nil[fpc_simps]:
+  "fpc (parse (many b)) [] c \<longleftrightarrow> False"
+  by (clarsimp simp add: NER_simps fpc_def)
+
 
 \<comment> \<open>Has result for many for_predicate has some nice properties\<close>
 lemma many_char_for_predicate_has_result_forwards:
