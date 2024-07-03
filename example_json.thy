@@ -1378,17 +1378,56 @@ lemma inductive_Json_no_consume_past_ws:
   subgoal for c c' l l' r
     apply (cases c'; clarsimp)
     subgoal by (auto simp add: NER_simps J_pngi split: sum.splits)
-    subgoal
+    subgoal for c'' c's
       apply (clarsimp simp add: NER_simps split: sum.splits)
-      subgoal sorry
-      subgoal sorry
-      subgoal sorry
-      subgoal sorry
+      subgoal for x by (insert JsonList_first_char_result[of \<open>J ()\<close> c'' \<open>c's @ l\<close> x l]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonTrue_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
       done
     done
   subgoal
-    
+    \<comment> \<open>JsonObject no consume past ws\<close>
     sorry
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal for c c' l r
+    apply (cases c'; clarsimp)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal for c'' c's
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x by (insert JsonTrue_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal for c c' l l' r
+    apply (cases c'; clarsimp)
+    subgoal by (auto simp add: NER_simps J_pngi split: sum.splits)
+    subgoal for c'' c's
+      apply (clarsimp simp add: NER_simps split: sum.splits)
+      subgoal for x by (insert JsonTrue_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonFalse_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      subgoal for x by (insert JsonNull_first_char_result[of c'' \<open>c's @ l\<close> x l ]; clarsimp simp add: NER_simps)
+      done
+    done
+  subgoal
+    \<comment> \<open>JsonList no consume past ws\<close>
+    sorry
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal by (rule JsonTrue_can_drop_leftover_on_error)
+  subgoal for c by (cases c; clarsimp simp add: NER_simps JsonFalse_def JsonNull_def split: sum.splits)
+  subgoal
+    using JsonTrue_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
+    by blast
+  apply (rule or_no_consume_past_char[rotated, rotated])
+  subgoal by (rule JsonFalse_can_drop_leftover_on_error)
+  subgoal for c by (cases c; clarsimp simp add: NER_simps JsonNull_def)
+  subgoal
+    using JsonFalse_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
+    by blast
+  subgoal
+    using JsonNull_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
+    by blast
   oops
 
 \<comment> \<open>Other needed premises:
