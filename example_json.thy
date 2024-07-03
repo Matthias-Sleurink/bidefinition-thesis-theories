@@ -479,7 +479,87 @@ lemma JsonNameColonObject_no_consume_past_ws:
   subgoal using J_pngi by pasi_pngi
   done
 
+lemma JsonNameColonObject_sepByComma_no_consume_past_chars:
+  assumes JNCO_wf: "bidef_well_formed (JsonNameColonObject I)"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_dncp_closing_brace: "does_not_consume_past_char3 (parse I) CHR ''}''"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_fpc_no_ws: "\<And>i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_no_result_from_empty: "\<And>r x. has_result (parse I) [] r x \<Longrightarrow> False"
 
+  assumes JNCO_drop_leftover: "\<And> c l l' r. has_result (parse (JsonNameColonObject I)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (JsonNameColonObject I)) (c @ l) r l"
+
+  \<comment> \<open>Might also like to add comma later?\<close>
+  \<comment> \<open>Sadly had to drop the ws_chars from here because the separated_by_no_consume_past_char rule breaks that.\<close>
+  assumes c_val: "c = CHR ''}'' \<or> c = CHR '']''"
+  shows "does_not_consume_past_char3 (parse (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ())) c"
+  apply (rule separated_by_no_consume_past_char)
+  subgoal by (rule is_error_JsonNameColonObject)
+  subgoal
+    apply (rule is_error_JsonNameColonObject)
+    using c_val by force
+  subgoal by (rule JNCO_wf)
+  subgoal
+    apply (rule WF_many_then; clarsimp?)
+    subgoal by (rule ws_char_ws_well_formed; clarsimp)
+    subgoal by pasi_pngi
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal by (rule JNCO_wf)
+    subgoal using I_pngi by pasi_pngi
+    subgoal for a b c
+      apply (insert fpci_JsonNameColonObject[of I \<open>(a,b)\<close> c]; clarsimp)
+      by (rule ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> quot_chr, simplified])
+    subgoal for c
+      apply (clarsimp simp add: fpci_simps)
+      apply (rule JsonNameColonObject_no_consume_past_comma)
+      subgoal by (rule I_pngi)
+      subgoal by (rule I_wf)
+      subgoal by (rule I_dncp_comma)
+      subgoal by (rule I_fpc_no_ws)
+      subgoal using I_no_result_from_empty by blast
+      done
+    done
+  subgoal for i c
+    apply (cases i; clarsimp)
+    subgoal by (clarsimp simp add: fpc_simps)
+    apply (auto simp add: fpc_def NER_simps split: if_splits)
+    subgoal
+      apply (insert I_fpc_no_ws)
+      apply (rule JsonNameColonObject_no_consume_past_ws[of _ c, OF I_pngi I_wf I_dncp_ws, simplified]; assumption?)
+      using I_no_result_from_empty by blast
+    subgoal
+      apply (insert I_fpc_no_ws)
+      apply (rule JsonNameColonObject_no_consume_past_ws[of _ c, OF I_pngi I_wf I_dncp_ws, simplified]; assumption?)
+      using I_no_result_from_empty by blast
+    subgoal by (rule JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_dncp_comma]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    subgoal by (rule JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_dncp_comma]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    subgoal by (rule JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_dncp_comma]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    done
+  subgoal
+    apply (insert c_val; auto)
+    subgoal by (rule JsonNameColonObject_no_consume_past_closing_brace[OF I_pngi I_wf I_dncp_closing_brace]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    subgoal by (rule JsonNameColonObject_no_consume_past_closing_bracket[OF I_pngi I_wf I_dncp_closing_bracket]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    done
+  subgoal by (rule JNCO_drop_leftover)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal for cs r l
+    apply (insert c_val; auto)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal by (clarsimp simp add: NER_simps)
+    done
+  subgoal by pasi_pngi
+  subgoal using I_pngi by pasi_pngi
+  subgoal for cM l abs cS a b
+    using has_result_JsonNameColonObject[OF I_pngi, of \<open>cM@l\<close> b] by fastforce
+  subgoal for i c
+    apply (insert fpc_JsonNameColonObject[of I i c]; clarsimp)
+    by (rule ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> quot_chr, simplified])
+  done
 
 
 abbreviation "betweenBraces bd \<equiv> takeMiddle (char_ws CHR ''{'') bd (ws_char CHR ''}'') () ()"
@@ -587,7 +667,10 @@ lemma JsonObject_no_peek_past_end:
       subgoal for c
         apply (auto simp add: ws_char_fpc) \<comment> \<open>Would it be nice if we could split this with a split rule in clarsimp?\<close>
         subgoal
-          
+          \<comment> \<open>Would be nice to have a rule for this.\<close>
+          \<comment> \<open>Probably need to have something like both do not consume past each others fpc and also both do not consume past the C.\<close>
+          thm separated_by_no_consume_past_char
+          find_theorems does_not_consume_past_char3 separated_by
           sorry
         subgoal
           
