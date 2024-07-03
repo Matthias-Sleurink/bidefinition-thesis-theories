@@ -526,6 +526,24 @@ lemma JsonObject_no_peek_past_end:
         by fast
       done
     subgoal
+      apply (rule then_does_not_peek_past_end_from_fpc[of \<open>ws_char CHR ''}''\<close> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()\<close>,
+                    unfolded does_not_peek_past_end_def[of \<open>parse (b_then (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()) (ws_char CHR ''}''))\<close>],
+                    rule_format, of cb l b l'']; assumption?; clarsimp?)
+      subgoal for c
+        apply (auto simp add: ws_char_fpc) \<comment> \<open>Would it be nice if we could split this with a split rule in clarsimp?\<close>
+        subgoal
+          
+          sorry
+        subgoal
+          
+          sorry
+        done
+      subgoal using ws_char_no_result_same_leftover by fast
+      subgoal using I_pngi by pasi_pngi
+      subgoal by (rule ws_char_does_not_peek_past_end; clarsimp)
+      subgoal using I_pngi by pasi_pngi
+      done
+      (*
       apply (rule then_does_not_peek_past_end_with_inner_conflict[unfolded does_not_peek_past_end_def, rule_format, of _ _ cb l b l'']; assumption?; clarsimp?)
       subgoal using I_pngi by pasi_pngi
       subgoal using I_pngi by pasi_pngi
@@ -606,7 +624,7 @@ lemma JsonObject_no_peek_past_end:
         subgoal
           by (rule ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, unfolded does_not_peek_past_end_def, rule_format, simplified])
         done
-      done
+    *)
     done
   oops
   
