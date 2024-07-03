@@ -197,7 +197,7 @@ lemma separated_by_does_peek_past_end[peek_past_end_simps]:
 
 
 \<comment> \<open>Does not consume past char3\<close>
-lemma separated_by_dncpc:
+lemma separated_by_no_consume_past_char:
   assumes E_error_empty: "is_error (parse E) []"
   assumes E_error_c: "\<And>l. is_error (parse E) (c # l)"
   assumes E_wf: "bidef_well_formed E"
@@ -207,7 +207,7 @@ lemma separated_by_dncpc:
   assumes E_drop_leftover: "\<And>c c' l a. has_result (parse E) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse E) (c @ c') a c'"
 
   assumes S_error_empty: "\<forall>r l. has_result (parse S) [] r l \<longrightarrow> \<not> is_error (parse E) l \<Longrightarrow> is_error (parse S) []"
-  assumes S_error_c: "\<And>l'. \<forall>r l. has_result (parse S) (c # l') r l \<longrightarrow> \<not> is_error (parse E) l \<Longrightarrow> is_error (parse S) (c # l')"
+  assumes S_error_c: "\<And>l' r l. has_result (parse S) (c # l') r l \<longrightarrow> \<not> is_error (parse E) l \<Longrightarrow> is_error (parse S) (c # l')"
   assumes S_pngi: "PNGI (parse S)"
 
   assumes SE_pasi: "PASI (parse (b_then S E))"
@@ -241,9 +241,9 @@ lemma separated_by_dncpc:
     subgoal for ca l \<comment> \<open>Empty\<close>
       apply (auto simp add: NER_simps)
       subgoal by (rule S_error_empty)
-      subgoal by (rule S_error_c)
+      subgoal using S_error_c by blast
       subgoal by (rule S_error_empty)
-      subgoal by (rule S_error_c)
+      subgoal using S_error_c by blast
       done
     subgoal for a b abs ca l \<comment> \<open>NonEmpty\<close>
       apply (auto simp add: NER_simps)
