@@ -1031,6 +1031,10 @@ lemma Json_well_formed_inductive:
   assumes J_pngi: "PNGI (parse (J ()))"
   assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
   assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+  assumes J_dncpc_closing_brace: "does_not_consume_past_char3 (parse (J ())) CHR ''}''"
+  assumes J_dncpc_closing_bracket: "does_not_consume_past_char3 (parse (J ())) CHR '']''"
+  assumes J_dncpc_comma: "does_not_consume_past_char3 (parse (J ())) CHR '',''"
+  assumes J_dncpc_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse (J ())) c"
   shows "bidef_well_formed
           (transform
              sum_take_many
