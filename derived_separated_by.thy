@@ -196,6 +196,121 @@ lemma separated_by_does_peek_past_end[peek_past_end_simps]:
   done
 
 
+\<comment> \<open>Does not consume past char3\<close>
+lemma separated_by_dncpc:
+  assumes E_error_empty: "is_error (parse E) []"
+  assumes E_error_c: "\<And>l. is_error (parse E) (c # l)"
+  assumes E_wf: "bidef_well_formed E"
+  assumes MSTE_wf: "bidef_well_formed (many (b_then S E))"
+  assumes E_dncpc_fpc_SE: "\<And>i c. fpc (parse (many (b_then S E))) i c \<longrightarrow> does_not_consume_past_char3 (parse E) c"
+  assumes E_dncpc_c: "does_not_consume_past_char3 (parse E) c"
+  assumes E_drop_leftover: "\<And>c c' l a. has_result (parse E) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse E) (c @ c') a c'"
+
+  assumes S_error_empty: "\<forall>r l. has_result (parse S) [] r l \<longrightarrow> \<not> is_error (parse E) l \<Longrightarrow> is_error (parse S) []"
+  assumes S_error_c: "\<And>l'. \<forall>r l. has_result (parse S) (c # l') r l \<longrightarrow> \<not> is_error (parse E) l \<Longrightarrow> is_error (parse S) (c # l')"
+  assumes S_pngi: "PNGI (parse S)"
+
+  assumes SE_pasi: "PASI (parse (b_then S E))"
+
+  assumes S_drop_leftover_OR_E_no_parse_same_leftover: " \<And> cM l abs cS a b.
+             \<lbrakk>has_result (parse (many (b_then S E))) (cM @ l) abs l; has_result (parse S) (cS @ cM @ l) a (cM @ l)\<rbrakk> \<Longrightarrow>
+               ((has_result (parse E) (cM @ l) b (cM @ l) \<longrightarrow> False) \<or> (has_result (parse S) (cS @ cM) a cM))"
+
+  assumes S_dncpc_fpc_E: "\<And>i c. fpc (parse E) i c \<Longrightarrow> does_not_consume_past_char3 (parse S) c"
+
+
+  shows "does_not_consume_past_char3 (parse (separated_by S E oracle)) c"
+  unfolding separated_by_def
+  apply (rule transform_does_not_consume_past_char3)
+  apply (rule optional_does_not_consume_past_char3)
+  subgoal by (clarsimp simp add: separated_byBase_def NER_simps E_error_empty)
+  subgoal by (clarsimp simp add: separated_byBase_def NER_simps E_error_c)
+  unfolding separated_byBase_def
+  apply (rule then_does_not_consume_past3_from_can_drop_leftover) \<comment> \<open>Others are possible here too.\<close>
+  subgoal by (rule E_wf)
+  subgoal by (rule MSTE_wf)
+     defer \<comment> \<open>does_not_consume_past_char3 (parse (many (b_then S E))) c\<close>
+  subgoal by (rule E_dncpc_fpc_SE)
+  subgoal by (rule E_dncpc_c)
+  subgoal by (rule E_drop_leftover)
+  \<comment> \<open>does_not_consume_past_char3 (parse (many (b_then S E))) c\<close>
+  unfolding does_not_consume_past_char3_def
+  apply clarsimp
+  subgoal for ca r l
+    apply (induction r arbitrary: ca l; clarsimp?)
+    subgoal for ca l \<comment> \<open>Empty\<close>
+      apply (auto simp add: NER_simps)
+      subgoal by (rule S_error_empty)
+      subgoal by (rule S_error_c)
+      subgoal by (rule S_error_empty)
+      subgoal by (rule S_error_c)
+      done
+    subgoal for a b abs ca l \<comment> \<open>NonEmpty\<close>
+      apply (auto simp add: NER_simps)
+      subgoal for l' l''
+        apply (insert S_pngi[unfolded PNGI_def, rule_format, of \<open>ca@l\<close> a l'']; clarsimp)
+        subgoal for cS
+          apply (insert E_wf[THEN get_pngi_unfold, rule_format, of l'' b l']; clarsimp)
+          subgoal for cE
+            apply (insert many_PNGI[OF SE_pasi, unfolded PNGI_def, rule_format, of l' abs l]; clarsimp)
+            subgoal for cM
+              apply (rule exI[of _ cM]; clarsimp)
+              apply (rule exI[of _ \<open>cE @ cM\<close>]; rule conjI)
+              subgoal
+                apply (cases cE; clarsimp)
+                subgoal \<comment> \<open>empty\<close> by (insert S_drop_leftover_OR_E_no_parse_same_leftover; clarsimp)
+                subgoal for cE' cEs
+                  by (insert S_dncpc_fpc_E[of b cE', unfolded fpc_def, OF exI[of _ cEs], OF exI[of _ \<open>cM@l\<close>],
+                                           unfolded does_not_consume_past_char3_def, rule_format,
+                                           of cS \<open>cE' # cEs @ cM @ l\<close> a \<open>cEs @ cM\<close>]; clarsimp)
+                done
+              subgoal
+                apply (cases cM; clarsimp)
+                subgoal \<comment> \<open>empty\<close>
+                  using E_dncpc_c[unfolded does_not_consume_past_char3_def] by fast
+                subgoal for cM' cMs
+                  using E_dncpc_fpc_SE[unfolded does_not_consume_past_char3_def fpc_def] by blast
+                done
+              done
+            done
+          done
+        done
+      subgoal for l' l'' l'''
+        apply (insert S_pngi[unfolded PNGI_def, rule_format, of \<open>ca@l\<close> a l'']; clarsimp)
+        subgoal for cS
+          apply (insert E_wf[THEN get_pngi_unfold, rule_format, of l'' b l']; clarsimp)
+          subgoal for cE
+            apply (insert many_PNGI[OF SE_pasi, unfolded PNGI_def, rule_format, of l' abs l]; clarsimp)
+            subgoal for cM
+              apply (rule exI[of _ \<open>cM @ c # l'''\<close>]; clarsimp)
+              apply (rule exI[of _ \<open>cE @ cM @ c # l'''\<close>]; rule conjI)
+              subgoal
+                apply (cases cE; clarsimp)
+                subgoal \<comment> \<open>Empty\<close>
+                  apply (insert S_drop_leftover_OR_E_no_parse_same_leftover[of cM l abs cS a b]; clarsimp)
+                  apply (insert E_dncpc_c[unfolded does_not_consume_past_char3_def, rule_format, of \<open>[]\<close> \<open>cM@l\<close> b, simplified]
+                                has_result_implies_not_is_error[of \<open>parse E\<close> \<open>[]\<close> b \<open>[]\<close>]
+                                E_error_empty)
+                  by clarsimp
+                subgoal for cE' cEs
+                  using S_dncpc_fpc_E[unfolded does_not_consume_past_char3_def fpc_def] by fast
+                done
+              subgoal
+                apply (cases cM; clarsimp)
+                subgoal \<comment> \<open>Empty\<close>
+                  using E_dncpc_c[unfolded does_not_consume_past_char3_def] by fast
+                subgoal for cM' cMs
+                  using E_dncpc_fpc_SE[unfolded does_not_consume_past_char3_def fpc_def] by blast
+                done
+              done
+            done
+          done
+        done
+      done
+    done
+  done
+
+
 
 \<comment> \<open>First printed char\<close>
 lemma serparated_by_fpci[fpci_simps]:
