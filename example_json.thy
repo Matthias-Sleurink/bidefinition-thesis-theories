@@ -1107,11 +1107,11 @@ lemma WF_JsonObject:
       subgoal
         apply (rule b_then_well_formed)
         subgoal
-          
+          \<comment> \<open>blocked by bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())\<close>
           sorry
         subgoal by (rule ws_char_well_formed; clarsimp)
         subgoal
-          
+          \<comment> \<open>blocked by JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char\<close>
           sorry
         done
       done
