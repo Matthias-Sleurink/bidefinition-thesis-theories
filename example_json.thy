@@ -399,6 +399,30 @@ lemma JsonNameColonObject_no_consume_past_closing_brace:
   subgoal using J_pngi by pasi_pngi
   done
 
+lemma JsonNameColonObject_no_consume_past_closing_bracket:
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_no_consume_past_closing_bracket: "does_not_consume_past_char3 (parse J) CHR '']''"
+  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  shows "does_not_consume_past_char3 (parse (JsonNameColonObject J)) CHR '']''"
+  unfolding JsonNameColonObject_def
+  apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+  subgoal by (rule str_literal_no_peek_past_end)
+  subgoal by pasi_pngi
+  subgoal
+    unfolding then_drop_first_def
+    apply (rule transform_does_not_consume_past_char3)
+    apply (rule then_does_not_consume_past3) \<comment> \<open>or do: then_does_not_consume_past3_from_can_drop_leftover\<close>
+    subgoal by (clarsimp simp add: ws_char_ws_well_formed)
+    subgoal by (rule J_wf)
+    subgoal by (rule J_no_consume_past_closing_bracket)
+    subgoal by (clarsimp simp add: J_fpc_no_ws ws_char_ws_does_not_consume_past_char3)
+    subgoal by (rule J_no_parse_empty)
+    done
+  subgoal using J_pngi by pasi_pngi
+  done
+
 lemma JsonNameColonObject_no_consume_past_comma:
   assumes J_pngi: "PNGI (parse J)"
   assumes J_wf: "bidef_well_formed J"
