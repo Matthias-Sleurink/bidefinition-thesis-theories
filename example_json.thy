@@ -369,6 +369,13 @@ lemma is_error_JsonNameColonObject[NER_simps]:
   "c \<noteq> quot_chr \<Longrightarrow> is_error (parse (JsonNameColonObject J)) (c # l)"
   by (clarsimp simp add: JsonNameColonObject_def NER_simps)+
 
+lemma has_result_JsonNameColonObject[NER_simps]:
+  assumes J_pngi: "PNGI (parse J)"
+  shows "has_result (parse (JsonNameColonObject J)) i r i \<longleftrightarrow> False"
+  using PASI_PNGI_JsonNameColonObject(1)[OF J_pngi, unfolded PASI_def, rule_format]
+  by blast
+  
+
 lemma fpc_JsonNameColonObject[fpc_simps]:
   "fpc (parse (JsonNameColonObject I)) a c \<Longrightarrow> c = quot_chr"
   apply (clarsimp simp add: JsonNameColonObject_def fpc_simps)
