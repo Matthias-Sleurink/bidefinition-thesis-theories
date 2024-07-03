@@ -633,6 +633,8 @@ lemma JsonObject_no_peek_past_end:
   assumes I_pngi: "PNGI (parse I)"
   assumes I_wf: "bidef_well_formed I"
   assumes I_dncp_b: "does_not_consume_past_char3 (parse I) CHR ''}''"
+  assumes I_dncp_b': "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_c: "does_not_consume_past_char3 (parse I) CHR '',''"
   assumes I_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
   assumes I_fpc_no_ws: "\<And>i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
@@ -667,13 +669,24 @@ lemma JsonObject_no_peek_past_end:
       subgoal for c
         apply (auto simp add: ws_char_fpc) \<comment> \<open>Would it be nice if we could split this with a split rule in clarsimp?\<close>
         subgoal
-          \<comment> \<open>Would be nice to have a rule for this.\<close>
-          \<comment> \<open>Probably need to have something like both do not consume past each others fpc and also both do not consume past the C.\<close>
-          thm separated_by_no_consume_past_char
-          find_theorems does_not_consume_past_char3 separated_by
-          sorry
+          apply (rule JsonNameColonObject_sepByComma_no_consume_past_chars; clarsimp?)
+          subgoal
+            \<comment> \<open>bidef_well_formed (JsonNameColonObject I)\<close>
+            sorry
+          subgoal by (rule I_pngi)
+          subgoal by (rule I_wf)
+          subgoal by (rule I_dncp_c)
+          subgoal by (rule I_dncp_b)
+          subgoal by (rule I_dncp_b')
+          subgoal by (rule I_dncp_ws)
+          subgoal by (clarsimp simp add: I_fpc_no_ws)
+          subgoal for r x using I_no_empty_parse[simplified, rule_format, of r x] by fast
+          subgoal for cc l' l'' ccn cco
+            \<comment> \<open>JsonNameColonObject can drop past leftover\<close>
+            sorry
+          done
         subgoal
-          
+          \<comment> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) () no consume past ws\<close>
           sorry
         done
       subgoal using ws_char_no_result_same_leftover by fast
