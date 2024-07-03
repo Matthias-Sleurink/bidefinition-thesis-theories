@@ -1026,15 +1026,19 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
   assumes J_pngi: "PNGI (parse J)"
   assumes J_wf: "bidef_well_formed J"
   assumes J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
+  assumes J_no_consume_past_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
   assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  assumes J_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
   assumes jnco_wf: "bidef_well_formed (JsonNameColonObject J)"
   assumes many_comma_then_jcno_wf: "bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))"
   assumes inner_wf: "bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())"
   shows "pa_does_not_eat_into_pb_nondep (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ()) (ws_char CHR ''}'')"
   apply (rule first_printed_does_not_eat_into3)
   subgoal by (rule inner_wf)
-  apply (clarsimp simp add: fpci_simps separated_by_def)
+  apply (clarsimp simp add: fpci_simps)
+  thm JsonNameColonObject_sepByComma_no_consume_past_chars \<comment> \<open>TODO: move to this rule\<close>
+  apply (clarsimp simp add: separated_by_def)
   apply (rule transform_does_not_consume_past_char3)
   apply (rule optional_does_not_consume_past_char3)
   subgoal by (clarsimp simp add: separated_byBase_def NER_simps)
@@ -1052,20 +1056,22 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
       subgoal for a b abs
         apply (auto simp add: fpc_def many_has_result_safe(2) b_then_has_result ws_char_ws_has_result split: if_splits)
         subgoal
-          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) (whitespace_char)\<close>
-          sorry
+          apply (insert J_fpc_no_ws)
+          apply (rule JsonNameColonObject_no_consume_past_ws[of _ c, OF J_pngi J_wf J_dncp_ws, simplified]; assumption?)
+          using J_no_parse_empty by blast
         subgoal
-          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) (whitespace_char)\<close>
-          sorry
+          apply (insert J_fpc_no_ws)
+          apply (rule JsonNameColonObject_no_consume_past_ws[of _ c, OF J_pngi J_wf J_dncp_ws, simplified]; assumption?)
+          using J_no_parse_empty by blast
         subgoal
-          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) '',''\<close>
-          sorry
+          apply (rule JsonNameColonObject_no_consume_past_comma[OF J_pngi J_wf J_no_consume_past_comma])
+          using J_fpc_no_ws J_no_parse_empty by blast+
         subgoal
-          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) '',''\<close>
-          sorry
+          apply (rule JsonNameColonObject_no_consume_past_comma[OF J_pngi J_wf J_no_consume_past_comma])
+          using J_fpc_no_ws J_no_parse_empty by blast+
         subgoal
-          \<comment> \<open> does_not_consume_past_char3 (parse (JsonNameColonObject J)) '',''\<close>
-          sorry
+          apply (rule JsonNameColonObject_no_consume_past_comma[OF J_pngi J_wf J_no_consume_past_comma])
+          using J_fpc_no_ws J_no_parse_empty by blast+
         done
       done
     subgoal
