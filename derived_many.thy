@@ -440,6 +440,66 @@ lemma many_char_for_predicate_does_not_consume_past_char3:
   done
 
 
+lemma many_does_not_consume_past_char3:
+  assumes I_pngi: "PNGI (parse I)"
+  assumes M_I_pngi: "PNGI (parse (many I))"
+
+  assumes I_error_empty: "is_error (parse I) []"
+  assumes I_error_startswith_c: "\<And>l. is_error (parse I) (C # l)"
+
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c@l@l') r (l@l') \<Longrightarrow> has_result (parse I) (c@l) r l"
+  assumes I_dncp_c: "does_not_consume_past_char3 (parse I) C"
+
+  assumes I_dpcp_fpc_I: "\<And>i c. fpc (parse I) i c \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+
+  shows "does_not_consume_past_char3 (parse (many I)) C"
+  unfolding does_not_consume_past_char3_def
+  apply clarsimp
+  subgoal for c r l
+    apply (induction r arbitrary: c l)
+    subgoal by (clarsimp simp add: NER_simps I_error_empty I_error_startswith_c)
+    subgoal for r' rs c l
+      apply (auto simp add: NER_simps)
+      subgoal for l'
+        apply (insert I_pngi[unfolded PNGI_def, rule_format, of \<open>c@l\<close> r' l']; clarsimp)
+        subgoal for cI
+          apply (insert M_I_pngi[unfolded PNGI_def, rule_format, of l' rs l]; clarsimp)
+          subgoal for cMI
+            apply (rule exI[of _ cMI]; rule conjI; clarsimp?) \<comment> \<open>Clarsimp drops the Many part using the induction step\<close>
+            by (rule I_drop_leftover)
+          done
+        done
+      subgoal for l' l''
+        apply (insert I_pngi[unfolded PNGI_def, rule_format, of \<open>c@l\<close> r' l']; clarsimp)
+        subgoal for cI
+          apply (insert M_I_pngi[unfolded PNGI_def, rule_format, of l' rs l]; clarsimp)
+          subgoal for cMI
+            apply (rule exI[of _ \<open>cMI @ C # l''\<close>]; clarsimp?) \<comment> \<open>clarsimp drops the Many part using the induction step\<close>
+            apply (cases cMI; clarsimp)
+            subgoal by (meson I_dncp_c does_not_consume_past_char3_def)
+            subgoal for cMI' cMIs
+              apply (cases rs; clarsimp)
+              subgoal by (clarsimp simp add: NER_simps)
+              subgoal for rs' rss
+                apply (clarsimp simp add: many_has_result_safe(2)[of I \<open>(cMI' # cMIs @ l)\<close> rs' rss l])
+                subgoal for lIinner
+                  apply (insert M_I_pngi[unfolded PNGI_def, rule_format, of lIinner rss l]; clarsimp)
+                  subgoal for lMIInner
+                    using I_dpcp_fpc_I[unfolded fpc_def does_not_consume_past_char3_def]
+                          I_pngi[unfolded PNGI_def]
+                          I_error_empty
+                          I_dncp_c[unfolded does_not_consume_past_char3_def]
+                    by (metis has_result_implies_not_is_error list.sel(3) tl_append2)
+                  done
+                done
+              done
+            done
+          done
+        done
+      done
+    done
+  done
+
 
 \<comment> \<open>The second half of many holds for all applications of many.\<close>
 \<comment> \<open>Not really sure if this 'assumes A or B' is a good idea in general,
