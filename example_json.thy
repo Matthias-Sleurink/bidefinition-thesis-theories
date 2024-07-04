@@ -738,7 +738,7 @@ lemma JsonObject_no_peek_past_end:
       subgoal for ca' cb' rsb l2 l2'
         apply (rule exI[of _ \<open>cb'@l2'\<close>]; rule conjI)
         subgoal
-          
+          \<comment> \<open>How do we say that we do not peek past more than one char?\<close>
           sorry
         subgoal
           using ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, simplified, unfolded does_not_peek_past_end_def, rule_format] by blast
