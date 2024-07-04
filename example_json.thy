@@ -1847,6 +1847,54 @@ lemma inductive_Json_no_consume_past_closing_bracket:
     by blast
   oops
 
+
+
+lemma inductive_Json_drop_past_leftover:
+  assumes J_drop_leftover: "\<forall>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse J) (c @ l) r l"
+  shows "has_result
+             (parse
+               (transform sum_take_many sum_untake_many
+                 (derived_or.or JsonString (derived_or.or JsonNumber (derived_or.or (JsonObject J) (derived_or.or (JsonList J) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull))))))))
+             (c @ l @ l') r (l @ l') \<Longrightarrow>
+            has_result
+             (parse
+               (transform sum_take_many sum_untake_many
+                 (derived_or.or JsonString (derived_or.or JsonNumber (derived_or.or (JsonObject J) (derived_or.or (JsonList J) (derived_or.or JsonTrue (derived_or.or JsonFalse JsonNull))))))))
+             (c @ l) r l"
+  apply (rule transform_can_drop_leftover; assumption?)
+  apply (rule or_can_drop_leftover; assumption?)
+  subgoal by (rule JsonString_drop_leftover)
+  subgoal by (rule JsonString_drop_leftover_on_error2)
+
+  apply (rule or_can_drop_leftover; assumption?)
+  subgoal by (rule JsonNumber_drop_leftover)
+  subgoal by (rule JsonNumber_can_drop_leftover_on_error2)
+
+  apply (rule or_can_drop_leftover; assumption?)
+  subgoal \<comment> \<open>JsonObject can drop leftover\<close>
+    sorry
+  subgoal \<comment> \<open>JsonObject can drop lefter on error\<close>
+    sorry
+
+  apply (rule or_can_drop_leftover; assumption?)
+  subgoal \<comment> \<open>JsonList can drop leftover\<close>
+    sorry
+  subgoal \<comment> \<open>JsonList can drop lefter on error\<close>
+    sorry
+
+  apply (rule or_can_drop_leftover; assumption?)
+  subgoal by (rule JsonTrue_drop_leftover)
+  subgoal by (rule JsonTrue_can_drop_leftover_on_error2)
+
+  apply (rule or_can_drop_leftover; assumption?)
+  subgoal by (rule JsonFalse_drop_leftover)
+  subgoal by (rule JsonFalse_can_drop_leftover_on_error2)
+
+  subgoal by (rule JsonNull_drop_leftover)
+  done
+
+
+
 \<comment> \<open>Other needed premises:
   
 \<close>
