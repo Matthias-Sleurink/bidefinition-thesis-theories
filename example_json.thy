@@ -865,11 +865,25 @@ lemma JsonTrue_can_drop_leftover_on_error:
   using assms
   by (clarsimp simp add: NER_simps JsonTrue_def)
 
+lemma JsonTrue_can_drop_leftover_on_error2:
+  assumes "is_error (parse JsonTrue) (c @ l @ l')"
+  shows "is_error (parse JsonTrue) (c @ l)"
+  using assms
+  apply (clarsimp simp add: NER_simps JsonTrue_def)
+  by (smt (verit, ccfv_threshold) append.assoc append_is_Nil_conv hd_append2 tl_append2)
+
 lemma JsonTrue_no_peek_past_end:
   "does_not_peek_past_end (parse JsonTrue)"
   unfolding JsonTrue_def
   apply (rule ftrans_does_not_peek_past_end)
   by (rule this_string_does_not_peek_past_end)
+
+
+lemma JsonTrue_drop_leftover:
+  shows "has_result (parse JsonTrue) (c @ l @ l') r (l @ l')
+            \<Longrightarrow> has_result (parse JsonTrue) (c @ l) r l"
+  using JsonTrue_no_peek_past_end[unfolded does_not_peek_past_end_def]
+  by blast
 
 lemma wf_JsonTrue:
   "bidef_well_formed JsonTrue"
