@@ -181,7 +181,7 @@ lemma ws_char_chars_can_be_dropped:
 
 \<comment> \<open>Pretty sure this can be strengthened to can change leftover.\<close>
 section \<open>can drop past leftover\<close>
-lemma ws_char_can_drop_past_lefover:
+lemma ws_char_can_drop_past_leftover:
   assumes "has_result (parse (ws_char C)) (c @ l @ l') () (l @ l')"
   shows "has_result (parse (ws_char C)) (c @ l) () (l)"
   using assms
