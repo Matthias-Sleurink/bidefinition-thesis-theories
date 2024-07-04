@@ -80,6 +80,62 @@ lemma this_string_does_not_peek_past_end[peek_past_end_simps]:
 
 
 
+\<comment> \<open>Drop leftover\<close>
+lemma this_string_drop_leftover:
+  shows "has_result (parse (this_string s)) (c @ l @ l') r (l @ l')
+            \<Longrightarrow> has_result (parse (this_string s)) (c @ l) r l"
+  using this_string_does_not_peek_past_end[unfolded does_not_peek_past_end_def]
+  by blast
+
+
+lemma this_string_drop_leftover_on_errro:
+  shows "is_error (parse (this_string s)) (c @ l @ l')
+            \<Longrightarrow> is_error (parse (this_string s)) (c @ l)"
+  apply (induction s; auto simp add: NER_simps)
+  subgoal by (cases c; cases l; clarsimp)
+  subgoal by (cases c; cases l; clarsimp)
+  subgoal for s
+    apply (cases c; clarsimp)
+    subgoal for c' cs
+      apply (insert has_result_exhaust(1)[of \<open>parse (this_string s)\<close> \<open>cs@l\<close>]
+                    this_string_is_nonterm[of s \<open>cs@l\<close>, simplified]; clarsimp)
+      subgoal for r x
+        apply (insert this_string_PNGI[of s, unfolded PNGI_def, rule_format, of \<open>cs@l\<close> r x]; clarsimp)
+        subgoal for cr
+          apply (insert this_string_does_not_peek_past_end[of s, unfolded does_not_peek_past_end_def, rule_format, of cr x r \<open>x@l'\<close>]; clarsimp)
+          apply (insert has_result_implies_not_is_error[of \<open>parse (this_string s)\<close> \<open>cr@x@l'\<close> r \<open>x@l'\<close>]; clarsimp)
+          by (metis append.assoc)
+        done
+      done
+    done
+  subgoal for s
+    apply (cases c; cases l; clarsimp)
+    subgoal for l'' ls
+      apply (insert has_result_exhaust(1)[of \<open>parse (this_string s)\<close> ls]
+                    this_string_is_nonterm[of s ls, simplified]; clarsimp)
+      subgoal for rs lls
+        apply (insert this_string_PNGI[of s, unfolded PNGI_def, rule_format, of ls rs lls]; clarsimp)
+        subgoal for cs
+          apply (insert this_string_does_not_peek_past_end[of s, unfolded does_not_peek_past_end_def, rule_format, of cs lls rs \<open>lls@l'\<close>]; clarsimp)
+          by (insert has_result_implies_not_is_error[of \<open>parse (this_string s)\<close> \<open>cs@lls@l'\<close> rs \<open>lls@l'\<close>]; clarsimp)
+        done
+      done
+    subgoal for c' cs l'' ls
+      apply (insert has_result_exhaust(1)[of \<open>parse (this_string s)\<close> \<open>cs @ l'' # ls\<close>]
+                    this_string_is_nonterm[of s \<open>cs @ l'' # ls\<close>, simplified]; clarsimp)
+      subgoal for rs lls
+        apply (insert this_string_PNGI[of s, unfolded PNGI_def, rule_format, of \<open>cs@l''#ls\<close> rs lls]; clarsimp)
+        subgoal for conss
+          apply (insert this_string_does_not_peek_past_end[of s, unfolded does_not_peek_past_end_def, rule_format, of conss lls rs \<open>lls@l'\<close>]; clarsimp)
+          apply (insert has_result_implies_not_is_error[of \<open>parse (this_string s)\<close> \<open>conss@lls@l'\<close> rs \<open>lls@l'\<close>]; clarsimp)
+          by (metis append.assoc append_Cons)
+        done
+      done
+    done
+  done
+
+
+
 \<comment> \<open>First printed char\<close>
 lemma this_string_fpci[fpci_simps]:
   "first_printed_chari (print (this_string s)) i c \<longleftrightarrow> s\<noteq>[] \<and> i = s \<and> c = (hd s)"
