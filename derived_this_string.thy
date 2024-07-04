@@ -88,7 +88,7 @@ lemma this_string_drop_leftover:
   by blast
 
 
-lemma this_string_drop_leftover_on_errro:
+lemma this_string_drop_leftover_on_error:
   shows "is_error (parse (this_string s)) (c @ l @ l')
             \<Longrightarrow> is_error (parse (this_string s)) (c @ l)"
   apply (induction s; auto simp add: NER_simps)
