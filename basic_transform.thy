@@ -127,6 +127,18 @@ lemma transform_does_not_consume_past_char3:
 
 
 
+\<comment> \<open>Can drop leftover\<close>
+lemma transform_can_drop_leftover:
+  assumes "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l')
+              \<Longrightarrow> has_result (parse I) (c @ l) r l"
+  shows "has_result (parse (transform f f' I)) (c @ l @ l') r (l @ l')
+              \<Longrightarrow> has_result (parse (transform f f' I)) (c @ l) r l"
+  using assms
+  apply (clarsimp simp add: NER_simps)
+  by blast
+
+
+
 \<comment> \<open>First printed char\<close>
 lemma transform_fpci:
   assumes "first_printed_chari (print A) (f' i) c"
