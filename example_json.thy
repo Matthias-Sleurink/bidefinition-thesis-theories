@@ -878,7 +878,6 @@ lemma JsonTrue_no_peek_past_end:
   apply (rule ftrans_does_not_peek_past_end)
   by (rule this_string_does_not_peek_past_end)
 
-
 lemma JsonTrue_drop_leftover:
   shows "has_result (parse JsonTrue) (c @ l @ l') r (l @ l')
             \<Longrightarrow> has_result (parse JsonTrue) (c @ l) r l"
@@ -949,6 +948,25 @@ lemma JsonFalse_can_drop_leftover_on_error:
   using assms
   by (clarsimp simp add: NER_simps JsonFalse_def)
 
+lemma JsonFalse_can_drop_leftover_on_error2:
+  assumes "is_error (parse JsonFalse) (c @ l @ l')"
+  shows "is_error (parse JsonFalse) (c @ l)"
+  apply (insert assms)
+  unfolding JsonFalse_def
+  apply (clarsimp simp add: ftransform_is_error)
+  by (rule this_string_drop_leftover_on_error)
+
+lemma JsonFalse_drop_leftover:
+  shows "has_result (parse JsonFalse) (c @ l @ l') r (l @ l')
+            \<Longrightarrow> has_result (parse JsonFalse) (c @ l) r l"
+  unfolding JsonFalse_def
+  apply (clarsimp simp add: ftransform_has_result)
+  subgoal for r
+    apply (rule exI[of _ r])
+    by (rule this_string_drop_leftover)
+  done
+
+
 lemma JsonFalse_no_peek_past_end:
   "does_not_peek_past_end (parse JsonFalse)"
   unfolding JsonFalse_def
@@ -1018,6 +1036,24 @@ lemma JsonNull_can_drop_leftover_on_error:
   shows "is_error (parse JsonNull) c"
   using assms
   by (clarsimp simp add: NER_simps JsonNull_def)
+
+lemma JsonNull_can_drop_leftover_on_error2:
+  assumes "is_error (parse JsonNull) (c @ l @ l')"
+  shows "is_error (parse JsonNull) (c @ l)"
+  apply (insert assms)
+  unfolding JsonNull_def
+  apply (clarsimp simp add: ftransform_is_error)
+  by (rule this_string_drop_leftover_on_error)
+
+lemma JsonNull_drop_leftover:
+  shows "has_result (parse JsonNull) (c @ l @ l') r (l @ l')
+            \<Longrightarrow> has_result (parse JsonNull) (c @ l) r l"
+  unfolding JsonNull_def
+  apply (clarsimp simp add: ftransform_has_result)
+  subgoal for r
+    apply (rule exI[of _ r])
+    by (rule this_string_drop_leftover)
+  done
 
 lemma JsonNull_no_peek_past_end:
   "does_not_peek_past_end (parse JsonNull)"
