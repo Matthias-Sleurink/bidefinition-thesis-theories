@@ -238,6 +238,11 @@ lemma JsonString_drop_leftover_on_error:
   shows "is_error (parse JsonString) c"
   by (cases c; insert assms; auto simp add: NER_simps JsonString_def)
 
+lemma JsonString_drop_leftover_on_error2:
+  assumes "is_error (parse JsonString) (c @ l @ l')"
+  shows "is_error (parse JsonString) (c @ l)"
+  by (cases c; insert assms; auto simp add: NER_simps JsonString_def; cases l; auto simp add: NER_simps)
+
 lemma JsonString_no_peek_past_end:
   "does_not_peek_past_end (parse JsonString)"
   unfolding JsonString_def
@@ -249,6 +254,11 @@ lemma JsonString_no_consume_past_any_char:
   using does_not_consume_past_any_char3_eq_not_peek_past_end[of \<open>parse JsonString\<close>]
         JsonString_no_peek_past_end
   by blast
+
+lemma JsonString_drop_leftover:
+  shows "has_result (parse JsonString) (c @ l @ l') r (l @ l')
+            \<Longrightarrow> has_result (parse JsonString) (c @ l) r l"
+  using JsonString_no_peek_past_end[unfolded does_not_peek_past_end_def] by blast
 
 
 lemma JsonString_well_formed:
