@@ -1057,6 +1057,7 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
   assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
   assumes J_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) r l"
   assumes jnco_wf: "bidef_well_formed (JsonNameColonObject J)"
   assumes many_comma_then_jcno_wf: "bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))"
   assumes inner_wf: "bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())"
@@ -1109,9 +1110,7 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
       subgoal by (rule J_fpc_no_ws)
       subgoal by (rule J_no_parse_empty)
       done
-    subgoal for c l l' a
-      \<comment> \<open>JsonNameColonObject can drop leftover.\<close>
-      sorry
+    subgoal by (rule JsonNameColonObject_drop_leftover[OF J_pngi]; assumption?; rule J_drop_leftover)
     done
   oops
 
