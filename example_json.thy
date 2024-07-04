@@ -677,6 +677,22 @@ lemma fpc_JsonObject[fpc_simps]:
 lemma imply_and_eq_imply_one:
   "(a \<Longrightarrow> (A \<and> B)) \<Longrightarrow> (a \<Longrightarrow> B)"
   by blast
+lemma eq_tl_dropWhile_append:
+  assumes "c \<noteq> []"
+  assumes "\<exists>x. x \<in> (set c) \<and> x \<notin> whitespace_chars"
+  assumes "l = tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) (c @ l))"
+  shows "l' = tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) (c @ l'))"
+  apply (insert assms)
+  apply (induction c; auto)
+  by (metis dropWhile_eq_Nil_conv dropWhile_eq_self_iff)
+
+lemma eq_tl_dropWhile_append2:
+  assumes "cb' \<noteq> []"
+  assumes "l2 \<noteq> []"
+  assumes "l2 = tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) (cb' @ l2))"
+  shows "\<exists>x. x\<notin>whitespace_chars \<and> x\<in> (set cb')"
+  using assms
+  by (metis (no_types, lifting) Cons_eq_appendI dropWhile_append2 hd_Cons_tl list.simps(3) self_append_conv2 takeWhile_dropWhile_id tl_Nil)
 
 lemma JsonObject_no_peek_past_end:
   assumes I_pngi: "PNGI (parse I)"
@@ -714,6 +730,21 @@ lemma JsonObject_no_peek_past_end:
         by fast
       done
     subgoal
+      apply (rule then_does_not_peek_past_end_with_inner_conflict[
+                    of \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()\<close> \<open>ws_char CHR ''}''\<close>,
+                    unfolded does_not_peek_past_end_def, rule_format, of cb l b l'']; assumption?; clarsimp?)
+      subgoal using I_pngi by pasi_pngi
+      subgoal by pasi_pngi
+      subgoal for ca' cb' rsb l2 l2'
+        apply (rule exI[of _ \<open>cb'@l2'\<close>]; rule conjI)
+        subgoal
+          
+          sorry
+        subgoal
+          using ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, simplified, unfolded does_not_peek_past_end_def, rule_format] by blast
+        done
+
+(* \<comment> \<open>This rule cannot work since the inner bidef _does_ consume past WS. So, we have to use the conflict variant.\<close>
       apply (rule then_does_not_peek_past_end_from_fpc[of \<open>ws_char CHR ''}''\<close> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()\<close>,
                     unfolded does_not_peek_past_end_def[of \<open>parse (b_then (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()) (ws_char CHR ''}''))\<close>],
                     rule_format, of cb l b l'']; assumption?; clarsimp?)
@@ -742,6 +773,7 @@ lemma JsonObject_no_peek_past_end:
       subgoal using I_pngi by pasi_pngi
       subgoal by (rule ws_char_does_not_peek_past_end; clarsimp)
       subgoal using I_pngi by pasi_pngi
+        *)
       done
     done
   oops
