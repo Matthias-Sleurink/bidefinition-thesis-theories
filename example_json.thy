@@ -1138,7 +1138,7 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
   apply (rule first_printed_does_not_eat_into3)
   subgoal by (rule inner_wf)
   apply (clarsimp simp add: fpci_simps)
-  thm JsonNameColonObject_sepByComma_no_consume_past_chars \<comment> \<open>TODO: move to this rule\<close>
+  thm JsonNameColonObject_sepByComma_no_consume_past_chars \<comment> \<open>TODO: move to this rule (but only if below fails, which it looks like it wont.)\<close>
   apply (clarsimp simp add: separated_by_def)
   apply (rule transform_does_not_consume_past_char3)
   apply (rule optional_does_not_consume_past_char3)
@@ -1150,8 +1150,26 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
     subgoal by (rule jnco_wf)
     subgoal by (rule many_comma_then_jcno_wf)
     subgoal
-      
-      sorry
+      apply (rule many_does_not_consume_past_char3)
+      subgoal using J_pngi by pasi_pngi
+      subgoal using J_pngi by pasi_pngi
+      subgoal by (clarsimp simp add: NER_simps)
+      subgoal by (clarsimp simp add: NER_simps)
+      subgoal for c l l' r
+        \<comment> \<open>Inner can drop past leftover\<close>
+        sorry
+      subgoal
+        \<comment> \<open>does_not_consume_past_char3 (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject J))) CHR ''}''\<close>
+        sorry
+      subgoal for i c
+        apply (auto simp add: fpc_def NER_simps split: if_splits)
+        subgoal \<comment> \<open>does_not_consume_past_char3 (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject J))) ws\<close>  sorry
+        subgoal \<comment> \<open>does_not_consume_past_char3 (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject J))) ws\<close>  sorry
+        subgoal \<comment> \<open>does_not_consume_past_char3 (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject J))) '',''\<close>  sorry
+        subgoal \<comment> \<open>does_not_consume_past_char3 (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject J))) '',''\<close>  sorry
+        subgoal \<comment> \<open>does_not_consume_past_char3 (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject J))) '',''\<close>  sorry
+        done
+      done
     subgoal for i c \<comment> \<open>Need to do an fpc many rule\<close>
       apply (cases i; clarsimp simp add: fpc_simps) \<comment> \<open>Empty case is dispatched\<close>
       subgoal for a b abs
