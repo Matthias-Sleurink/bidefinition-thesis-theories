@@ -1776,6 +1776,7 @@ lemma inductive_Json_no_consume_past_closing_bracket:
   oops
 
 \<comment> \<open>Other needed premises:
+  
 \<close>
 
 lemma Json_well_formed:
@@ -1787,12 +1788,13 @@ lemma Json_well_formed:
   \<and> (\<forall>c. c \<in>whitespace_chars \<longrightarrow> does_not_consume_past_char3 (parse Json) c)
   \<and> (does_not_consume_past_char3 (parse Json) CHR '','')
   \<and> (does_not_consume_past_char3 (parse Json) CHR '']'')
+  \<and> (\<forall>c l l' r. has_result (parse Json) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse Json) (c @ l) r l)
 "
   apply (induction rule: JsonR.fixp_induct)
   subgoal by clarsimp
   subgoal
     apply (clarsimp simp add: strict_WF strict_PNGI)
-    using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3
+    using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3 bottom_drop_past_leftover
     by fast
   subgoal for J
     apply clarsimp
@@ -1814,6 +1816,9 @@ lemma Json_well_formed:
       sorry
     subgoal
       \<comment> \<open>Does not consume past closing bracket\<close>
+      sorry
+    subgoal
+      \<comment> \<open>Drop past leftover\<close>
       sorry
     done
   oops
