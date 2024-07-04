@@ -325,6 +325,18 @@ lemma JsonNumber_can_drop_leftover_on_error:
   using assms
   by (clarsimp simp add: NER_simps JsonNumber_def int_b_can_drop_leftover_on_error)
 
+lemma JsonNumber_can_drop_leftover_on_error2:
+  assumes "is_error (parse JsonNumber) (c @ l @ l')"
+  shows "is_error (parse JsonNumber) (c @ l)"
+  using assms
+  by (clarsimp simp add: NER_simps JsonNumber_def int_b_can_drop_leftover_on_error)
+
+lemma JsonNumber_drop_leftover:
+  shows "has_result (parse JsonNumber) (c @ l @ l') r (l @ l')
+            \<Longrightarrow> has_result (parse JsonNumber) (c @ l) r l"
+  by (clarsimp simp add: NER_simps JsonNumber_def int_b_leftover_can_be_dropped_gen)
+
+
 lemma JsonNumber_stays_error_with_injected_char:
   assumes "is_error (parse JsonNumber) (c @ l)"
   assumes "c' \<noteq> CHR ''-'' \<and> c' \<notin> digit_chars" \<comment> \<open>Too strong but good for our uses here.\<close>
