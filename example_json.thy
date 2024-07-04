@@ -1900,6 +1900,10 @@ lemma inductive_Json_drop_past_leftover:
   
 \<close>
 
+\<comment> \<open>Definitely write in the thesis that this process is shit.\<close>
+\<comment> \<open>It would be amazing if we could create some sort of "state" that all proofs for these inner things are in,\<close>
+\<comment> \<open>Wich automatically has all these premises as facts.\<close>
+\<comment> \<open>Because right now we have to thread these premises though all kinds of proofs to reach the right place, which is whack.\<close>
 lemma Json_well_formed:
   "bidef_well_formed Json
   \<and> (PNGI (parse Json))
