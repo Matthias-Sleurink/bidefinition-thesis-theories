@@ -1085,5 +1085,8 @@ lemma bottom_no_consume_past_char3[cont_intro]:
   unfolding does_not_consume_past_char3_def
   by (clarsimp simp add: NER_simps)
 
+lemma bottom_drop_past_leftover[cont_intro]:
+  "(\<forall>c l l' r. has_result (\<lambda>a. None) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (\<lambda>a. None) (c @ l) r l)"
+  by (clarsimp simp add: NER_simps)
 
 end
