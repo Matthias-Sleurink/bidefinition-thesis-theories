@@ -665,6 +665,8 @@ lemma JsonObject_no_peek_past_end:
   assumes I_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
   assumes I_fpc_no_ws: "\<And>i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
+
   shows "does_not_peek_past_end (parse (JsonObject I))"
   unfolding JsonObject_def
   apply (rule ftrans_does_not_peek_past_end)
@@ -708,9 +710,7 @@ lemma JsonObject_no_peek_past_end:
           subgoal by (rule I_dncp_ws)
           subgoal by (clarsimp simp add: I_fpc_no_ws)
           subgoal for r x using I_no_empty_parse[simplified, rule_format, of r x] by fast
-          subgoal for cc l' l'' ccn cco
-            \<comment> \<open>JsonNameColonObject can drop past leftover\<close>
-            sorry
+          subgoal by (rule I_drop_leftover)
           done
         subgoal
           \<comment> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) () no consume past ws\<close>
