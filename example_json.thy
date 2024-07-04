@@ -515,8 +515,7 @@ lemma JsonNameColonObject_sepByComma_no_consume_past_chars:
   assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
   assumes I_fpc_no_ws: "\<And>i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes I_no_result_from_empty: "\<And>r x. has_result (parse I) [] r x \<Longrightarrow> False"
-
-  assumes JNCO_drop_leftover: "\<And> c l l' r. has_result (parse (JsonNameColonObject I)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (JsonNameColonObject I)) (c @ l) r l"
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
 
   \<comment> \<open>Might also like to add comma later?\<close>
   \<comment> \<open>Sadly had to drop the ws_chars from here because the separated_by_no_consume_past_char rule breaks that.\<close>
@@ -569,7 +568,9 @@ lemma JsonNameColonObject_sepByComma_no_consume_past_chars:
     subgoal by (rule JsonNameColonObject_no_consume_past_closing_brace[OF I_pngi I_wf I_dncp_closing_brace]; insert I_fpc_no_ws I_no_result_from_empty; blast)
     subgoal by (rule JsonNameColonObject_no_consume_past_closing_bracket[OF I_pngi I_wf I_dncp_closing_bracket]; insert I_fpc_no_ws I_no_result_from_empty; blast)
     done
-  subgoal by (rule JNCO_drop_leftover)
+  subgoal
+    apply (rule JsonNameColonObject_drop_leftover[OF I_pngi]; assumption?)
+    by (rule I_drop_leftover)
   subgoal by (clarsimp simp add: NER_simps)
   subgoal for cs r l
     apply (insert c_val; auto)
