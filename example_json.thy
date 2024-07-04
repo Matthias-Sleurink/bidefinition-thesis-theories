@@ -743,37 +743,6 @@ lemma JsonObject_no_peek_past_end:
         subgoal
           using ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, simplified, unfolded does_not_peek_past_end_def, rule_format] by blast
         done
-
-(* \<comment> \<open>This rule cannot work since the inner bidef _does_ consume past WS. So, we have to use the conflict variant.\<close>
-      apply (rule then_does_not_peek_past_end_from_fpc[of \<open>ws_char CHR ''}''\<close> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()\<close>,
-                    unfolded does_not_peek_past_end_def[of \<open>parse (b_then (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ()) (ws_char CHR ''}''))\<close>],
-                    rule_format, of cb l b l'']; assumption?; clarsimp?)
-      subgoal for c
-        apply (auto simp add: ws_char_fpc) \<comment> \<open>Would it be nice if we could split this with a split rule in clarsimp?\<close>
-        subgoal
-          apply (rule JsonNameColonObject_sepByComma_no_consume_past_chars; clarsimp?)
-          subgoal
-            \<comment> \<open>bidef_well_formed (JsonNameColonObject I)\<close>
-            sorry
-          subgoal by (rule I_pngi)
-          subgoal by (rule I_wf)
-          subgoal by (rule I_dncp_c)
-          subgoal by (rule I_dncp_b)
-          subgoal by (rule I_dncp_b')
-          subgoal by (rule I_dncp_ws)
-          subgoal by (clarsimp simp add: I_fpc_no_ws)
-          subgoal for r x using I_no_empty_parse[simplified, rule_format, of r x] by fast
-          subgoal by (rule I_drop_leftover)
-          done
-        subgoal
-          \<comment> \<open>separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) () no consume past ws\<close>
-          sorry
-        done
-      subgoal using ws_char_no_result_same_leftover by fast
-      subgoal using I_pngi by pasi_pngi
-      subgoal by (rule ws_char_does_not_peek_past_end; clarsimp)
-      subgoal using I_pngi by pasi_pngi
-        *)
       done
     done
   oops
