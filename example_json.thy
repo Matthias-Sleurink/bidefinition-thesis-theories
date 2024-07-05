@@ -2241,13 +2241,15 @@ lemma inductive_Json_drop_past_leftover:
 
 
 \<comment> \<open>Other needed premises:
-  
+  \<forall>l. is_error (parse (J ())) (CHR '']'' # l)
+  is_error (parse (J ())) []
 \<close>
 
 \<comment> \<open>Definitely write in the thesis that this process is shit.\<close>
 \<comment> \<open>It would be amazing if we could create some sort of "state" that all proofs for these inner things are in,\<close>
 \<comment> \<open>Wich automatically has all these premises as facts.\<close>
 \<comment> \<open>Because right now we have to thread these premises though all kinds of proofs to reach the right place, which is whack.\<close>
+\<comment> \<open>In essence, the transitive assumption story isn't great.\<close>
 lemma Json_well_formed:
   "bidef_well_formed Json
   \<and> (PNGI (parse Json))
@@ -2269,8 +2271,12 @@ lemma Json_well_formed:
     apply clarsimp
     apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>
     subgoal
-      \<comment> \<open>WF\<close>
-      sorry
+      apply (rule Json_well_formed_inductive; assumption?)
+      subgoal by blast
+      subgoal by blast
+      subgoal \<comment> \<open>\<forall>l. is_error (parse (J ())) (CHR '']'' # l)\<close> sorry
+      subgoal \<comment> \<open>is_error (parse (J ())) []\<close> sorry
+      done
     subgoal by pasi_pngi
     subgoal using inductive_Json_no_empty_result by blast
     subgoal by (rule inductive_Json_fpc_not_ws)
