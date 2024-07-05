@@ -946,6 +946,147 @@ lemma fpc_JsonList[fpc_simps]:
   by (clarsimp simp add: fpc_def NER_simps takeMiddle_def)
 
 
+lemma wf_Json_sepby_ws_char_ws_comma:
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_error_empty: "is_error (parse J) []"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_fpc_no_ws: "\<And>i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_dncpc_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
+  shows "bidef_well_formed (separated_by (ws_char_ws CHR '','') J ())"
+  apply (rule separated_by_well_formed_no_consume_past_char; clarsimp?)
+  subgoal by (clarsimp simp add: good_separated_by_oracle_def fp_NER)
+  subgoal by (rule J_wf)
+  subgoal by (rule ws_char_ws_well_formed; clarsimp)
+  subgoal by (rule J_error_empty)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by pasi_pngi
+  subgoal for i c
+    by (insert ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> c, simplified]; clarsimp simp add: J_fpci_no_ws)
+  subgoal for c
+    by (insert ws_char_ws_fpci[of \<open>CHR '',''\<close> \<open>()\<close> c]; clarsimp simp add: J_dncpc_comma)
+  subgoal for b c
+    apply (clarsimp simp add: fpci_simps print_empty)
+    apply (rule then_does_not_consume_past3; clarsimp?)
+    subgoal by (rule ws_char_ws_well_formed; clarsimp)
+    subgoal by (rule J_wf)
+    subgoal by (rule J_dncpc_comma)
+    subgoal for b_pr i c
+      by (insert ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> c, simplified]; clarsimp simp add: J_fpc_no_ws)
+    subgoal using J_error_empty has_result_implies_not_is_error by fast
+    done
+  done
+
+lemma Json_sepBy_ws_comma_ws_no_consume_past_closing_bracket:
+  assumes J_error_empty: "is_error (parse J) []"
+  assumes J_error_on_close_bracket: "\<And>l. is_error (parse J) (CHR '']'' # l)"
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_dncpc_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
+  assumes J_dncpc_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
+  assumes J_dncpc_closing_bracket: "does_not_consume_past_char3 (parse J) CHR '']''"
+  assumes J_can_drop_leftover: "\<And>c l l' a. has_result (parse J) (c @ l @ l') a (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) a l"
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_fpc_no_ws: "\<And>i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  shows "does_not_consume_past_char3 (parse (separated_by (ws_char_ws CHR '','') J ())) CHR '']''"
+  apply (rule separated_by_no_consume_past_char; clarsimp?)
+  subgoal by (rule J_error_empty)
+  subgoal by (rule J_error_on_close_bracket)
+  subgoal by (rule J_wf)
+  subgoal \<comment> \<open>bidef_well_formed (many (b_then (ws_char_ws CHR '','') J))\<close>
+    apply (rule wf_many_then; clarsimp?)
+    subgoal by (rule J_wf)
+    subgoal by (rule ws_char_ws_well_formed; clarsimp)
+    subgoal by (rule J_error_empty)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal by pasi_pngi
+    subgoal for i c
+      by (insert ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> c, simplified]; clarsimp simp add: J_fpci_no_ws)
+    subgoal for b c
+      apply (clarsimp simp add: fpci_simps print_empty)
+      apply (rule then_does_not_consume_past3)
+      subgoal by (rule ws_char_ws_well_formed; clarsimp)
+      subgoal by (rule J_wf)
+      subgoal by (rule J_dncpc_comma)
+      subgoal for b_pr i c
+        by (insert ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> c, simplified]; clarsimp simp add: J_fpc_no_ws)
+      subgoal
+        using J_error_empty J_wf is_error_implies_not_has_result by blast
+      done
+    done
+  subgoal for i c
+    apply (cases i; clarsimp simp add: fpc_simps) \<comment> \<open>Empty case dispatched\<close>
+    apply (auto simp add: fpc_def NER_simps split: if_splits)
+    subgoal by (rule J_dncpc_ws)
+    subgoal by (rule J_dncpc_ws)
+    subgoal by (rule J_dncpc_comma)
+    subgoal by (rule J_dncpc_comma)
+    subgoal by (rule J_dncpc_comma)
+    done
+  subgoal by (rule J_dncpc_closing_bracket)
+  subgoal by (rule J_can_drop_leftover)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by pasi_pngi
+  subgoal using J_pngi by pasi_pngi
+  subgoal by (rule ws_char_ws_can_drop_past_leftover)
+  subgoal for i c
+    by (insert ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> c, simplified]; clarsimp simp add: J_fpc_no_ws)
+  done
+
+lemma wf_JsonList:
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_error_empty: "is_error (parse J) []"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_fpc_no_ws: "\<And>i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_dncpc_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
+  assumes J_dncpc_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
+  assumes J_dncpc_closing_bracket: "does_not_consume_past_char3 (parse J) CHR '']''"
+  assumes J_no_print_empty: "\<And>a. \<not>p_has_result (print J) a []"
+  assumes J_can_drop_leftover: "\<And>c l l' a. has_result (parse J) (c @ l @ l') a (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) a l"
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_error_on_close_bracket: "\<And>l. is_error (parse J) (CHR '']'' # l)"
+  shows "bidef_well_formed (JsonList J)"
+  unfolding JsonList_def
+  apply (rule ftransform_well_formed2)
+  subgoal by (clarsimp simp add: well_formed_ftransform_funcs_def fp_NER split: JSON.splits)
+  unfolding takeMiddle_def
+  apply (rule transform_well_formed4)
+  subgoal by (clarsimp simp add: well_formed_transform_funcs4_def)
+  apply (rule b_then_well_formed)
+  subgoal by (rule char_ws_well_formed; clarsimp)
+   defer \<comment> \<open>bidef_well_formed (b_then (separated_by (ws_char_ws CHR '','') J ()) (ws_char CHR '']''))\<close>
+  subgoal
+    apply (rule first_printed_does_not_eat_into3; clarsimp?)
+    subgoal by (rule char_ws_well_formed; clarsimp)
+    subgoal for a c
+      apply (cases a; clarsimp simp add: fpci_simps print_empty J_no_print_empty)
+      subgoal
+        using char_ws_does_not_consume_past_char3[of \<open>CHR ''[''\<close> \<open>CHR '']''\<close>, simplified]
+        by fast
+      subgoal for a' as
+        apply (insert J_fpci_no_ws[of a' c]; clarsimp)
+        using char_ws_does_not_consume_past_char3[of \<open>CHR ''[''\<close> c, simplified]
+        by fast
+      done
+    done
+  apply (rule b_then_well_formed) \<comment> \<open>Other possible here\<close>
+  subgoal
+    apply (rule wf_Json_sepby_ws_char_ws_comma)
+    by (auto simp add: J_wf J_error_empty J_fpci_no_ws J_fpc_no_ws J_dncpc_comma)
+  subgoal by (rule ws_char_well_formed; clarsimp)
+  apply (rule first_printed_does_not_eat_into3; clarsimp?)
+  subgoal
+    apply (rule wf_Json_sepby_ws_char_ws_comma)
+    by (auto simp add: J_wf J_error_empty J_fpci_no_ws J_fpc_no_ws J_dncpc_comma)
+  subgoal for c
+    apply (insert ws_char_fpci[of \<open>CHR '']''\<close> \<open>()\<close> c]; clarsimp)
+    apply (rule Json_sepBy_ws_comma_ws_no_consume_past_closing_bracket)
+    by (auto simp add: J_error_empty J_wf J_dncpc_comma J_dncpc_ws J_dncpc_closing_bracket
+                       J_can_drop_leftover J_pngi J_fpc_no_ws J_fpci_no_ws J_error_on_close_bracket)
+  done
+
+
+
 
 definition JsonTrue :: "JSON bidef" where
   "JsonTrue = ftransform
