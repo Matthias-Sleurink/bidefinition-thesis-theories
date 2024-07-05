@@ -1168,7 +1168,8 @@ lemma char_ws_not_eat_into_object:
     by (clarsimp simp add: char_ws_does_not_consume_past_char3)
   done
 
-lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
+\<comment> \<open>We may be able to copy this proof and slighly change it for ]\<close>
+lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace:
   assumes J_pngi: "PNGI (parse J)"
   assumes J_wf: "bidef_well_formed J"
   assumes J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
@@ -1204,7 +1205,15 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
       subgoal by (clarsimp simp add: NER_simps)
       subgoal for c l l' r
         \<comment> \<open>Inner can drop past leftover\<close>
-        sorry
+        apply (rule then_can_drop_leftover[of _ _ c l l' r]; assumption?)
+        subgoal by (rule ws_char_ws_can_drop_past_leftover; assumption)
+        subgoal by pasi_pngi
+        subgoal for cJ wJ lJ rJ
+          \<comment> \<open>JsonNameColonObject can drop past leftover\<close>
+          apply (rule JsonNameColonObject_drop_leftover[of J cJ wJ lJ rJ, OF J_pngi]; assumption?)
+          by (rule J_drop_leftover)
+        subgoal using J_pngi by pasi_pngi
+        done
       subgoal
         apply (rule ws_char_ws_then_JNCO_no_consume_past_char[of J \<open>CHR ''}''\<close>,
                       OF J_pngi J_wf _ _ J_no_consume_past_closing_brace jnco_wf _ J_no_consume_past_ws])
@@ -1233,7 +1242,7 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
           by (auto simp add: J_fpc_no_ws J_no_parse_empty)
         done
       done
-    subgoal for i c \<comment> \<open>Need to do an fpc many rule\<close>
+    subgoal for i c
       apply (cases i; clarsimp simp add: fpc_simps) \<comment> \<open>Empty case is dispatched\<close>
       subgoal for a b abs
         apply (auto simp add: fpc_def many_has_result_safe(2) b_then_has_result ws_char_ws_has_result split: if_splits)
@@ -1266,7 +1275,7 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char:
       done
     subgoal by (rule JsonNameColonObject_drop_leftover[OF J_pngi]; assumption?; rule J_drop_leftover)
     done
-  oops
+  done
 
 
 lemma WF_JsonObject:
