@@ -527,8 +527,26 @@ lemma JsonNameColonObject_drop_leftover:
   done
 
 lemma wf_JsonNameColonObject:
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
   shows "bidef_well_formed (JsonNameColonObject J)"
-  oops
+  unfolding JsonNameColonObject_def
+  apply (rule b_then_well_formed_does_not_peek_past)
+  subgoal by (rule str_literal_well_formed)
+   defer \<comment> \<open>bidef_well_formed (then_drop_first (ws_char_ws CHR '':'') J ())\<close>
+  subgoal by (rule str_literal_no_peek_past_end)
+  unfolding then_drop_first_def
+  apply (rule transform_well_formed4)
+  subgoal by (clarsimp simp add: well_formed_transform_funcs4_def)
+  apply (rule b_then_well_formed)
+  subgoal by (rule ws_char_ws_well_formed; clarsimp)
+  subgoal by (rule J_wf)
+  apply (rule first_printed_does_not_eat_into3; clarsimp?)
+  subgoal by (rule ws_char_ws_well_formed; clarsimp)
+  subgoal for i c
+    apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR '':''\<close> c, simplified])
+    by (rule J_fpci_no_ws)
+  done
 
 
 
