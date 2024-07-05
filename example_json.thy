@@ -702,6 +702,47 @@ lemma wf_many_then_ws_char_ws_comma_JNCO:
     by (auto simp add: J_pngi J_wf J_dncp_comma J_fpc_no_ws J_no_parse_empty)
   done
 
+lemma map_pair_snd:
+  shows "map (Pair () \<circ> snd) l = l"
+  by (induction l; clarsimp)
+
+lemma wf_JNCO_sepBy_ws_char_ws_comma:
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_dncp_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
+  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  shows "bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())"
+  \<comment> \<open>There are a few rules we can use here, but I think that from the above it'll be easier\<close>
+  unfolding separated_by_def
+  apply (rule transform_well_formed4)
+  subgoal
+    apply (auto simp add: well_formed_transform_funcs4_def split: list.splits sum.splits)
+    subgoal for i r l by (cases r; clarsimp)
+    subgoal for i r r'a r'b rs l by (cases r; clarsimp simp add: map_pair_snd)
+    done
+  apply (rule optional_well_formed)
+  subgoal by (clarsimp simp add: NER_simps separated_byBase_def)
+  unfolding separated_byBase_def
+  apply (rule b_then_well_formed)
+  subgoal
+    apply (rule wf_JsonNameColonObject)
+    by (auto simp add: J_wf J_fpci_no_ws)
+  subgoal
+    apply (rule wf_many_then_ws_char_ws_comma_JNCO)
+    by (auto simp add: J_pngi J_wf J_fpci_no_ws J_dncp_comma J_fpc_no_ws J_no_parse_empty)
+  subgoal
+    apply (rule first_printed_does_not_eat_into3; clarsimp?)
+    subgoal
+      apply (rule wf_JsonNameColonObject)
+      by (auto simp add: J_wf J_fpci_no_ws)
+    subgoal for i c
+      apply (cases i; clarsimp simp add: fpci_simps print_empty)
+      apply (rule JsonNameColonObject_no_consume_past_comma)
+      by (auto simp add: J_pngi J_wf J_dncp_comma J_fpc_no_ws J_no_parse_empty)
+    done
+  done
 
 
 
