@@ -1358,8 +1358,8 @@ lemma WF_JsonObject:
           apply (auto simp add: J_pngi J_wf J_dncpc_closing_brace J_dncpc_comma J_no_consume_past_ws
               J_fpc_no_ws J_no_parse_empty J_drop_leftover J_fpci_no_ws)
           subgoal
-            \<comment> \<open>bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))\<close>
-            sorry
+            apply (rule wf_many_then_ws_char_ws_comma_JNCO)
+            by (auto simp add: J_pngi J_wf J_fpci_no_ws J_dncpc_comma J_fpc_no_ws J_no_parse_empty)
           subgoal
             \<comment> \<open>bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())\<close>
             sorry
