@@ -1391,8 +1391,8 @@ lemma WF_JsonObject:
       subgoal
         apply (rule b_then_well_formed)
         subgoal
-          \<comment> \<open>blocked by bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())\<close>
-          sorry
+          apply (rule wf_JNCO_sepBy_ws_char_ws_comma)
+          by (auto simp add: J_pngi J_wf J_fpci_no_ws J_dncpc_comma J_fpc_no_ws J_no_parse_empty)
         subgoal by (rule ws_char_well_formed; clarsimp)
         subgoal
           apply (rule JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace)
@@ -1402,13 +1402,13 @@ lemma WF_JsonObject:
             apply (rule wf_many_then_ws_char_ws_comma_JNCO)
             by (auto simp add: J_pngi J_wf J_fpci_no_ws J_dncpc_comma J_fpc_no_ws J_no_parse_empty)
           subgoal
-            \<comment> \<open>bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())\<close>
-            sorry
+            apply (rule wf_JNCO_sepBy_ws_char_ws_comma)
+            by (auto simp add: J_pngi J_wf J_fpci_no_ws J_dncpc_comma J_fpc_no_ws J_no_parse_empty)
           done
         done
       done
     done
-  oops
+  done
 
 
 lemma Json_well_formed_inductive:
