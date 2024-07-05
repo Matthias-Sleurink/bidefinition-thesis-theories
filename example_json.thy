@@ -554,10 +554,9 @@ lemma ws_char_ws_then_JNCO_no_consume_past_char:
   assumes J_pngi: "PNGI (parse J)"
   assumes J_wf: "bidef_well_formed J"
   assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
   assumes J_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse J) c"
-
-  assumes jnco_wf: "bidef_well_formed (JsonNameColonObject J)"
 
   assumes c_val: "c = CHR ''}'' \<or> c = CHR '','' \<or> c \<in> whitespace_chars"
 
@@ -566,7 +565,7 @@ lemma ws_char_ws_then_JNCO_no_consume_past_char:
   shows "does_not_consume_past_char3 (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject J))) c"
   apply (rule then_does_not_consume_past3)
   subgoal by (rule ws_char_ws_well_formed; clarsimp)
-  subgoal by (rule jnco_wf)
+  subgoal by (rule wf_JsonNameColonObject; clarsimp simp add: J_fpci_no_ws J_wf)
   subgoal
     using c_val
     apply auto
@@ -1200,9 +1199,9 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace:
   assumes J_no_consume_past_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
   assumes J_no_consume_past_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
   assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
   assumes J_drop_leftover: "\<And>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) r l"
-  assumes jnco_wf: "bidef_well_formed (JsonNameColonObject J)"
   assumes many_comma_then_jcno_wf: "bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))"
   assumes inner_wf: "bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())"
   shows "pa_does_not_eat_into_pb_nondep (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ()) (ws_char CHR ''}'')"
@@ -1218,7 +1217,7 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace:
   subgoal
     apply (clarsimp simp add: separated_byBase_def)
     apply (rule then_does_not_consume_past3_from_can_drop_leftover)
-    subgoal by (rule jnco_wf)
+    subgoal by (rule wf_JsonNameColonObject; clarsimp simp add: J_wf J_fpci_no_ws)
     subgoal by (rule many_comma_then_jcno_wf)
     subgoal
       apply (rule many_does_not_consume_past_char3)
@@ -1239,30 +1238,30 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace:
         done
       subgoal
         apply (rule ws_char_ws_then_JNCO_no_consume_past_char[of J \<open>CHR ''}''\<close>,
-                      OF J_pngi J_wf _ _ J_no_consume_past_closing_brace jnco_wf _ J_no_consume_past_ws])
-        by (auto simp add: J_fpc_no_ws J_no_parse_empty)
+                      OF J_pngi J_wf _ _ _ J_no_consume_past_closing_brace _ J_no_consume_past_ws])
+        by (auto simp add: J_fpc_no_ws J_fpci_no_ws J_no_parse_empty)
       subgoal for i c
         apply (auto simp add: fpc_def NER_simps split: if_splits)
         subgoal
           apply (rule ws_char_ws_then_JNCO_no_consume_past_char[of J c,
-                        OF J_pngi J_wf _ _ J_no_consume_past_ws jnco_wf _ J_no_consume_past_ws])
-          by (auto simp add: J_fpc_no_ws J_no_parse_empty)
+                        OF J_pngi J_wf _ _ _ J_no_consume_past_ws _ J_no_consume_past_ws])
+          by (auto simp add: J_fpc_no_ws J_fpci_no_ws J_no_parse_empty)
         subgoal
           apply (rule ws_char_ws_then_JNCO_no_consume_past_char[of J c,
-                        OF J_pngi J_wf _ _ J_no_consume_past_ws jnco_wf _ J_no_consume_past_ws])
-          by (auto simp add: J_fpc_no_ws J_no_parse_empty)
+                        OF J_pngi J_wf _ _ _ J_no_consume_past_ws _ J_no_consume_past_ws])
+          by (auto simp add: J_fpc_no_ws J_fpci_no_ws J_no_parse_empty)
         subgoal
           apply (rule ws_char_ws_then_JNCO_no_consume_past_char[of J \<open>CHR '',''\<close>,
-                        OF J_pngi J_wf _ _ J_no_consume_past_comma jnco_wf _ J_no_consume_past_ws])
-          by (auto simp add: J_fpc_no_ws J_no_parse_empty)
+                        OF J_pngi J_wf _ _ _ J_no_consume_past_comma _ J_no_consume_past_ws])
+          by (auto simp add: J_fpc_no_ws J_fpci_no_ws J_no_parse_empty)
         subgoal
           apply (rule ws_char_ws_then_JNCO_no_consume_past_char[of J \<open>CHR '',''\<close>,
-                        OF J_pngi J_wf _ _ J_no_consume_past_comma jnco_wf _ J_no_consume_past_ws])
-          by (auto simp add: J_fpc_no_ws J_no_parse_empty)
+                        OF J_pngi J_wf _ _ _ J_no_consume_past_comma _ J_no_consume_past_ws])
+          by (auto simp add: J_fpc_no_ws J_fpci_no_ws J_no_parse_empty)
         subgoal
           apply (rule ws_char_ws_then_JNCO_no_consume_past_char[of J \<open>CHR '',''\<close>,
-                        OF J_pngi J_wf _ _ J_no_consume_past_comma jnco_wf _ J_no_consume_past_ws])
-          by (auto simp add: J_fpc_no_ws J_no_parse_empty)
+                        OF J_pngi J_wf _ _ _ J_no_consume_past_comma _ J_no_consume_past_ws])
+          by (auto simp add: J_fpc_no_ws J_fpci_no_ws J_no_parse_empty)
         done
       done
     subgoal for i c
@@ -1308,6 +1307,7 @@ lemma WF_JsonObject:
   assumes J_dncpc_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
   assumes J_no_consume_past_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
   assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
   assumes J_drop_leftover: "\<And>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) r l"
   shows "bidef_well_formed (JsonObject J)"
@@ -1331,10 +1331,7 @@ lemma WF_JsonObject:
         subgoal
           apply (rule JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace)
           apply (auto simp add: J_pngi J_wf J_dncpc_closing_brace J_dncpc_comma J_no_consume_past_ws
-              J_fpc_no_ws J_no_parse_empty J_drop_leftover)
-          subgoal
-            \<comment> \<open>bidef_well_formed (JsonNameColonObject J)\<close>
-            sorry
+              J_fpc_no_ws J_no_parse_empty J_drop_leftover J_fpci_no_ws)
           subgoal
             \<comment> \<open>bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))\<close>
             sorry
