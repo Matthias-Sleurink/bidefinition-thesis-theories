@@ -83,6 +83,7 @@ lemma ws_char_ws_p_is_error[fp_NER]:
 
 lemma ws_char_ws_p_has_result[fp_NER]:
   "p_has_result (print (ws_char_ws c)) i r \<longleftrightarrow> r = [c]"
+  "\<exists>r. p_has_result (print (ws_char_ws c)) () r"
   by (auto simp add: ws_char_ws_def fp_NER)
 
 lemma ws_char_ws_print_empty[print_empty, fp_NER]:
