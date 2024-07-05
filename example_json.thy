@@ -501,6 +501,37 @@ lemma JsonNameColonObject_no_consume_past_ws:
   subgoal using J_pngi by pasi_pngi
   done
 
+
+lemma JsonNameColonObject_drop_leftover:
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
+  shows "has_result (parse (JsonNameColonObject I)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (JsonNameColonObject I)) (c @ l) r l"
+  unfolding JsonNameColonObject_def
+  apply (rule then_can_drop_leftover; assumption?)
+  subgoal for cs ls ls' rs
+    using str_literal_no_peek_past_end[unfolded does_not_peek_past_end_def, rule_format, of cs \<open>ls@ls'\<close> rs ls] by blast
+  subgoal by pasi_pngi
+  subgoal for ctt ltt ltt' rtt
+    unfolding then_drop_first_def
+    apply (rule transform_can_drop_leftover[of \<open>b_then (ws_char_ws CHR '':'') I\<close> snd \<open>Pair ()\<close> ctt ltt ltt' rtt]; assumption?)
+    subgoal for ct lt lt' rt
+      apply (rule then_can_drop_leftover; assumption?)
+      subgoal for cw lw lw' rw
+        by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR '':''\<close> cw lw lw' rw])
+      subgoal by pasi_pngi
+      subgoal by (rule I_drop_leftover)
+      subgoal by (rule I_pngi)
+      done
+    done
+  subgoal using I_pngi by pasi_pngi
+  done
+
+lemma wf_JsonNameColonObject:
+  shows "bidef_well_formed (JsonNameColonObject J)"
+  oops
+
+
+
 lemma ws_char_ws_then_JNCO_no_consume_past_char:
   assumes J_pngi: "PNGI (parse J)"
   assumes J_wf: "bidef_well_formed J"
@@ -546,31 +577,6 @@ lemma ws_char_ws_then_JNCO_no_consume_past_char:
   subgoal
     using is_error_JsonNameColonObject(1) is_error_implies_not_has_result by blast
   done
-
-lemma JsonNameColonObject_drop_leftover:
-  assumes I_pngi: "PNGI (parse I)"
-  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
-  shows "has_result (parse (JsonNameColonObject I)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (JsonNameColonObject I)) (c @ l) r l"
-  unfolding JsonNameColonObject_def
-  apply (rule then_can_drop_leftover; assumption?)
-  subgoal for cs ls ls' rs
-    using str_literal_no_peek_past_end[unfolded does_not_peek_past_end_def, rule_format, of cs \<open>ls@ls'\<close> rs ls] by blast
-  subgoal by pasi_pngi
-  subgoal for ctt ltt ltt' rtt
-    unfolding then_drop_first_def
-    apply (rule transform_can_drop_leftover[of \<open>b_then (ws_char_ws CHR '':'') I\<close> snd \<open>Pair ()\<close> ctt ltt ltt' rtt]; assumption?)
-    subgoal for ct lt lt' rt
-      apply (rule then_can_drop_leftover; assumption?)
-      subgoal for cw lw lw' rw
-        by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR '':''\<close> cw lw lw' rw])
-      subgoal by pasi_pngi
-      subgoal by (rule I_drop_leftover)
-      subgoal by (rule I_pngi)
-      done
-    done
-  subgoal using I_pngi by pasi_pngi
-  done
-
 
 
 lemma JsonNameColonObject_sepByComma_no_consume_past_chars:
