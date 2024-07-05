@@ -679,6 +679,31 @@ lemma JsonNameColonObject_sepByComma_no_consume_past_chars:
     by (rule ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> quot_chr, simplified])
   done
 
+lemma wf_many_then_ws_char_ws_comma_JNCO:
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_wf: "bidef_well_formed J"
+  assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_dncp_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
+  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  shows "bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))"
+  apply (rule WF_many_then; clarsimp?) \<comment> \<open>Slightly different alternative: wf_many_then\<close>
+  subgoal by (rule ws_char_ws_well_formed; clarsimp)
+  subgoal by pasi_pngi
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by (rule wf_JsonNameColonObject; clarsimp simp add: J_wf J_fpci_no_ws)
+  subgoal using J_pngi by pasi_pngi
+  subgoal for a b c
+    apply (insert fpci_JsonNameColonObject[of J \<open>(a,b)\<close> c]; clarsimp)
+    by (rule ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> quot_chr, simplified])
+  subgoal for c
+    apply (insert ws_char_ws_fpci[of \<open>CHR '',''\<close> \<open>()\<close> c]; clarsimp)
+    apply (rule JsonNameColonObject_no_consume_past_comma)
+    by (auto simp add: J_pngi J_wf J_dncp_comma J_fpc_no_ws J_no_parse_empty)
+  done
+
+
+
 
 abbreviation "betweenBraces bd \<equiv> takeMiddle (char_ws CHR ''{'') bd (ws_char CHR ''}'') () ()"
 definition JsonObject :: "JSON bidef \<Rightarrow> JSON bidef" where
