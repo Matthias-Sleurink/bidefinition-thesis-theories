@@ -1561,6 +1561,9 @@ lemma Json_well_formed_inductive:
   assumes J_dncpc_closing_bracket: "does_not_consume_past_char3 (parse (J ())) CHR '']''"
   assumes J_dncpc_comma: "does_not_consume_past_char3 (parse (J ())) CHR '',''"
   assumes J_dncpc_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse (J ())) c"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
+  assumes J_error_on_close_bracket: "\<And>l. is_error (parse (J ())) (CHR '']'' # l)"
+  assumes J_error_empty: "is_error (parse (J ())) []"
   shows "bidef_well_formed
           (transform
              sum_take_many
@@ -1595,13 +1598,20 @@ lemma Json_well_formed_inductive:
     subgoal
       apply (rule or_well_formed)
       subgoal
-        \<comment> \<open>Well formed JsonObject\<close>
-        sorry
+        apply (rule WF_JsonObject)
+          apply (auto simp add: J_wf J_pngi J_dncpc_closing_brace J_dncpc_comma J_dncpc_ws J_fpc_no_ws J_no_result_from_empty J_drop_leftover)
+        using fpci_implies_fpc[OF J_wf] J_fpc_no_ws by blast
       subgoal
         apply (rule or_well_formed)
         subgoal
-          \<comment> \<open>Well formed JsonList\<close>
-          sorry
+          apply (rule wf_JsonList)
+            apply (auto simp add: J_wf J_fpc_no_ws J_dncpc_ws J_dncpc_comma J_dncpc_closing_bracket J_drop_leftover J_pngi J_error_on_close_bracket)
+          subgoal by (rule J_error_empty)
+          subgoal
+            using fpci_implies_fpc[OF J_wf] J_fpc_no_ws by blast
+          subgoal
+            using J_error_empty J_wf wf_no_empty_parse_means_no_empty_print by fast
+          done
         subgoal
           apply (rule or_well_formed)
           subgoal by (rule wf_JsonTrue)
@@ -1670,7 +1680,7 @@ lemma Json_well_formed_inductive:
       by blast+
     subgoal by (clarsimp simp add: print_empty NER_simps split: sum.splits)
     done
-  oops
+  done
 
 lemma inductive_Json_no_empty_result:
   shows "\<not> has_result
