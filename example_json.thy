@@ -1280,6 +1280,12 @@ lemma JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace:
 lemma WF_JsonObject:
   assumes J_wf: "bidef_well_formed J"
   assumes J_pngi: "PNGI (parse J)"
+  assumes J_dncpc_closing_brace: "does_not_consume_past_char3 (parse J) CHR ''}''"
+  assumes J_dncpc_comma: "does_not_consume_past_char3 (parse J) CHR '',''"
+  assumes J_no_consume_past_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse J) c"
+  assumes J_fpc_no_ws: "\<And> i c. fpc (parse J) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_no_parse_empty: "\<nexists>r l. has_result (parse J) [] r l"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) r l"
   shows "bidef_well_formed (JsonObject J)"
   unfolding JsonObject_def
   apply (rule ftransform_well_formed2)
@@ -1299,8 +1305,19 @@ lemma WF_JsonObject:
           sorry
         subgoal by (rule ws_char_well_formed; clarsimp)
         subgoal
-          \<comment> \<open>blocked by JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char\<close>
-          sorry
+          apply (rule JsonNameColonObject_sepBy_ws_char_ws_no_eat_into_ws_char_closing_brace)
+          apply (auto simp add: J_pngi J_wf J_dncpc_closing_brace J_dncpc_comma J_no_consume_past_ws
+              J_fpc_no_ws J_no_parse_empty J_drop_leftover)
+          subgoal
+            \<comment> \<open>bidef_well_formed (JsonNameColonObject J)\<close>
+            sorry
+          subgoal
+            \<comment> \<open>bidef_well_formed (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject J)))\<close>
+            sorry
+          subgoal
+            \<comment> \<open>bidef_well_formed (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())\<close>
+            sorry
+          done
         done
       done
     done
