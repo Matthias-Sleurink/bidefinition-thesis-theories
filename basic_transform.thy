@@ -126,6 +126,14 @@ lemma transform_does_not_consume_past_char3:
   by (auto simp add: transform_has_result)
 
 
+lemma transform_does_not_consume_past_parser_result:
+  assumes "does_not_consume_past_parse_consume (parse A) (parse B)"
+  shows "does_not_consume_past_parse_consume (parse (transform f f' A)) (parse B)"
+  apply (insert assms)
+  apply (clarsimp simp add: NER_simps does_not_consume_past_parse_consume_def)
+  by blast
+
+
 
 \<comment> \<open>Can drop leftover\<close>
 lemma transform_can_drop_leftover:

@@ -878,6 +878,15 @@ lemma does_not_consume_past_any_char3_eq_not_peek_past_end:
   by (metis neq_Nil_conv self_append_conv)
 
 
+section \<open>Does not consume past consumed by other parser\<close>
+definition does_not_consume_past_parse_consume :: "'a parser \<Rightarrow> 'b parser \<Rightarrow> bool" where
+  "does_not_consume_past_parse_consume p p' \<longleftrightarrow> (\<forall>c r l l' c2 r2 l2.
+         has_result p (c@l) r l \<and> has_result p' (c2@l2) r2 l2 \<longrightarrow> (has_result p c r [] \<and> has_result p (c@(c2@l')) r (c2@l')))"
+
+
+
+
+
 
 section \<open>First printed character\<close>
 \<comment> \<open>Which characters can be the first printed char?\<close>
