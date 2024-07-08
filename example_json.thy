@@ -712,7 +712,7 @@ lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
             I_fpc_no_ws by blast
     done
   subgoal for c l l' r
-    \<comment> \<open>Continue here!\<close>
+    \<comment> \<open>Continue here! has_result (parse (JsonNameColonObject I)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (JsonNameColonObject I)) (c @ l) r l\<close>
     sorry
   subgoal sorry
   subgoal using I_pngi by pasi_pngi
