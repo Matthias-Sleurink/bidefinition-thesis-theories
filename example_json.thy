@@ -1384,6 +1384,13 @@ partial_function (bd) JsonR :: "unit \<Rightarrow> JSON bidef" where
              ))))))"
 abbreviation "Json \<equiv> JsonR ()"
 
+\<comment> \<open>Note that this is not provable using the induction method as the bottom type does not error on empty.\<close>
+lemma Json_error_on_empty:
+  "(is_error (parse Json) [])"
+  apply (subst JsonR.simps)
+  by (clarsimp simp add: NER_simps)
+
+
 lemma char_ws_not_eat_into_object:
   shows "pa_does_not_eat_into_pb_nondep
            (char_ws CHR ''{'')
