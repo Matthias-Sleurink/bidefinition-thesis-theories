@@ -969,6 +969,8 @@ lemma JsonObject_no_peek_past_end:
   assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
   assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
 
+  assumes TEST: "does_not_consume_past_parse_consume (parse (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ())) (parse (ws_char CHR ''}''))"
+
   shows "does_not_peek_past_end (parse (JsonObject I))"
   unfolding JsonObject_def
   apply (rule ftrans_does_not_peek_past_end)
@@ -1002,7 +1004,15 @@ lemma JsonObject_no_peek_past_end:
       subgoal for ca' cb' rsb l2 l2'
         apply (rule exI[of _ \<open>cb'@l2'\<close>]; rule conjI)
         subgoal
+          \<comment> \<open>Should probably remove the empty case here.\<close>
+          apply (insert TEST[unfolded does_not_consume_past_parse_consume_def, rule_format, of ca' \<open>cb'@l2\<close> rsb cb' l2 \<open>()\<close> l2']; clarsimp)
           \<comment> \<open>How do we say that we do not peek past more than one char?\<close>
+          \<comment> \<open>Maybe we adjust this?\<close>
+          thm separated_by_no_consume_past_char
+
+          using JsonNameColonObject_sepByComma_no_consume_past_chars
+          thm separated_by_no_consume_past_char
+          find_theorems separated_by name: "consume"
           sorry
         subgoal
           using ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, simplified, unfolded does_not_peek_past_end_def, rule_format] by blast
