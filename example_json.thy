@@ -595,6 +595,79 @@ lemma ws_char_ws_then_JNCO_no_consume_past_char:
     using is_error_JsonNameColonObject(1) is_error_implies_not_has_result by blast
   done
 
+lemma JsonNameColonObject_sepByComma_no_consume_past_chars_ws:
+  assumes JNCO_wf: "bidef_well_formed (JsonNameColonObject I)"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_dncp_closing_brace: "does_not_consume_past_char3 (parse I) CHR ''}''"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_fpc_no_ws: "\<And>i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_no_result_from_empty: "\<And>r x. has_result (parse I) [] r x \<Longrightarrow> False"
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
+
+  \<comment> \<open>Might also like to add comma later?\<close>
+  \<comment> \<open>Sadly had to drop the ws_chars from here because the separated_by_no_consume_past_char rule breaks that.\<close>
+  assumes c_val: "c \<in> whitespace_chars"
+  shows "does_not_consume_past_char3 (parse (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ())) c"
+  apply (rule separated_by_no_consume_past_char)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal for l
+    apply (insert c_val)
+    by (rule is_error_JsonNameColonObject(2)[of c I l]; clarsimp)
+  subgoal by (rule JNCO_wf)
+  subgoal
+    apply (rule WF_many_then; clarsimp?)
+    subgoal by (rule ws_char_ws_well_formed; clarsimp)
+    subgoal by pasi_pngi
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal by (rule JNCO_wf)
+    subgoal using I_pngi by pasi_pngi
+    subgoal for a b c
+      apply (insert fpci_JsonNameColonObject[of I \<open>(a,b)\<close> c]; clarsimp)
+      by (rule ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> quot_chr, simplified])
+    subgoal for c
+      apply (clarsimp simp add: fpci_simps)
+      apply (rule JsonNameColonObject_no_consume_past_comma)
+      subgoal by (rule I_pngi)
+      subgoal by (rule I_wf)
+      subgoal by (rule I_dncp_comma)
+      subgoal by (rule I_fpc_no_ws)
+      subgoal using I_no_result_from_empty by blast
+      done
+    done
+  subgoal for i c
+    apply (cases i; clarsimp simp add: fpc_simps) \<comment> \<open>Empty case dispatched\<close>
+    apply (auto simp add: NER_simps fpc_def split: if_splits)
+    subgoal
+      apply (insert I_fpc_no_ws)
+      apply (rule JsonNameColonObject_no_consume_past_ws[of _ c, OF I_pngi I_wf I_dncp_ws, simplified]; assumption?)
+      using I_no_result_from_empty by blast
+    subgoal
+      apply (insert I_fpc_no_ws)
+      apply (rule JsonNameColonObject_no_consume_past_ws[of _ c, OF I_pngi I_wf I_dncp_ws, simplified]; assumption?)
+      using I_no_result_from_empty by blast
+    subgoal by (rule JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_dncp_comma]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    subgoal by (rule JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_dncp_comma]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    subgoal by (rule JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_dncp_comma]; insert I_fpc_no_ws I_no_result_from_empty; blast)
+    done
+  subgoal
+    apply (insert c_val)
+    apply (rule JsonNameColonObject_no_consume_past_ws)
+         apply (auto simp add: I_pngi I_wf I_dncp_ws I_fpc_no_ws)
+    using I_no_result_from_empty by blast
+  subgoal for c l l' r
+    apply (rule JsonNameColonObject_drop_leftover[OF I_pngi]; assumption?)
+    by (rule I_drop_leftover)
+  subgoal
+    by (clarsimp simp add: NER_simps)
+  subgoal for i r l
+    \<comment> \<open>Problem here! We find that ws_char_ws does not actually error on ws.\<close>
+    \<comment> \<open>So we do look past ws\<close>
+
+    oops
+
 
 lemma JsonNameColonObject_sepByComma_no_consume_past_chars:
   assumes JNCO_wf: "bidef_well_formed (JsonNameColonObject I)"
