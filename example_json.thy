@@ -669,6 +669,62 @@ lemma JsonNameColonObject_sepByComma_no_consume_past_chars_ws:
     oops
 
 
+lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
+  assumes I_pngi: "PNGI (parse I)"
+
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_no_consume_past_ws: "\<And>c . c\<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_no_consume_past_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_no_parse_empty: "\<nexists>r l. has_result (parse I) [] r l"
+
+  shows "does_not_consume_past_parse_consume (parse (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ())) (parse (ws_char CHR ''}''))"
+  unfolding separated_by_def
+  apply (rule transform_does_not_consume_past_parser_result)
+  apply (rule optional_does_not_consume_past_parse_consume)
+  subgoal by (clarsimp simp add: NER_simps separated_byBase_def)
+  subgoal for ea cws lws rws l'
+    apply (cases cws; clarsimp)
+    subgoal
+      using ws_char_no_result_same_leftover[of \<open>CHR ''}''\<close> lws \<open>()\<close>] by blast
+    by (clarsimp simp add: NER_simps separated_byBase_def JsonNameColonObject_def)
+  unfolding separated_byBase_def
+  apply (rule then_does_not_consume_past_parse_consume)
+  subgoal for i c
+    apply (cases i; clarsimp simp add: fpc_simps)
+    apply (auto simp add: fpc_def NER_simps split: if_splits)
+    subgoal
+      using JsonNameColonObject_no_consume_past_ws[of I c, OF I_pngi I_wf I_no_consume_past_ws _ I_no_parse_empty]
+            I_fpc_no_ws
+      by blast
+    subgoal
+      using JsonNameColonObject_no_consume_past_ws[of I c, OF I_pngi I_wf I_no_consume_past_ws _ I_no_parse_empty]
+            I_fpc_no_ws
+      by blast
+    subgoal
+      using JsonNameColonObject_no_consume_past_comma[of I, OF I_pngi I_wf I_no_consume_past_comma _ I_no_parse_empty]
+            I_fpc_no_ws by blast
+    subgoal
+      using JsonNameColonObject_no_consume_past_comma[of I, OF I_pngi I_wf I_no_consume_past_comma _ I_no_parse_empty]
+            I_fpc_no_ws by blast
+    subgoal
+      using JsonNameColonObject_no_consume_past_comma[of I, OF I_pngi I_wf I_no_consume_past_comma _ I_no_parse_empty]
+            I_fpc_no_ws by blast
+    done
+  subgoal for c l l' r
+    \<comment> \<open>Continue here!\<close>
+    sorry
+  subgoal sorry
+  subgoal using I_pngi by pasi_pngi
+  subgoal using I_pngi by pasi_pngi
+  
+
+    sorry
+
+
+  oops
+
+
 lemma JsonNameColonObject_sepByComma_no_consume_past_chars:
   assumes JNCO_wf: "bidef_well_formed (JsonNameColonObject I)"
   assumes I_pngi: "PNGI (parse I)"
