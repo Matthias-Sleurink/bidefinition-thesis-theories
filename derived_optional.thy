@@ -188,6 +188,16 @@ lemma optional_does_not_consume_past_char3:
   by (auto simp add: NER_simps I_error_empty I_fail_if_first_char split: sum.splits)
 
 
+lemma optional_does_not_consume_past_parse_consume:
+  assumes A_error_empty: "is_error (parse A) []"
+  assumes A_error_on_B: "\<And>ea cb lb rb l'. \<lbrakk>is_error (parse A) ea; has_result (parse B) (cb @ lb) rb lb\<rbrakk> \<Longrightarrow> is_error (parse A) (cb @ l')"
+  assumes A_dncppc_B: "does_not_consume_past_parse_consume (parse A) (parse B)"
+  shows "does_not_consume_past_parse_consume (parse (optional A)) (parse B)"
+  apply (auto simp add: does_not_consume_past_parse_consume_def NER_simps A_error_empty A_error_on_B split: option.splits)
+  using A_dncppc_B[unfolded does_not_consume_past_parse_consume_def]
+  by blast+
+
+
 
 \<comment> \<open>Well formed\<close>
 lemma optional_well_formed:
