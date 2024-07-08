@@ -269,6 +269,46 @@ lemma then_does_not_consume_past_char_from_first_no_peek_past_end:
     done
   done
 
+lemma then_does_not_consume_past_parse_consume:
+  assumes fpc_B_dncpc_A:  "\<And>i c. fpc (parse B) i c \<Longrightarrow> does_not_consume_past_char3 (parse A) c"
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
+  assumes A_pngi: "PNGI (parse A)"
+  assumes B_pngi: "PNGI (parse B)"
+  assumes A_dncppc_B: "does_not_consume_past_parse_consume (parse A) (parse B)"
+  assumes B_dncppc_C: "does_not_consume_past_parse_consume (parse B) (parse C)"
+  shows "does_not_consume_past_parse_consume (parse (b_then A B)) (parse C)"
+  unfolding does_not_consume_past_parse_consume_def
+  apply (auto simp add: NER_simps)
+  subgoal for ca ra rb l cc bi rc lc
+    apply (insert B_pngi[unfolded PNGI_def, rule_format, of bi rb l]; clarsimp)
+    subgoal for cb
+      apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>ca@l\<close> ra \<open>cb@l\<close>]; clarsimp)
+      subgoal for ca
+        apply (rule exI[of _ cb]; rule conjI)
+        subgoal using A_can_drop_leftover[of ca cb l ra] by blast
+        subgoal using B_can_drop_leftover[of cb \<open>[]\<close> l rb, simplified] by blast
+        done
+      done
+    done
+  subgoal for c a b l l' cc l'a r2 l2
+    apply (insert B_pngi[unfolded PNGI_def, rule_format, of l'a b l]; clarsimp)
+    subgoal for cb
+      apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>c@l\<close> a \<open>cb@l\<close>]; clarsimp)
+      subgoal for ca
+        apply (rule exI[of _ \<open>cb @ cc @ l'\<close>]; rule conjI)
+        subgoal
+          using A_dncppc_B[unfolded does_not_consume_past_parse_consume_def, rule_format, of ca \<open>cb@l\<close> a cb l b \<open>cc@l'\<close>]
+          by blast
+        subgoal
+          using B_dncppc_C[unfolded does_not_consume_past_parse_consume_def, rule_format, of cb l b cc l2 r2 l']
+          by blast
+        done
+      done
+    done
+  done
+
+
 
 lemma then_can_drop_leftover:
   assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
