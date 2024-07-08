@@ -1463,6 +1463,12 @@ lemma Json_error_on_empty:
   apply (subst JsonR.simps)
   by (clarsimp simp add: NER_simps)
 
+\<comment> \<open>Note that this is not provable using the induction method as the bottom parser always nonterms.\<close>
+lemma Json_error_on_close_bracket:
+  "\<forall>l. is_error (parse Json) (CHR '']'' # l)"
+  apply (subst JsonR.simps)
+  by (clarsimp simp add: NER_simps)
+
 
 lemma char_ws_not_eat_into_object:
   shows "pa_does_not_eat_into_pb_nondep
@@ -2321,9 +2327,24 @@ lemma inductive_Json_drop_past_leftover:
 
 
 \<comment> \<open>Other needed premises:
-  \<forall>l. is_error (parse (J ())) (CHR '']'' # l)
+
+
+  These two:
   is_error (parse (J ())) []
+  \<forall>l. is_error (parse (J ())) (CHR '']'' # l)
+  are not possible using the induction rule because the bottom parser always nonterms.
+  We can prove both of these for JSON, but how do we include that in this proof?
+  
 \<close>
+\<comment> \<open>We can use this but then the assms require us to prove is_error [] from nothing.\<close>
+lemma drop_the_is_error_part:
+  assumes "bd.admissible (\<lambda>x. X x)"
+  shows "bd.admissible
+     (\<lambda>JsonR.
+         is_error (parse (JsonR ())) [] \<longrightarrow> (X JsonR))"
+  apply (insert assms)
+  by (auto simp add: is_error_def)
+
 
 \<comment> \<open>Definitely write in the thesis that this process is shit.\<close>
 \<comment> \<open>It would be amazing if we could create some sort of "state" that all proofs for these inner things are in,\<close>
@@ -2342,7 +2363,8 @@ lemma Json_well_formed:
   \<and> (\<forall>c l l' r. has_result (parse Json) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse Json) (c @ l) r l)
 "
   apply (induction rule: JsonR.fixp_induct)
-  subgoal by clarsimp
+  subgoal
+    by clarsimp
   subgoal
     apply (clarsimp simp add: strict_WF strict_PNGI)
     using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3 bottom_drop_past_leftover
@@ -2354,8 +2376,12 @@ lemma Json_well_formed:
       apply (rule Json_well_formed_inductive; assumption?)
       subgoal by blast
       subgoal by blast
-      subgoal \<comment> \<open>\<forall>l. is_error (parse (J ())) (CHR '']'' # l)\<close> sorry
-      subgoal \<comment> \<open>is_error (parse (J ())) []\<close> sorry
+      subgoal \<comment> \<open>\<forall>l. is_error (parse (J ())) (CHR '']'' # l)\<close>
+        using Json_error_on_close_bracket \<comment> \<open>We break here!\<close>
+        sorry
+      subgoal \<comment> \<open>is_error (parse (J ())) []\<close>
+        using Json_error_on_empty \<comment> \<open>We break here!\<close>
+        sorry
       done
     subgoal by pasi_pngi
     subgoal using inductive_Json_no_empty_result by blast

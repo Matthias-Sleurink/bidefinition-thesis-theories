@@ -1098,4 +1098,14 @@ lemma bottom_drop_past_leftover[cont_intro]:
   "(\<forall>c l l' r. has_result (\<lambda>a. None) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (\<lambda>a. None) (c @ l) r l)"
   by (clarsimp simp add: NER_simps)
 
+lemma admissible_error_on_empty[cont_intro]:
+  "bd.admissible (\<lambda>I. is_error (parse (I ())) [])"
+  by (clarsimp simp add: is_error_def)
+
+\<comment> \<open>Is false.\<close>
+lemma bottom_error_empty[cont_intro]:
+  "is_error (\<lambda>a. None) []"
+  apply (clarsimp simp add: NER_simps)
+  oops
+
 end
