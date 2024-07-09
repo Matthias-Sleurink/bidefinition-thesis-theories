@@ -130,6 +130,36 @@ lemma fpc_str_literal[fpc_simps]:
   apply (clarsimp simp add: str_literal_def fpc_simps takeMiddle_def)
   by (clarsimp simp add: fpc_def NER_simps quot_def)
 
+lemma str_literal_drop_input_on_error:
+  "is_error (parse str_literal) (i @ i') \<Longrightarrow> is_error (parse str_literal) i"
+  apply (clarsimp simp add: str_literal_def takeMiddle_def)
+  apply (rule transform_drop_input_leftover_on_error; assumption?)
+  apply (rule then_can_drop_leftover_on_error; assumption?; clarsimp?)
+  subgoal
+    apply (clarsimp simp add: quot_def)
+    by (rule this_char_drop_leftover_on_error)
+  subgoal by pasi_pngi
+  subgoal by (clarsimp simp add: NER_simps quot_def)
+  subgoal by (cases \<open>i\<close>; clarsimp simp add: NER_simps quot_def)
+  subgoal unfolding quot_def by (rule this_char_drop_leftover)
+  subgoal for i2 i2'
+    apply (rule then_can_drop_leftover_on_error; assumption?; clarsimp?)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal by pasi_pngi
+    subgoal
+      using many_not_nonterm_when_base_not_nonterm[of \<open>char_not_in_set {quot_chr}\<close> i2, OF _ char_not_in_set_PASI]
+            char_not_in_set_is_nonterm
+      by blast
+    subgoal by (clarsimp simp add: NER_simps char_not_in_set_def quot_def)
+    subgoal for c2 l2 l2' r2
+      apply (clarsimp simp add: NER_simps char_not_in_set_def quot_def; rule conjI)
+      subgoal by (smt (verit, best) append_is_Nil_conv hd_dropWhile takeWhile_append takeWhile_eq_all_conv takeWhile_hd_no_match)
+      subgoal by (smt (verit, best) append_is_Nil_conv dropWhile_append dropWhile_eq_self_iff hd_append2 self_append_conv2)
+      done
+    subgoal unfolding quot_def by (rule this_char_drop_leftover_on_error)
+    done
+  done
+
 
 lemma str_literal_well_formed:
   "bidef_well_formed str_literal"
