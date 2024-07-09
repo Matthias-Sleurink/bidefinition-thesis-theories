@@ -78,6 +78,14 @@ lemma this_char_does_not_consume_past_char3:
   by (clarsimp simp add: does_not_consume_past_char3_def NER_simps)
 
 
+lemma this_char_drop_leftover:
+  "has_result (parse (this_char C)) (i @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (this_char C)) (i@l) r l"
+  by (clarsimp simp add: NER_simps)
+
+lemma this_char_drop_leftover_on_error:
+  "is_error (parse (this_char C)) (i @ i') \<Longrightarrow> is_error (parse (this_char C)) i"
+  by (clarsimp simp add: NER_simps)
+
 
 \<comment> \<open>First printed char\<close>
 lemma this_char_fpci[fpci_simps]:
