@@ -230,6 +230,15 @@ lemma ws_char_ws_can_drop_past_leftover:
   done
 
 
+lemma ws_char_ws_drop_on_error:
+  assumes "is_error (parse (ws_char_ws CHR '','')) (i @ i')"
+  shows " is_error (parse (ws_char_ws CHR '','')) i"
+  using assms
+  apply (clarsimp simp add: NER_simps)
+  by (metis Cons_eq_appendI dropWhile_append dropWhile_eq_Nil_conv list.distinct(1))
+
+
+
 section \<open>Well formed\<close>
 lemma many_ws_wf:
   "bidef_well_formed (many whitespace_char)"
