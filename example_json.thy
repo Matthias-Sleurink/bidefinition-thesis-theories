@@ -770,12 +770,15 @@ lemma JsonNameColonObject_sepByComma_no_consume_past_chars_ws:
 
 lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
   assumes I_pngi: "PNGI (parse I)"
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
 
   assumes I_wf: "bidef_well_formed I"
   assumes I_no_consume_past_ws: "\<And>c . c\<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
   assumes I_no_consume_past_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
   assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes I_no_parse_empty: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_error_empty: "is_error (parse I) []"
+  assumes I_drop_leftover_on_error: "\<And>i i'. is_error (parse I) (i @ i') \<Longrightarrow> is_error (parse I) i"
 
   shows "does_not_consume_past_parse_consume (parse (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ())) (parse (ws_char CHR ''}''))"
   unfolding separated_by_def
@@ -811,16 +814,45 @@ lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
             I_fpc_no_ws by blast
     done
   subgoal for c l l' r
-    \<comment> \<open>Continue here! has_result (parse (JsonNameColonObject I)) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (JsonNameColonObject I)) (c @ l) r l\<close>
-    sorry
-  subgoal sorry
+    by (rule JsonNameColonObject_drop_leftover[OF I_pngi, of c l l' r]; clarsimp simp add: I_drop_leftover)
+  subgoal for c l l' r
+    apply (rule many_can_drop_leftover[of _ c l l' r]; clarsimp?)
+    subgoal for ca la la' on oc
+      apply (rule then_can_drop_leftover[of _ _ ca la la' \<open>((), on, oc)\<close>]; clarsimp?)
+      subgoal using ws_char_ws_can_drop_past_leftover by blast
+      subgoal by pasi_pngi
+      subgoal using JsonNameColonObject_drop_leftover[OF I_pngi] I_drop_leftover by blast
+      subgoal using I_pngi by pasi_pngi
+      done
+    subgoal for i i'
+      apply (rule then_can_drop_leftover_on_error[of \<open>ws_char_ws CHR '',''\<close> i \<open>JsonNameColonObject I\<close> i']; assumption?; clarsimp?)
+      subgoal by (rule ws_char_ws_drop_input_on_error)
+      subgoal by pasi_pngi
+      subgoal by (clarsimp simp add: NER_simps)
+      subgoal for i'' l''
+        apply (clarsimp simp add: ws_char_ws_has_result JsonNameColonObject_def)
+        by (smt (verit) \<open>\<lbrakk>has_result (parse (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject I)))) (c @ l @ l') r (l @ l'); is_error (parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject I))) (i @ i'); is_nonterm (parse (ws_char_ws CHR '','')) i\<rbrakk> \<Longrightarrow> False\<close>
+                        JsonNameColonObject_def
+                        append.assoc append_is_Nil_conv append_same_eq b_then_is_error_from_first
+                        dropWhile_append dropWhile_eq_Nil_conv has_result_exhaust(1) is_error_str_literal(1)
+                        self_append_conv tl_append2 ws_char_ws_has_result)
+      subgoal using ws_char_ws_can_drop_past_leftover by blast
+      subgoal for i2 i2'
+        apply (rule JsonNameColonObject_drop_leftover_on_error[OF I_error_empty]; assumption?)
+        by (rule I_drop_leftover_on_error)
+      done
+    subgoal using I_pngi by pasi_pngi
+    done
   subgoal using I_pngi by pasi_pngi
   subgoal using I_pngi by pasi_pngi
-  
-
-    sorry
-
-
+  subgoal                                                
+    apply (rule no_consume_past_parse_from_no_consume_past_char_fpc; clarsimp?)
+    subgoal for c l l' a b l2 r2
+      \<comment> \<open>We fail here! We need to ensure that we also include the closing } after the many here.\<close>
+      \<comment> \<open>Because this comes down to does not peek past end, which we cannot get for JNCO\<close>
+      sorry
+    subgoal sorry
+    done
   oops
 
 
