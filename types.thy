@@ -962,6 +962,22 @@ definition chars_can_be_dropped :: "'a parser \<Rightarrow> char set \<Rightarro
   "chars_can_be_dropped p cs = (\<forall> i r l. has_result p i r l \<longrightarrow> has_result p (dropWhile (\<lambda>c. c \<in> cs) i) r l)"
 
 
+lemma no_consume_past_parse_from_no_consume_past_char_fpc:
+  assumes change_leftover: "(\<exists>l2 r2. has_result (parse B) l2 r2 l2) \<Longrightarrow> (\<And>c l l' r l''. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l @ l'') r (l @ l''))"
+  assumes fpc: "\<And>i c. fpc (parse B) i c \<Longrightarrow> does_not_consume_past_char3 (parse A) c"
+  shows "does_not_consume_past_parse_consume (parse A) (parse B)"
+  apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
+  subgoal for c r l l' c2 r2 l2
+    apply (cases c2; clarsimp)
+    subgoal
+      using change_leftover[of c \<open>[]\<close> l r, simplified]
+      by (metis append.right_neutral)
+    subgoal for c2' c2s
+      using fpc[unfolded fpc_def does_not_consume_past_char3_def, rule_format, of c2' r2 c l r \<open>c2s@l'\<close>]
+      by blast
+    done
+  done
+
 
 
 section \<open>Admissible\<close>
