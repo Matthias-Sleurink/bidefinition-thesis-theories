@@ -106,6 +106,10 @@ lemma is_error_str_literal2[NER_simps]:
   apply (auto split: if_splits)
   by fastforce
 
+lemma str_literal_is_nonterm[NER_simps]:
+  "is_nonterm (parse str_literal) i \<longleftrightarrow> False"
+  by (clarsimp simp add: str_literal_def takeMiddle_def quot_def NER_simps char_not_in_set_PASI)
+
 
 lemma str_literal_print_empty[fp_NER, print_empty]:
   "p_has_result (print (str_literal)) i [] \<longleftrightarrow> False"
