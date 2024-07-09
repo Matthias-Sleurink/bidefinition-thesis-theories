@@ -234,7 +234,7 @@ lemma str_literal_no_peek_past_end:
   subgoal by pasi_pngi
   done
 
-lemma str_literal_drop_leftover:
+lemma str_literal_can_drop_leftover:
   assumes "has_result (parse str_literal) (c @ l @ l') r (l @ l')"
   shows "has_result (parse str_literal) (c @ l) r l"
   apply (insert assms)
