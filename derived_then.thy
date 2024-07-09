@@ -332,6 +332,78 @@ lemma then_can_drop_leftover:
     done
   done
 
+lemma length_lt_eq_append_exI:
+  assumes "i @ i' = cA @ l"
+  assumes "length cA < length i"
+  shows "\<exists>ci. i = cA@ci"
+  using assms
+  by (metis append_eq_append_conv2 length_append not_add_less1)
+lemma length_mt_eq_append_exI:
+  assumes "i @ i' = cA @ l"
+  assumes "\<not> length cA < length i"
+  shows "\<exists>i''. cA = i@i''"
+  using assms
+  by (metis append.right_neutral append_eq_append_conv length_lt_eq_append_exI linorder_neqE_nat)
+
+
+lemma then_can_drop_leftover_on_error:
+  assumes A_can_drop_leftover_error: "\<And>i i' i''. is_error (parse A) (i @ i') \<Longrightarrow> is_error (parse A) i"
+  assumes A_pngi: "PNGI (parse A)"
+  assumes A_no_nonterm_i: "\<not>is_nonterm (parse A) i"
+
+  assumes remove_into_A_means_error_A_or_error_B: "\<And>i' r l. \<lbrakk>i'\<noteq> []; has_result (parse A) (i @ i' @ l) r l; is_error (parse B) l\<rbrakk> \<Longrightarrow> (is_error (parse A) i \<or> (\<exists>r l. has_result (parse A) i r l \<and> is_error (parse B) l))"
+
+  assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
+  assumes B_can_drop_leftover_error: "\<And>i i' i''. is_error (parse B) (i @ i') \<Longrightarrow> is_error (parse B) i"
+
+  assumes AB_error: "is_error (parse (b_then A B)) (i @ i')"
+  shows "is_error (parse (b_then A B)) i"
+  apply (insert AB_error)
+  apply (auto simp add: NER_simps)
+  subgoal by (rule A_can_drop_leftover_error)
+  subgoal for r l
+    \<comment> \<open>A has a result from i@i', and B errors on the leftover l.\<close>
+    \<comment> \<open>Assuming that A having a result from i and B does not error from the leftover.\<close>
+    apply (insert A_pngi[unfolded PNGI_def, rule_format, of \<open>i@i'\<close> r l]; clarsimp)
+    subgoal for cA
+      \<comment> \<open>We want to split into two cases. Either I is wholly consumed, or it is not.\<close>
+      apply (cases \<open>length i > length cA\<close>)
+      subgoal
+        apply (insert length_lt_eq_append_exI[of i i' cA l]; clarsimp)
+        subgoal for cI
+          apply (insert A_can_drop_leftover[of cA cI i' r]; clarsimp)
+          using B_can_drop_leftover_error[of cI i'] by blast
+        done
+      subgoal
+        \<comment> \<open>cA is longer than i.\<close>
+        \<comment> \<open>So, we are trying to drop into the territory of A.\<close>
+        \<comment> \<open>So, we need to show that if this happens either A fails, or it creates a leftover that makes B fail.\<close>
+        apply (insert length_mt_eq_append_exI[of i i' cA l]; clarsimp)
+        subgoal for i''
+          apply (cases i''; clarsimp)
+          subgoal \<comment> \<open>i'' is empty, so now we can do the same argument as above\<close>
+            apply (insert A_can_drop_leftover[of i \<open>[]\<close> l r, simplified]; clarsimp)
+            by (insert B_can_drop_leftover_error[of \<open>[]\<close> l, simplified]; clarsimp)
+          subgoal for is' iss
+            \<comment> \<open>Either removing is'#iss makes A error, or it makes it succeed with some result.\<close>
+            \<comment> \<open>We require that if it does succeed with some leftover that that leftover makes B error.\<close>
+            apply (cases \<open>\<exists>r l. has_result (parse A) i r l\<close>)
+            subgoal
+              \<comment> \<open>There is some way to make a result from i.\<close>
+              \<comment> \<open>Now we need either that the leftover cannot be used by B or that actually this is not possible because of A.\<close>
+              apply (insert remove_into_A_means_error_A_or_error_B[of \<open>is'#iss\<close> l]; clarsimp)
+              by blast
+            subgoal
+              using has_result_exhaust(3)[of \<open>parse A\<close> i] A_no_nonterm_i
+              by fast
+            done
+          done
+        done
+      done
+    done
+  done
+
+
 
 lemma then_can_drop_leftover_on_error:
   assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
