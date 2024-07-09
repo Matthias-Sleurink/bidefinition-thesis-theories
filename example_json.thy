@@ -580,6 +580,51 @@ lemma JsonNameColonObject_drop_leftover:
   subgoal using I_pngi by pasi_pngi
   done
 
+lemma result_of_ws_char_ws_from_c_must_be_empty:
+  assumes "i' \<noteq> []"
+  assumes "has_result (parse (ws_char_ws C)) (i @ i' @ l) r l"
+	assumes "has_result (parse (ws_char_ws C)) i r l'"
+	shows "l' = []"
+  using assms
+  apply (auto simp add: NER_simps)
+  subgoal by (metis (no_types, lifting) Nil_is_append_conv append.assoc append_self_conv2 assms(3) dropWhile_append1 tl_append2 ws_char_ws_has_result)
+  subgoal using \<open>\<And>xb xa x. \<lbrakk>i' \<noteq> []; x \<in> set (tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) i)); l = dropWhile (\<lambda>x. x \<in> whitespace_chars) (tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) i @ i' @ l)); l' = dropWhile (\<lambda>x. x \<in> whitespace_chars) (tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) i)); C = hd (dropWhile (\<lambda>x. x \<in> whitespace_chars) i @ i' @ l); xa \<notin> whitespace_chars; hd (dropWhile (\<lambda>x. x \<in> whitespace_chars) i) = hd (dropWhile (\<lambda>x. x \<in> whitespace_chars) i @ i' @ l); xb \<in> set i; xb \<notin> whitespace_chars; xa \<in> set i\<rbrakk> \<Longrightarrow> x \<in> whitespace_chars\<close>
+    by blast
+  subgoal using \<open>\<And>xb xa x. \<lbrakk>i' \<noteq> []; x \<in> set (tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) i)); l = dropWhile (\<lambda>x. x \<in> whitespace_chars) (tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) i @ i' @ l)); l' = dropWhile (\<lambda>x. x \<in> whitespace_chars) (tl (dropWhile (\<lambda>x. x \<in> whitespace_chars) i)); C = hd (dropWhile (\<lambda>x. x \<in> whitespace_chars) i @ i' @ l); xa \<notin> whitespace_chars; hd (dropWhile (\<lambda>x. x \<in> whitespace_chars) i) = hd (dropWhile (\<lambda>x. x \<in> whitespace_chars) i @ i' @ l); xb \<in> set i; xb \<notin> whitespace_chars; xa \<in> set i\<rbrakk> \<Longrightarrow> x \<in> whitespace_chars\<close>
+    by blast
+  done
+
+
+lemma JsonNameColonObject_drop_leftover_on_error:
+  assumes I_error_empty: "is_error (parse I) []"
+  assumes I_drop_leftover_on_error: "\<And>i i'. is_error (parse I) (i @ i') \<Longrightarrow> is_error (parse I) i"
+  assumes e1: "is_error (parse (JsonNameColonObject I)) (i @ i')"
+  shows "is_error (parse (JsonNameColonObject I)) i"
+  apply (insert e1)
+  unfolding JsonNameColonObject_def
+  apply (rule then_can_drop_leftover_on_error; assumption?; clarsimp?)
+  subgoal by (rule str_literal_drop_input_on_error)
+  subgoal by pasi_pngi
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by (rule str_literal_error_if_take_from_c)
+  subgoal by (rule str_literal_can_drop_leftover)
+  subgoal for i2 i2'
+    unfolding then_drop_first_def
+    apply (rule transform_drop_input_leftover_on_error; assumption?)
+    apply (rule then_can_drop_leftover_on_error; assumption?; clarsimp?)
+    subgoal by (rule ws_char_ws_drop_input_on_error)
+    subgoal by pasi_pngi
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal for i3' l3
+      apply (insert result_of_ws_char_ws_from_c_must_be_empty[of i3' \<open>CHR '':''\<close> i2 l3 \<open>()\<close>]; clarsimp)
+      using I_error_empty
+      by (metis (full_types) has_result_exhaust(2) old.unit.exhaust ws_char_ws_is_nonterm)
+    subgoal by (rule ws_char_ws_can_drop_past_leftover)
+    subgoal by (rule I_drop_leftover_on_error)
+    done
+  done
+
+
 lemma wf_JsonNameColonObject:
   assumes J_wf: "bidef_well_formed J"
   assumes J_fpci_no_ws: "\<And>i c. first_printed_chari (print J) i c \<Longrightarrow> c \<notin> whitespace_chars"
