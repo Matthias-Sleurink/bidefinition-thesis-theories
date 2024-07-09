@@ -145,6 +145,13 @@ lemma transform_can_drop_leftover:
   apply (clarsimp simp add: NER_simps)
   by blast
 
+lemma transform_drop_input_leftover_on_error:
+  assumes "is_error (parse A) (i @ i') \<Longrightarrow> is_error (parse A) i"
+  shows "is_error (parse (transform f f' A)) (i @ i') \<Longrightarrow> is_error (parse (transform f f' A)) i"
+  apply (clarsimp simp add: NER_simps)
+  by (rule assms)
+
+
 
 
 \<comment> \<open>First printed char\<close>
