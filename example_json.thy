@@ -164,6 +164,19 @@ lemma str_literal_drop_input_on_error:
     done
   done
 
+lemma str_literal_error_if_take_from_c:
+  assumes take_no_empty: "i' \<noteq> []"
+  assumes result: "has_result (parse str_literal) (i @ i' @ l) r l"
+  shows "is_error (parse str_literal) i"
+  using assms
+  apply (clarsimp simp add: NER_simps str_literal_def takeMiddle_def quot_def char_not_in_set_def)
+  subgoal for l'
+    apply (rule exI[of _ \<open>tl i\<close>]; rule conjI; clarsimp?)
+    subgoal using list.collapse by force
+    subgoal by (smt (verit, ccfv_SIG) append.assoc append_is_Nil_conv dropWhile_append1 dropWhile_eq_Nil_conv list.sel(3) self_append_conv2 tl_append2)
+    done
+  done
+
 
 lemma str_literal_well_formed:
   "bidef_well_formed str_literal"
