@@ -883,7 +883,9 @@ definition does_not_consume_past_parse_consume :: "'a parser \<Rightarrow> 'b pa
   "does_not_consume_past_parse_consume p p' \<longleftrightarrow> (\<forall>c r l l' c2 r2 l2.
          has_result p (c@l) r l \<and> has_result p' (c2@l2) r2 l2 \<longrightarrow> (has_result p c r [] \<and> has_result p (c@(c2@l')) r (c2@l')))"
 
-
+definition does_not_conusme_past_parse_consume_or_if_empty :: "'a parser \<Rightarrow> 'b parser \<Rightarrow> 'c parser \<Rightarrow> bool" where
+  "does_not_conusme_past_parse_consume_or_if_empty A B C \<longleftrightarrow> (\<forall> c r l c2 r2 l2 c3 r3 l3 l' l''.
+        has_result A (c@l) r l \<longrightarrow> has_result B (c2@l2) r2 l2 \<longrightarrow> has_result C (c3@l3) r3 l3 \<longrightarrow> (has_result A c r [] \<and> (if c2 = [] then (has_result A (c@(c3@l')) r (c3@l')) else (has_result A (c@(c2@l'')) r (c2@l'')))))"
 
 
 
