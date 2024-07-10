@@ -270,7 +270,6 @@ lemma then_does_not_consume_past_char_from_first_no_peek_past_end:
   done
 
 lemma then_does_not_consume_past_parse_consume:
-  assumes fpc_B_dncpc_A:  "\<And>i c. fpc (parse B) i c \<Longrightarrow> does_not_consume_past_char3 (parse A) c"
   assumes A_can_drop_leftover: "\<And>c l l' r. has_result (parse A) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse A) (c @ l) r l"
   assumes B_can_drop_leftover: "\<And>c l l' r. has_result (parse B) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse B) (c @ l) r l"
   assumes A_pngi: "PNGI (parse A)"
