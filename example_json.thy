@@ -803,12 +803,8 @@ lemma sublemma_2:
     subgoal
       apply (cases c2; clarsimp)
       subgoal
-        apply (cases aa; clarsimp simp add: NER_simps)
-        subgoal by (metis dropWhile_eq_Nil_conv ws_char_has_result ws_char_no_result_same_leftover)
-        subgoal
-          
-          sorry
-        done
+        \<comment> \<open>Solve via PASI of the b_then inside...\<close>
+        sorry
       subgoal for c2' c2s
       sorry
     sorry
