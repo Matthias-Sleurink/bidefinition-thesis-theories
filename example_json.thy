@@ -450,7 +450,10 @@ lemma has_result_JsonNameColonObject[NER_simps]:
   shows "has_result (parse (JsonNameColonObject J)) i r i \<longleftrightarrow> False"
   using PASI_PNGI_JsonNameColonObject(1)[OF J_pngi, unfolded PASI_def, rule_format]
   by blast
-  
+lemma has_result_JsonNameColonObject_first_char:
+  shows "has_result (parse (JsonNameColonObject J)) (i#is) r l \<Longrightarrow> i = quot_chr"
+  apply (clarsimp simp add: NER_simps JsonNameColonObject_def str_literal_def takeMiddle_def quot_def)
+  done
 
 lemma fpc_JsonNameColonObject[fpc_simps]:
   "fpc (parse (JsonNameColonObject I)) a c \<Longrightarrow> c = quot_chr"
@@ -768,6 +771,49 @@ lemma JsonNameColonObject_sepByComma_no_consume_past_chars_ws:
     oops
 
 
+lemma a_imp_conj2:
+  "(A1 \<Longrightarrow> A2 \<Longrightarrow> A3 \<Longrightarrow> A4 \<Longrightarrow> A5 \<Longrightarrow> A6 \<Longrightarrow> A7 \<Longrightarrow> (B \<and> C)) \<Longrightarrow> (A1 \<longrightarrow> A2 \<longrightarrow> A3 \<longrightarrow> A4 \<longrightarrow> A5 \<longrightarrow> A6 \<longrightarrow> A7 \<longrightarrow> C)"
+  by blast
+
+lemma sublemma_1:
+  assumes I_pngi: "PNGI (parse I)"
+  shows "does_not_conusme_past_parse_consume_or_if_empty (parse (ws_char_ws CHR '','')) (parse (JsonNameColonObject I)) (parse (b_then (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject I))) (ws_char CHR ''}'')))"
+  apply (clarsimp simp add: does_not_conusme_past_parse_consume_or_if_empty_def; rule conjI)
+  subgoal for c l by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR '',''\<close> c \<open>[]\<close> l \<open>()\<close>, simplified])
+  subgoal for c l c2 a b l2 c3 c3r l3
+    apply (cases c2; clarsimp)
+    subgoal using has_result_JsonNameColonObject[OF I_pngi] by blast
+    subgoal for c2' c2s l''
+      apply (insert has_result_JsonNameColonObject_first_char[of I c2' \<open>c2s@l2\<close> \<open>(a,b)\<close> l2]; clarsimp)
+      using ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> quot_chr, simplified,
+            unfolded does_not_consume_past_char3_def, rule_format, of c l \<open>()\<close>] by fast
+    done
+  done
+
+lemma sublemma_2:
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
+  shows "does_not_consume_past_parse_consume (parse (JsonNameColonObject I)) (parse (b_then (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject I))) (ws_char CHR ''}'')))"
+  apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
+  subgoal for c a b l l' c2 aa l2
+    apply (rule conjI)
+    subgoal
+      using JsonNameColonObject_drop_leftover[OF I_pngi, of c \<open>[]\<close> l \<open>(a,b)\<close>, simplified] I_drop_leftover
+      by blast
+    subgoal
+      apply (cases c2; clarsimp)
+      subgoal
+        apply (cases aa; clarsimp simp add: NER_simps)
+        subgoal by (metis dropWhile_eq_Nil_conv ws_char_has_result ws_char_no_result_same_leftover)
+        subgoal
+          
+          sorry
+        done
+      subgoal for c2' c2s
+      sorry
+    sorry
+  oops
+
 lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
   assumes I_pngi: "PNGI (parse I)"
   assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
@@ -775,6 +821,7 @@ lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
   assumes I_wf: "bidef_well_formed I"
   assumes I_no_consume_past_ws: "\<And>c . c\<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
   assumes I_no_consume_past_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse I) CHR ''}''"
   assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes I_no_parse_empty: "\<nexists>r l. has_result (parse I) [] r l"
   assumes I_error_empty: "is_error (parse I) []"
@@ -791,28 +838,7 @@ lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
       using ws_char_no_result_same_leftover[of \<open>CHR ''}''\<close> lws \<open>()\<close>] by blast
     by (clarsimp simp add: NER_simps separated_byBase_def JsonNameColonObject_def)
   unfolding separated_byBase_def
-  apply (rule then_does_not_consume_past_parse_consume)
-  subgoal for i c
-    apply (cases i; clarsimp simp add: fpc_simps)
-    apply (auto simp add: fpc_def NER_simps split: if_splits)
-    subgoal
-      using JsonNameColonObject_no_consume_past_ws[of I c, OF I_pngi I_wf I_no_consume_past_ws _ I_no_parse_empty]
-            I_fpc_no_ws
-      by blast
-    subgoal
-      using JsonNameColonObject_no_consume_past_ws[of I c, OF I_pngi I_wf I_no_consume_past_ws _ I_no_parse_empty]
-            I_fpc_no_ws
-      by blast
-    subgoal
-      using JsonNameColonObject_no_consume_past_comma[of I, OF I_pngi I_wf I_no_consume_past_comma _ I_no_parse_empty]
-            I_fpc_no_ws by blast
-    subgoal
-      using JsonNameColonObject_no_consume_past_comma[of I, OF I_pngi I_wf I_no_consume_past_comma _ I_no_parse_empty]
-            I_fpc_no_ws by blast
-    subgoal
-      using JsonNameColonObject_no_consume_past_comma[of I, OF I_pngi I_wf I_no_consume_past_comma _ I_no_parse_empty]
-            I_fpc_no_ws by blast
-    done
+  apply (rule then_does_not_consume_past_parse_consume_or_if_empty_B)
   subgoal for c l l' r
     by (rule JsonNameColonObject_drop_leftover[OF I_pngi, of c l l' r]; clarsimp simp add: I_drop_leftover)
   subgoal for c l l' r
@@ -845,13 +871,141 @@ lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
     done
   subgoal using I_pngi by pasi_pngi
   subgoal using I_pngi by pasi_pngi
-  subgoal                                                
-    apply (rule no_consume_past_parse_from_no_consume_past_char_fpc; clarsimp?)
-    subgoal for c l l' a b l2 r2
-      \<comment> \<open>We fail here! We need to ensure that we also include the closing } after the many here.\<close>
-      \<comment> \<open>Because this comes down to does not peek past end, which we cannot get for JNCO\<close>
-      sorry
-    subgoal sorry
+  subgoal
+    apply (clarsimp simp add: does_not_conusme_past_parse_consume_or_if_empty_def)
+    subgoal for c a b l c2 r2 l2 c3 l3
+      apply auto \<comment> \<open>Split up conjunctions and the implication\<close>
+      subgoal
+        apply (rule JsonNameColonObject_drop_leftover[OF I_pngi, of c \<open>[]\<close> l \<open>(a,b)\<close>, simplified]; assumption?)
+        by (rule I_drop_leftover)
+      subgoal for l'
+        apply (cases c3; clarsimp)
+        subgoal by (subst (asm) ws_char_no_result_same_leftover; clarsimp)
+        subgoal for c3' c3s
+          apply (insert ws_char_fpc[of \<open>CHR ''}''\<close> \<open>()\<close> c3', unfolded fpc_def]; auto)
+          subgoal for cs la
+            using JsonNameColonObject_no_consume_past_closing_brace[OF I_pngi I_wf I_no_consume_past_closing_brace,
+                    unfolded does_not_consume_past_char3_def, rule_format, of c l \<open>(a,b)\<close> \<open>c3s@l'\<close>]
+                  I_fpc_no_ws I_no_parse_empty
+            by fast
+          subgoal for cs la
+            using JsonNameColonObject_no_consume_past_ws[OF I_pngi I_wf I_no_consume_past_ws,
+                    unfolded does_not_consume_past_char3_def, rule_format, of c3' c l \<open>(a,b)\<close> \<open>c3s@l'\<close>]
+                  I_fpc_no_ws I_no_parse_empty
+            by fastforce
+          done
+        done
+      subgoal for l''
+        apply (cases c2; clarsimp) \<comment> \<open>Empty case dispatched because handled via c3 above.\<close>
+        apply (cases r2; clarsimp)
+        subgoal by (clarsimp simp add: NER_simps) \<comment> \<open>Many cannot parse empty with a nonempty consumed\<close>
+        subgoal for c2' c2s a' b' ab's
+          apply (clarsimp simp add: many_has_result b_then_has_result)
+          apply (insert ws_char_ws_fpc[of \<open>CHR '',''\<close> \<open>()\<close> c2', unfolded fpc_def]; auto)
+          subgoal
+            using JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_no_consume_past_comma,
+                    unfolded does_not_consume_past_char3_def, rule_format, of c l \<open>(a,b)\<close> \<open>c2s@l''\<close>]
+                  I_fpc_no_ws I_no_parse_empty
+            by fast
+          subgoal
+            using JsonNameColonObject_no_consume_past_ws[OF I_pngi I_wf I_no_consume_past_ws,
+                    unfolded does_not_consume_past_char3_def, rule_format, of c2' c l \<open>(a,b)\<close> \<open>c2s@l''\<close>]
+                  I_fpc_no_ws I_no_parse_empty
+            by fastforce
+          subgoal for l2' l2''
+            apply (insert ws_char_ws_PASI[of \<open>CHR '',''\<close>, unfolded PASI_def, rule_format, of \<open>c2'#c2s@l2\<close> \<open>()\<close> l2'']; clarsimp)
+            by (metis (no_types, lifting) dropWhile_eq_self_iff list.sel(1) ws_char_ws_has_result)
+          done
+        done
+      done
+    done
+  subgoal
+    apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
+    subgoal for c r l l' c2 l2
+      apply (rule conjI)
+      subgoal
+        apply (rule many_can_drop_leftover[of _ c \<open>[]\<close> l r, simplified]; clarsimp?)
+        subgoal for c3 l3 l3' ra rb
+          apply (rule then_can_drop_leftover[of _ _ c3 l3 l3' \<open>((), ra, rb)\<close>]; clarsimp?)
+          subgoal using ws_char_ws_can_drop_past_leftover by blast
+          subgoal by pasi_pngi
+          subgoal for c4 l4 l4'
+            apply (rule JsonNameColonObject_drop_leftover[OF I_pngi, of c4 l4 l4']; clarsimp?)
+            by (rule I_drop_leftover)
+          subgoal using I_pngi by pasi_pngi
+          done
+        subgoal for l3 l3'
+          apply (rule then_can_drop_leftover_on_error[of _ l3 _ l3']; clarsimp?)
+          subgoal by (rule ws_char_ws_drop_input_on_error)
+          subgoal by pasi_pngi
+          subgoal by (clarsimp simp add: NER_simps)
+          subgoal for i3' l3'
+            apply (cases \<open>\<forall>b \<in> set l3. b \<in> whitespace_chars\<close>)
+            subgoal
+              apply (insert ws_char_ws_is_error[of \<open>CHR '',''\<close> l3, simplified]; clarsimp)
+              by (metis chars_that_are_not_whitespace list.set_intros(1) set_dropWhileD)
+            subgoal
+              apply (insert ws_char_ws_has_result[of \<open>CHR '',''\<close> \<open>l3 @ i3' @ l3'\<close> \<open>()\<close> l3']
+                            ws_char_ws_has_result[of \<open>CHR '',''\<close> \<open>l3\<close> \<open>()\<close>])
+              apply clarsimp
+              by (metis is_error_JsonNameColonObject(1) list.sel(1) result_of_ws_char_ws_from_c_must_be_empty ws_char_ws_is_error)
+            done
+          subgoal using ws_char_ws_can_drop_past_leftover by blast
+          subgoal
+            apply (rule JsonNameColonObject_drop_leftover_on_error[OF I_error_empty]; assumption?)
+            by (rule I_drop_leftover_on_error)
+          done
+        subgoal using I_pngi by pasi_pngi
+        done
+      subgoal
+        apply (induction r arbitrary: c; clarsimp?)
+        subgoal for c
+          apply (cases c; clarsimp)
+          subgoal
+            apply (insert ws_char_can_drop_past_leftover[of \<open>CHR ''}''\<close> c2 \<open>[]\<close> l2, simplified]; clarsimp)
+            apply (clarsimp simp add: many_has_result)
+            apply (rule b_then_is_error_from_first)
+            apply (clarsimp simp add: ws_char_ws_is_error)
+            apply (clarsimp simp add: ws_char_has_result[of \<open>CHR ''}''\<close> c2])
+            by (smt (z3) char.inject dropWhile_eq_Nil_conv hd_append2 list.sel(1))
+          subgoal by (clarsimp simp add: NER_simps)
+          done
+        subgoal for a b abs c
+          apply (insert ws_char_can_drop_past_leftover[of \<open>CHR ''}''\<close> c2 \<open>[]\<close> l2, simplified]; clarsimp)
+          apply (clarsimp simp add: many_has_result_safe)
+          subgoal for l3
+            apply (insert many_PNGI[of \<open>b_then (ws_char_ws CHR '','') (JsonNameColonObject I)\<close>,
+                            OF then_PASI_from_pasi_pngi,
+                            OF ws_char_ws_PASI PASI_PNGI_JsonNameColonObject(2),
+                            OF I_pngi, unfolded PNGI_def, rule_format,
+                            of l3 abs l]; clarsimp)
+            subgoal for c_laters
+              apply (insert then_PNGI[OF ws_char_ws_PNGI PASI_PNGI_JsonNameColonObject(2), OF I_pngi,
+                              unfolded PNGI_def, rule_format,
+                              of \<open>CHR '',''\<close> \<open>c@l\<close> \<open>((), a, b)\<close> \<open>c_laters@l\<close>]; clarsimp)
+              subgoal for c_first
+                apply (rule exI[of _ \<open>c_laters @ c2 @ l'\<close>]; clarsimp) \<comment> \<open>induction end removed, now just need the first.\<close>
+                apply (insert then_does_not_consume_past_parse_consume_or_if_empty_B[
+                        of \<open>ws_char_ws CHR '',''\<close>
+                           \<open>JsonNameColonObject I\<close>
+                           \<open>b_then (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject I))) (ws_char CHR ''}'')\<close>,
+                        unfolded does_not_consume_past_parse_consume_def[of \<open>parse (b_then (ws_char_ws CHR '','') (JsonNameColonObject I))\<close>],
+                        rule_format, of c_first \<open>c_laters @ l\<close> \<open>((), a, b)\<close> \<open>c_laters@c2\<close> l \<open>(abs, ())\<close> l',
+                        OF _ _ ws_char_ws_PNGI PASI_PNGI_JsonNameColonObject(2)[OF I_pngi]
+                        ]; clarsimp)
+                apply (insert ws_char_ws_can_drop_past_leftover[of \<open>CHR '',''\<close>]; clarsimp)
+                apply (insert I_drop_leftover)
+                apply (insert JsonNameColonObject_drop_leftover[OF I_pngi])
+                apply clarsimp
+                apply (insert sublemma_1[OF I_pngi]; clarsimp)
+                
+                
+                sorry
+              done
+            done
+          done
+        done
+      done
     done
   oops
 
