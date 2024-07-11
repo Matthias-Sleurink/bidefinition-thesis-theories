@@ -792,6 +792,12 @@ lemma sublemma_1:
 
 lemma sublemma_2:
   assumes I_pngi: "PNGI (parse I)"
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_no_consume_past_closing_brace: "does_not_consume_past_char3 (parse I) CHR ''}''"
+  assumes I_no_consume_past_ws: "\<And>c . c\<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_no_consume_past_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_no_parse_empty: "\<nexists>r l. has_result (parse I) [] r l"
   assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
   shows "does_not_consume_past_parse_consume (parse (JsonNameColonObject I)) (parse (b_then (many (b_then (ws_char_ws CHR '','') (JsonNameColonObject I))) (ws_char CHR ''}'')))"
   apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
@@ -803,12 +809,45 @@ lemma sublemma_2:
     subgoal
       apply (cases c2; clarsimp)
       subgoal
-        \<comment> \<open>Solve via PASI of the b_then inside...\<close>
-        sorry
+        using then_PASI_from_pngi_pasi[OF many_PNGI, OF then_PASI_from_pasi_pngi, OF ws_char_ws_PASI
+                      PASI_PNGI_JsonNameColonObject(2), OF I_pngi ws_char_PASI,
+                      unfolded PASI_def, rule_format, of _ _ l2 \<open>(aa, ())\<close> l2]
+        by fast
       subgoal for c2' c2s
-      sorry
-    sorry
-  oops
+        apply (cases aa; clarsimp)
+        subgoal
+          apply (clarsimp simp add: b_then_has_result many_has_result)
+          apply (insert ws_char_fpc[of \<open>CHR ''}''\<close> \<open>()\<close> c2', unfolded fpc_def]; auto)
+          subgoal
+            using I_fpc_no_ws I_no_parse_empty
+                  JsonNameColonObject_no_consume_past_closing_brace[OF I_pngi I_wf I_no_consume_past_closing_brace,
+                        unfolded does_not_consume_past_char3_def, rule_format, of c l \<open>(a,b)\<close> \<open>c2s @ l'\<close>]
+            by fast
+          subgoal
+            using I_fpc_no_ws I_no_parse_empty
+                  JsonNameColonObject_no_consume_past_ws[OF I_pngi I_wf I_no_consume_past_ws,
+                        unfolded does_not_consume_past_char3_def, rule_format, of c2' c l \<open>(a,b)\<close> \<open>c2s @ l'\<close>]
+            by fast
+          done
+        subgoal for aa' aas
+          apply (clarsimp simp add: b_then_has_result many_has_result)
+          apply (insert ws_char_ws_fpc[of \<open>CHR '',''\<close> \<open>()\<close> c2', unfolded fpc_def]; auto)
+          subgoal
+            using I_fpc_no_ws I_no_parse_empty
+                  JsonNameColonObject_no_consume_past_comma[OF I_pngi I_wf I_no_consume_past_comma,
+                        unfolded does_not_consume_past_char3_def, rule_format, of c l \<open>(a,b)\<close> \<open>c2s @ l'\<close>]
+            by fast
+          subgoal
+            using I_fpc_no_ws I_no_parse_empty
+                  JsonNameColonObject_no_consume_past_ws[OF I_pngi I_wf I_no_consume_past_ws,
+                        unfolded does_not_consume_past_char3_def, rule_format, of c2' c l \<open>(a,b)\<close> \<open>c2s @ l'\<close>]
+            by fast
+          subgoal by (clarsimp simp add: NER_simps)
+          done
+        done
+      done
+    done
+  done
 
 lemma JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace:
   assumes I_pngi: "PNGI (parse I)"
