@@ -448,7 +448,7 @@ lemma many_does_not_consume_past_parse_consume:
   assumes I_error_startswith_B_cons: "\<And>c l r l'. has_result (parse B) (c @ l) r l \<Longrightarrow> is_error (parse I) (c @ l')"
 
   assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c@l@l') r (l@l') \<Longrightarrow> has_result (parse I) (c@l) r l"
-  assumes I_dncppc_MI: "does_not_consume_past_parse_consume (parse I) (parse (many I))"
+  assumes I_dncppc_MI_or_B: "does_not_conusme_past_parse_consume_or_if_empty (parse I) (parse (many I)) (parse B)"
 
   shows "does_not_consume_past_parse_consume (parse (many I)) (parse B)"
   apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
@@ -468,7 +468,8 @@ lemma many_does_not_consume_past_parse_consume:
               M_I_pngi[unfolded PNGI_def, rule_format, of l1 rs l]; clarsimp)
         subgoal for cI cMI
           apply (rule exI[of _ \<open>cMI @ c2 @ l'\<close>]; clarsimp)
-          using I_dncppc_MI[unfolded does_not_consume_past_parse_consume_def] by fast
+          by (insert I_dncppc_MI_or_B[unfolded does_not_conusme_past_parse_consume_or_if_empty_def,
+                          rule_format, of cI \<open>cMI@l\<close> r' cMI l rs c2 l2 r2 l' \<open>c2@l'\<close>]; clarsimp split: if_splits)
         done
       done
     done
