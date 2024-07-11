@@ -877,6 +877,11 @@ lemma does_not_consume_past_any_char3_eq_not_peek_past_end:
   unfolding does_not_consume_past_char3_def does_not_peek_past_end_def
   by (metis neq_Nil_conv self_append_conv)
 
+lemma dnppe_implies_dncpc:
+  assumes "does_not_peek_past_end A"
+  shows "does_not_consume_past_char3 A c"
+  using assms does_not_consume_past_any_char3_eq_not_peek_past_end by blast
+
 
 section \<open>Does not consume past consumed by other parser\<close>
 definition does_not_consume_past_parse_consume :: "'a parser \<Rightarrow> 'b parser \<Rightarrow> bool" where
