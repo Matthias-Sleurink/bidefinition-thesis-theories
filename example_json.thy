@@ -1548,9 +1548,9 @@ lemma JsonObject_no_peek_past_end:
   assumes I_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
   assumes I_fpc_no_ws: "\<And>i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
   assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_error_on_empty: "is_error (parse I) []"
   assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse I) (c @ l) r l"
-
-  assumes TEST: "does_not_consume_past_parse_consume (parse (separated_by (ws_char_ws CHR '','') (JsonNameColonObject I) ())) (parse (ws_char CHR ''}''))"
+  assumes I_drop_leftover_on_error: "\<And>i i'. is_error (parse I) (i @ i') \<Longrightarrow> is_error (parse I) i"
 
   shows "does_not_peek_past_end (parse (JsonObject I))"
   unfolding JsonObject_def
@@ -1585,22 +1585,18 @@ lemma JsonObject_no_peek_past_end:
       subgoal for ca' cb' rsb l2 l2'
         apply (rule exI[of _ \<open>cb'@l2'\<close>]; rule conjI)
         subgoal
-          \<comment> \<open>Should probably remove the empty case here.\<close>
-          apply (insert TEST[unfolded does_not_consume_past_parse_consume_def, rule_format, of ca' \<open>cb'@l2\<close> rsb cb' l2 \<open>()\<close> l2']; clarsimp)
-          \<comment> \<open>How do we say that we do not peek past more than one char?\<close>
-          \<comment> \<open>Maybe we adjust this?\<close>
-          thm separated_by_no_consume_past_char
-
-          using JsonNameColonObject_sepByComma_no_consume_past_chars
-          thm separated_by_no_consume_past_char
-          find_theorems separated_by name: "consume"
-          sorry
+          apply (insert JNCO_sepBy_ws_comma_ws_no_consume_past_ws_closing_brace[
+                          OF I_pngi _ I_wf _ I_dncp_c I_dncp_b _ _ I_error_on_empty,
+                          unfolded does_not_consume_past_parse_consume_def, rule_format,
+                          of ca' \<open>cb'@l2\<close> rsb cb' l2 \<open>()\<close> l2']; clarsimp)
+          apply (clarsimp simp add: I_drop_leftover I_dncp_ws I_fpc_no_ws I_drop_leftover_on_error)
+          by (insert I_no_empty_parse; clarsimp)
         subgoal
           using ws_char_does_not_peek_past_end[of \<open>CHR ''}''\<close>, simplified, unfolded does_not_peek_past_end_def, rule_format] by blast
         done
       done
     done
-  oops
+  done
   
 
 abbreviation "betweenSquareBrackets bd \<equiv> takeMiddle (char_ws CHR ''['') bd (ws_char CHR '']'') () ()"
