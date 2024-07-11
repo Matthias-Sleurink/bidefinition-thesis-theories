@@ -2480,6 +2480,15 @@ lemma inductive_Json_no_consume_past_closing_brace:
   assumes J_pngi: "PNGI (parse (J ()))"
   assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
   assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+
+  assumes J_dncp_b: "does_not_consume_past_char3 (parse (J ())) CHR ''}''"
+  assumes J_dncp_b': "does_not_consume_past_char3 (parse (J ())) CHR '']''"
+  assumes J_dncp_c: "does_not_consume_past_char3 (parse (J ())) CHR '',''"
+  assumes J_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse (J ())) c"
+  assumes J_error_on_empty: "is_error (parse (J ())) []"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
+  assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
+
   shows "does_not_consume_past_char3
           (parse
             (transform sum_take_many sum_untake_many
@@ -2543,8 +2552,8 @@ lemma inductive_Json_no_consume_past_closing_brace:
       done
     done
   subgoal
-    \<comment> \<open>I believe we should be able to get does not peek past end for this even.\<close>
-    sorry
+    apply (rule JsonObject_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal for c l r
     \<comment> \<open>If the other Json parsers have result then JsonList can never succeed\<close>
@@ -2592,6 +2601,15 @@ lemma inductive_Json_no_consume_past_ws:
   assumes J_pngi: "PNGI (parse (J ()))"
   assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
   assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+
+  assumes J_dncp_b: "does_not_consume_past_char3 (parse (J ())) CHR ''}''"
+  assumes J_dncp_b': "does_not_consume_past_char3 (parse (J ())) CHR '']''"
+  assumes J_dncp_c: "does_not_consume_past_char3 (parse (J ())) CHR '',''"
+  assumes J_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse (J ())) c"
+  assumes J_error_on_empty: "is_error (parse (J ())) []"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
+  assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
+
   shows "\<forall>c. c \<in> whitespace_chars \<longrightarrow>
           does_not_consume_past_char3
             (parse
@@ -2656,8 +2674,8 @@ lemma inductive_Json_no_consume_past_ws:
       done
     done
   subgoal
-    \<comment> \<open>JsonObject no consume past ws\<close>
-    sorry
+    apply (rule JsonObject_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal for c c' l r
     apply (cases c'; clarsimp)
@@ -2705,6 +2723,15 @@ lemma inductive_Json_no_consume_past_comma:
   assumes J_pngi: "PNGI (parse (J ()))"
   assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
   assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+
+  assumes J_dncp_b: "does_not_consume_past_char3 (parse (J ())) CHR ''}''"
+  assumes J_dncp_b': "does_not_consume_past_char3 (parse (J ())) CHR '']''"
+  assumes J_dncp_c: "does_not_consume_past_char3 (parse (J ())) CHR '',''"
+  assumes J_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse (J ())) c"
+  assumes J_error_on_empty: "is_error (parse (J ())) []"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
+  assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
+
   shows "does_not_consume_past_char3
             (parse
               (transform sum_take_many sum_untake_many
@@ -2767,8 +2794,8 @@ lemma inductive_Json_no_consume_past_comma:
       done
     done
   subgoal
-    \<comment> \<open>JsonObject no consume past comma\<close>
-    sorry
+    apply (rule JsonObject_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal for c' l r
     apply (cases c'; clarsimp)
@@ -2816,6 +2843,15 @@ lemma inductive_Json_no_consume_past_closing_bracket:
   assumes J_pngi: "PNGI (parse (J ()))"
   assumes J_no_result_from_empty: "\<forall>r x. \<not> has_result (parse (J ())) [] r x"
   assumes J_fpc_no_ws: "\<forall>i c. fpc (parse (J ())) i c \<longrightarrow> c \<notin> whitespace_chars"
+
+  assumes J_dncp_b: "does_not_consume_past_char3 (parse (J ())) CHR ''}''"
+  assumes J_dncp_b': "does_not_consume_past_char3 (parse (J ())) CHR '']''"
+  assumes J_dncp_c: "does_not_consume_past_char3 (parse (J ())) CHR '',''"
+  assumes J_dncp_ws: "\<And>c. c \<in>whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse (J ())) c"
+  assumes J_error_on_empty: "is_error (parse (J ())) []"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
+  assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
+
   shows "does_not_consume_past_char3
             (parse
               (transform sum_take_many sum_untake_many
@@ -2878,8 +2914,8 @@ lemma inductive_Json_no_consume_past_closing_bracket:
       done
     done
   subgoal
-    \<comment> \<open>JsonObject no consume past comma\<close>
-    sorry
+    apply (rule JsonObject_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal for c' l r
     apply (cases c'; clarsimp)
