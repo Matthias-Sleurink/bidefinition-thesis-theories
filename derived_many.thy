@@ -440,6 +440,42 @@ lemma many_char_for_predicate_does_not_consume_past_char3:
   done
 
 
+lemma many_does_not_consume_past_parse_consume:
+  assumes I_pngi: "PNGI (parse I)"
+  assumes M_I_pngi: "PNGI (parse (many I))"
+
+  assumes I_error_empty: "is_error (parse I) []"
+  assumes I_error_startswith_B_cons: "\<And>c l r l'. has_result (parse B) (c @ l) r l \<Longrightarrow> is_error (parse I) (c @ l')"
+
+  assumes I_drop_leftover: "\<And>c l l' r. has_result (parse I) (c@l@l') r (l@l') \<Longrightarrow> has_result (parse I) (c@l) r l"
+  assumes I_dncppc_MI: "does_not_consume_past_parse_consume (parse I) (parse (many I))"
+
+  shows "does_not_consume_past_parse_consume (parse (many I)) (parse B)"
+  apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
+  subgoal for c r l l' c2 r2 l2
+    apply (induction r arbitrary: c)
+    subgoal by (clarsimp simp add: NER_simps I_error_empty I_error_startswith_B_cons)
+    subgoal for r' rs c
+      apply (auto simp add: NER_simps)
+      subgoal for l1
+        apply (insert I_pngi[unfolded PNGI_def, rule_format, of \<open>c@l\<close> r' l1]
+              M_I_pngi[unfolded PNGI_def, rule_format, of l1 rs l]; clarsimp)
+        subgoal for cI cMI
+          by (rule exI[of _ cMI]; clarsimp simp add: I_drop_leftover)
+        done
+      subgoal for l1
+        apply (insert I_pngi[unfolded PNGI_def, rule_format, of \<open>c@l\<close> r' l1]
+              M_I_pngi[unfolded PNGI_def, rule_format, of l1 rs l]; clarsimp)
+        subgoal for cI cMI
+          apply (rule exI[of _ \<open>cMI @ c2 @ l'\<close>]; clarsimp)
+          using I_dncppc_MI[unfolded does_not_consume_past_parse_consume_def] by fast
+        done
+      done
+    done
+  done
+
+
+
 lemma many_does_not_consume_past_char3:
   assumes I_pngi: "PNGI (parse I)"
   assumes M_I_pngi: "PNGI (parse (many I))"
