@@ -35,6 +35,13 @@ lemma ws_char_ws_has_result[NER_simps]:
   apply (auto simp add: ws_char_ws_def NER_simps whitespace_char_def any_from_set_def)
   by (metis dropWhile_eq_Nil_conv hd_Cons_tl)
 
+lemma ws_char_ws_same_leftover:
+  "has_result (parse (ws_char_ws c)) i r i \<Longrightarrow> False"
+  apply (subgoal_tac \<open>PASI (parse (ws_char_ws c))\<close>; clarsimp)
+  subgoal using PASI_def by fast
+  subgoal unfolding ws_char_ws_def by pasi_pngi
+  done
+
 lemma ws_char_ws_has_result_implies_leftover_head:
   assumes "has_result (parse (ws_char_ws c)) i r l"
   shows "case l of [] \<Rightarrow> True | (l'#ls) \<Rightarrow> l' \<notin> whitespace_chars"
