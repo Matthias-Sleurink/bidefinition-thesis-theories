@@ -1597,7 +1597,37 @@ lemma JsonObject_no_peek_past_end:
       done
     done
   done
-  
+
+lemma JsonObject_drop_leftover:
+  assumes J_pngi: "PNGI (parse J)"
+  shows "has_result (parse (JsonObject J)) (c @ c' @ l) r (c' @ l)
+             \<Longrightarrow> has_result (parse (JsonObject J)) (c @ c') r c'"
+  unfolding JsonObject_def
+  apply (clarsimp simp add: ftransform_has_result)
+  unfolding takeMiddle_def
+  subgoal for r'
+    apply (rule transform_can_drop_leftover[of _ _ _ c c' l r']; assumption?)
+    subgoal for ca la la' ra
+      apply (rule then_can_drop_leftover[of _ _ ca la la' ra]; assumption?)
+      subgoal using char_ws_can_drop_past_lefover[of \<open>CHR ''{''\<close>] by force
+      subgoal by pasi_pngi
+      subgoal for cb lb lb' rb
+        apply (rule then_can_drop_leftover[of _ _ cb lb lb' rb]; assumption?)
+        subgoal for cc lc lc' rc
+          \<comment> \<open>Probably want to do a rule in that file.\<close>
+          using separated_by_def
+          
+          sorry
+        subgoal using J_pngi by pasi_pngi
+        subgoal using ws_char_can_drop_past_leftover[of \<open>CHR ''}''\<close>] by force
+        subgoal by pasi_pngi
+        done
+      subgoal using J_pngi by pasi_pngi
+      done
+    done
+  oops
+
+
 
 abbreviation "betweenSquareBrackets bd \<equiv> takeMiddle (char_ws CHR ''['') bd (ws_char CHR '']'') () ()"
 definition JsonList :: "JSON bidef \<Rightarrow> JSON bidef" where
@@ -3380,7 +3410,8 @@ lemma inductive_Json_drop_past_leftover:
   subgoal by (rule JsonNumber_can_drop_leftover_on_error2)
 
   apply (rule or_can_drop_leftover; assumption?)
-  subgoal \<comment> \<open>JsonObject can drop leftover\<close>
+  subgoal for _ _ _ _ _ _ _ _ _ _ _ _ c c' l r \<comment> \<open>JsonObject can drop leftover\<close>
+    
     sorry
   subgoal \<comment> \<open>JsonObject can drop lefter on error\<close>
     sorry
