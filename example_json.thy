@@ -1749,6 +1749,389 @@ lemma Json_sepBy_ws_comma_ws_no_consume_past_closing_bracket:
     by (insert ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> c, simplified]; clarsimp simp add: J_fpc_no_ws)
   done
 
+lemma many_comma_then_I_wf:
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_error_on_empty: "is_error (parse I) []"
+  assumes I_fpci_no_ws: "\<And> i c. first_printed_chari (print I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  shows "bidef_well_formed (many (b_then (ws_char_ws CHR '','') I))"
+  apply (rule wf_many_then)
+        apply (auto simp add: I_wf ws_char_ws_well_formed I_error_on_empty ws_char_ws_PASI NER_simps)
+  subgoal for i c
+    by (insert I_fpci_no_ws[of i c]; clarsimp simp add: ws_char_ws_does_not_consume_past_char3)
+  subgoal for b c
+    apply (clarsimp simp add: fpci_simps print_empty)
+    apply (rule then_does_not_consume_past3)
+    by (auto simp add: ws_char_ws_well_formed I_wf I_dncp_comma I_no_empty_parse I_fpc_no_ws
+                      ws_char_ws_does_not_consume_past_char3)
+  done
+
+lemma I_sepBy_comma_no_peek_past_closing_bracket:
+  assumes I_error_on_empty: "is_error (parse I) []"
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_error_on_close_bracket: "\<And>l. is_error (parse I) (CHR '']'' # l)"
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_dncpc_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_fpci_no_ws: "\<And> i c. first_printed_chari (print I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+
+  shows "does_not_consume_past_char3 (parse (separated_by (ws_char_ws CHR '','') I ())) CHR '']''"
+  apply (rule separated_by_no_consume_past_char)
+              apply (auto simp add: I_error_on_empty I_error_on_close_bracket I_wf I_dncp_closing_bracket I_drop_leftover)
+  subgoal by (rule many_comma_then_I_wf; clarsimp simp add: assms)
+  subgoal for i c
+    apply (cases i; clarsimp simp add: many_fpc_nil)
+    subgoal for i' iss
+      apply (clarsimp simp add: fpc_def many_has_result_safe(2) b_then_has_result)
+      subgoal for cs l
+        apply (insert ws_char_ws_fpc[of \<open>CHR '',''\<close> \<open>()\<close> c, unfolded fpc_def, simplified]; auto)
+        subgoal by (rule I_dncp_comma)
+        subgoal by (rule I_dncpc_ws)
+        subgoal by (metis dropWhile_eq_self_iff list.sel(1) ws_char_ws_has_result)
+        done
+      done
+    done
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by pasi_pngi
+  subgoal using I_pngi by pasi_pngi
+  subgoal by (rule ws_char_ws_can_drop_past_leftover)
+  subgoal by (clarsimp simp add: I_fpc_no_ws ws_char_ws_does_not_consume_past_char3)
+  done
+
+lemma hr_ws_char_implies_error_ws_char_ws_other_char:
+  assumes "C1 \<noteq> C2"
+  shows "has_result (parse (ws_char C1)) (c @ l) r l \<Longrightarrow> is_error (parse (ws_char_ws C2)) (c @ l')"
+  apply (auto simp add: NER_simps)
+  subgoal for x tla
+    by (metis assms dropWhile_eq_Nil_conv hd_append list.sel(1))
+  subgoal for x tla 
+    by (smt (verit, best) assms dropWhile_append dropWhile_eq_Nil_conv hd_Cons_tl hd_append2 impossible_Cons length_dropWhile_le list.sel(1))
+  done
+
+
+lemma comma_then_I_can_drop_leftover:
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_pngi: "PNGI (parse I)"
+  shows "has_result (parse (b_then (ws_char_ws CHR '','') I)) (c @ l @ l') r (l @ l')
+           \<Longrightarrow> has_result (parse (b_then (ws_char_ws CHR '','') I)) (c @ l) r l"
+  apply (rule then_can_drop_leftover; assumption?)
+  subgoal by (rule ws_char_ws_can_drop_past_leftover)
+  subgoal by pasi_pngi
+  subgoal by (rule I_drop_leftover)
+  subgoal by (rule I_pngi)
+  done
+
+lemma ws_char_ws_does_not_consume_past_I:
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  shows "does_not_consume_past_parse_consume (parse (ws_char_ws CHR '','')) (parse I)"
+  apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
+  subgoal for c l l' c2 r2 l2
+    apply (rule conjI)
+    subgoal by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR '',''\<close> c \<open>[]\<close> l, simplified])
+    subgoal
+      apply (cases c2; clarsimp)
+      subgoal
+        apply (insert I_drop_leftover[of \<open>[]\<close> \<open>[]\<close> l2 r2, simplified]; clarsimp)
+        using I_no_empty_parse by fast
+      subgoal for c2' c2s
+        using ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> c2', unfolded does_not_consume_past_char3_def, simplified]
+              I_fpc_no_ws[of r2 c2', unfolded fpc_def]
+        by blast
+      done
+    done
+  done
+
+lemma I_no_peek_past_parse_consume_of_closing_bracket:
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  shows "does_not_consume_past_parse_consume (parse I) (parse (ws_char CHR '']''))"
+  apply (clarsimp simp add: does_not_consume_past_parse_consume_def)
+  subgoal for c r l l' c2 l2
+    apply (rule conjI)
+    subgoal by (rule I_drop_leftover[of c \<open>[]\<close> l r, simplified])
+    apply (cases c2; clarsimp)
+    subgoal using ws_char_no_result_same_leftover by blast
+    subgoal for c2' c2s
+      apply (insert ws_char_fpc[of \<open>CHR '']''\<close> \<open>()\<close> c2', unfolded fpc_def, simplified]; auto)
+      subgoal by (auto simp add: I_dncp_closing_bracket[unfolded does_not_consume_past_char3_def])
+      subgoal by (auto simp add: I_dncp_ws[unfolded does_not_consume_past_char3_def])
+      done
+    done
+  done
+
+
+lemma comma_then_I_no_consume_past_parse_of_closing_bracket:
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  shows "does_not_consume_past_parse_consume (parse (b_then (ws_char_ws CHR '','') I)) (parse (ws_char CHR '']''))"
+  apply (rule then_does_not_consume_past_parse_consume)
+  subgoal by (rule ws_char_ws_can_drop_past_leftover)
+  subgoal by (rule I_drop_leftover)
+  subgoal by pasi_pngi
+  subgoal by (rule I_pngi)
+  subgoal by (rule ws_char_ws_does_not_consume_past_I; auto simp add: assms)
+  subgoal by (rule I_no_peek_past_parse_consume_of_closing_bracket; auto simp add: assms)
+  done
+
+
+lemma comma_then_I_no_consume_past_many_comma_I_or_closing_bracket_if_empty:
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  shows "does_not_conusme_past_parse_consume_or_if_empty (parse (b_then (ws_char_ws CHR '','') I)) (parse (many (b_then (ws_char_ws CHR '','') I))) (parse (ws_char CHR '']''))"
+  apply (auto simp add: does_not_conusme_past_parse_consume_or_if_empty_def)
+  subgoal for c b l c2 r2 l2 c3 l3
+    apply (rule then_can_drop_leftover[of _ _ c \<open>[]\<close> l \<open>((), b)\<close>, simplified]; assumption?)
+    subgoal by (rule ws_char_ws_can_drop_past_leftover)
+    subgoal by pasi_pngi
+    subgoal by (rule I_drop_leftover)
+    subgoal by (rule I_pngi)
+    done
+  subgoal for c b l r2 l2 c3 l3 l'
+    using comma_then_I_no_consume_past_parse_of_closing_bracket[unfolded does_not_consume_past_parse_consume_def,
+                    rule_format, of I c l \<open>((), b)\<close> c3 l3 \<open>()\<close> l'] assms
+    by blast
+  subgoal for c b l c2 r2 l2 c3 l3 l''    
+    apply (clarsimp simp add: b_then_has_result)
+    subgoal for l'
+      apply (insert ws_char_ws_PNGI[of \<open>CHR '',''\<close>, unfolded PNGI_def, rule_format, of \<open>c@l\<close> \<open>()\<close> l']
+                    I_pngi[unfolded PNGI_def, rule_format, of l' b l]; clarsimp)
+      subgoal for cWs cI
+        apply (cases cI; clarsimp)
+        subgoal using I_drop_leftover[of \<open>[]\<close> \<open>[]\<close> l b, simplified] I_no_empty_parse by blast
+        subgoal for cI' cIs
+          apply (rule exI[of _ \<open>cI' # cIs @ c2 @ l''\<close>]; rule conjI)
+          subgoal
+            using ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> cI',
+                    unfolded does_not_consume_past_char3_def, simplified, rule_format]
+            using I_fpc_no_ws[of b cI', unfolded fpc_def] by blast
+          subgoal
+            apply (cases r2; clarsimp)
+            subgoal by (clarsimp simp add: NER_simps)
+            subgoal for r2' r2s
+              apply (clarsimp simp add: many_has_result_safe b_then_has_result)
+              subgoal for lW lI
+                apply (cases c2; clarsimp) \<comment> \<open>Empty case dropped by assms from initial rule above\<close>
+                subgoal for c2' c2s
+                  apply (insert ws_char_ws_fpc[of \<open>CHR '',''\<close> \<open>()\<close> c2', unfolded fpc_def, simplified])
+                  apply auto
+                  subgoal
+                    using I_dncp_comma[unfolded does_not_consume_past_char3_def, rule_format, of \<open>cI' # cIs\<close> l b \<open>c2s @ l''\<close>]
+                    by force
+                  subgoal 
+                    using I_dncp_ws[of c2', unfolded does_not_consume_past_char3_def, rule_format, of \<open>cI' # cIs\<close> l b \<open>c2s @ l''\<close>] 
+                    by force
+                  subgoal by (metis dropWhile_eq_self_iff list.sel(1) ws_char_ws_has_result)
+                  done
+                done
+              done
+            done
+          done
+        done
+      done
+    done
+  done
+
+lemma many_comma_then_I_no_peek_past_parse_of_closing_bracket:
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  shows "does_not_consume_past_parse_consume (parse (many (b_then (ws_char_ws CHR '','') I))) (parse (ws_char CHR '']''))"
+  apply (rule many_does_not_consume_past_parse_consume)
+  subgoal using I_pngi by pasi_pngi
+  subgoal using I_pngi by pasi_pngi
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal for c l r l'
+    apply (rule b_then_is_error_from_first)
+    by (rule hr_ws_char_implies_error_ws_char_ws_other_char; auto)
+  subgoal for c l l' r
+    apply (rule comma_then_I_can_drop_leftover; assumption?)
+    subgoal by (rule I_drop_leftover)
+    subgoal by (rule I_pngi)
+    done
+  apply (rule comma_then_I_no_consume_past_many_comma_I_or_closing_bracket_if_empty)
+  by (auto simp add: assms)
+
+
+lemma I_sepBy_comma_then_closing_bracket_no_peek_past_end:
+  assumes I_error_on_empty: "is_error (parse I) []"
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_fpci_no_ws: "\<And> i c. first_printed_chari (print I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+
+
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_drop_leftover_on_error: "\<And>i i'. is_error (parse I) (i @ i') \<Longrightarrow> is_error (parse I) i"
+  assumes I_error_on_close_bracket: "\<And>l. is_error (parse I) (CHR '']'' # l)"
+  assumes I_error_on_ws: "\<And>c l. c \<in>whitespace_chars \<Longrightarrow> is_error (parse I) (c # l)"
+
+  shows "does_not_peek_past_end (parse (b_then (separated_by (ws_char_ws CHR '','') I ()) (ws_char CHR '']'')))"
+  apply (rule then_does_not_peek_past_end_with_inner_conflict; clarsimp?)
+  subgoal using I_pngi by pasi_pngi
+  subgoal by pasi_pngi
+  subgoal for ca cl a l l''
+    apply (rule exI[of _ \<open>cl @ l''\<close>]; rule conjI)
+    subgoal
+      apply (cases a; clarsimp)
+      subgoal
+        apply (clarsimp simp add: separated_by_has_result_safe_Nil)
+        apply (cases cl; clarsimp)
+        subgoal using ws_char_no_result_same_leftover by force
+        subgoal for cl' cls
+          apply (insert ws_char_fpc[of \<open>CHR '']''\<close> \<open>()\<close> cl', unfolded fpc_def, simplified])
+          by (auto simp add: I_error_on_close_bracket I_error_on_ws)
+        done
+      subgoal for a' as
+        apply (clarsimp simp add: separated_by_has_result_safe_Cons)
+        subgoal for lI
+          apply (insert I_pngi[unfolded PNGI_def, rule_format, of \<open>ca@cl@l\<close> a' lI])
+          apply (insert many_PNGI[OF then_PASI_from_pasi_pngi, OF ws_char_ws_PASI I_pngi,
+                            unfolded PNGI_def, rule_format, of \<open>CHR '',''\<close> lI \<open>zip (replicate (length as) ()) as\<close> \<open>cl@l\<close>])
+          apply clarsimp
+          subgoal for cI cMCI
+            apply (rule exI[of _ \<open>cMCI @ cl @ l''\<close>]; rule conjI)
+            subgoal
+              apply (cases as; clarsimp simp add: many_has_result_safe)
+              subgoal
+                apply (cases cl; clarsimp simp add: ws_char_no_result_same_leftover)
+                subgoal for cl' cls
+                  apply (insert ws_char_fpc[of \<open>CHR '']''\<close> \<open>()\<close> cl', unfolded fpc_def, simplified])
+                  by (auto simp add: I_dncp_closing_bracket[unfolded does_not_consume_past_char3_def]
+                                     I_dncp_ws[unfolded does_not_consume_past_char3_def])
+                done
+              subgoal for as' ass lCTI
+                apply (clarsimp simp add: b_then_has_result)
+                subgoal for lC
+                  apply (insert ws_char_ws_PNGI[of \<open>CHR '',''\<close>, unfolded PNGI_def, rule_format, of \<open>cMCI@cl@l\<close> \<open>()\<close> lC])
+                  apply (insert I_pngi[unfolded PNGI_def, rule_format, of lC as' lCTI])
+                  apply (insert many_PNGI[OF then_PASI_from_pasi_pngi, OF ws_char_ws_PASI I_pngi,
+                            unfolded PNGI_def, rule_format, of \<open>CHR '',''\<close> lCTI \<open>zip (replicate (length ass) ()) ass\<close> \<open>cl@l\<close>])
+                  apply clarsimp
+                  subgoal for cC cI' cMTI'
+                    apply (cases cC; clarsimp)
+                    subgoal using ws_char_ws_same_leftover[of \<open>CHR '',''\<close>] by fast
+                    subgoal for cC' cCs
+                      apply (insert ws_char_ws_fpc[of \<open>CHR '',''\<close> \<open>()\<close> cC', unfolded fpc_def, simplified])
+                      by (auto simp add: I_dncp_comma[unfolded does_not_consume_past_char3_def]
+                                     I_dncp_ws[unfolded does_not_consume_past_char3_def])
+                    done
+                  done
+                done
+              done
+            subgoal
+              apply (rule many_comma_then_I_no_peek_past_parse_of_closing_bracket[of I,
+                        unfolded does_not_consume_past_parse_consume_def, rule_format,
+                        of cMCI \<open>cl@l\<close> \<open>zip (replicate (length as) ()) as\<close> cl l \<open>()\<close> l'',
+                        THEN conjunct2]; clarsimp?)
+              apply (auto simp add: assms)
+              using I_no_empty_parse by fast
+            done
+          done
+        done
+      done
+    subgoal
+      using ws_char_does_not_peek_past_end[of \<open>CHR '']''\<close>, simplified, unfolded does_not_peek_past_end_def]
+      by blast
+    done
+  done
+
+
+lemma JsonList_no_peek_past_end:
+  assumes I_error_on_empty: "is_error (parse I) []"
+  assumes I_wf: "bidef_well_formed I"
+  assumes I_fpci_no_ws: "\<And> i c. first_printed_chari (print I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+
+  assumes I_no_empty_parse: "\<nexists>r l. has_result (parse I) [] r l"
+  assumes I_dncp_closing_bracket: "does_not_consume_past_char3 (parse I) CHR '']''"
+  assumes I_dncp_comma: "does_not_consume_past_char3 (parse I) CHR '',''"
+  assumes I_dncp_ws: "\<And>c. c \<in> whitespace_chars \<Longrightarrow> does_not_consume_past_char3 (parse I) c"
+  assumes I_fpc_no_ws: "\<And> i c. fpc (parse I) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes I_pngi: "PNGI (parse I)"
+  assumes I_drop_leftover: "\<And>c c' l a. has_result (parse I) (c @ c' @ l) a (c' @ l) \<Longrightarrow> has_result (parse I) (c @ c') a c'"
+  assumes I_drop_leftover_on_error: "\<And>i i'. is_error (parse I) (i @ i') \<Longrightarrow> is_error (parse I) i"
+  assumes I_error_on_close_bracket: "\<And>l. is_error (parse I) (CHR '']'' # l)"
+  assumes I_error_on_ws: "\<And>c l. c \<in>whitespace_chars \<Longrightarrow> is_error (parse I) (c # l)"
+
+  shows "does_not_peek_past_end (parse (JsonList I))"
+  unfolding JsonList_def
+  apply (rule ftrans_does_not_peek_past_end)
+  unfolding takeMiddle_def
+  apply (rule transform_does_not_peek_past_end)
+  apply (rule then_does_not_peek_past_end_with_inner_conflict)
+  subgoal by pasi_pngi
+  subgoal using I_pngi by pasi_pngi
+  subgoal for ca cb ra l rb l'
+    apply (rule exI[of _ \<open>cb @ l'\<close>]; clarsimp; rule conjI)
+    subgoal
+      apply (clarsimp simp add: b_then_has_result)
+      subgoal for lsepby
+        apply (cases \<open>fst rb\<close>; clarsimp)
+        subgoal
+          apply (clarsimp simp add: separated_by_has_result_safe_Nil)
+          apply (cases cb; clarsimp)
+          subgoal using ws_char_no_result_same_leftover[of _ l] by fast
+          by (clarsimp simp add: NER_simps)
+        subgoal for rb' rbs
+          apply (clarsimp simp add: separated_by_has_result_safe_Cons)
+          subgoal for lI
+            apply (insert I_pngi[unfolded PNGI_def, rule_format, of \<open>cb@l\<close> rb' lI]; clarsimp)
+            subgoal for cI
+              apply (cases cI; clarsimp)
+              subgoal
+                apply (insert I_drop_leftover[of \<open>[]\<close> \<open>[]\<close> \<open>cb@l\<close> rb', simplified]; clarsimp)
+                using I_error_on_empty is_error_implies_not_has_result by blast
+              subgoal for cI' cIs
+                apply (insert I_fpc_no_ws[of rb' cI', unfolded fpc_def, OF exI[of _ cIs], OF exI[of _ lI]]; clarsimp)
+                apply (insert many_PNGI[OF then_PASI_from_pasi_pngi, OF ws_char_ws_PASI I_pngi, of \<open>CHR '',''\<close>,
+                                unfolded PNGI_def, rule_format, of lI \<open>zip (replicate (length rbs) ()) rbs\<close> lsepby])
+                apply (insert ws_char_PNGI[of \<open>CHR '']''\<close>, unfolded PNGI_def, rule_format, of lsepby \<open>()\<close> l])
+                apply clarsimp
+                subgoal for cSebBy cClose
+                  using char_ws_does_not_consume_past_char3_rev[of cI' \<open>CHR ''[''\<close>, unfolded does_not_consume_past_char3_def]
+                  by fast
+                done
+              done
+            done
+          done
+        done
+      done
+    subgoal
+      apply (rule I_sepBy_comma_then_closing_bracket_no_peek_past_end[of I,
+                  unfolded does_not_peek_past_end_def, rule_format, of cb l rb l']; assumption?)
+      by (auto simp add: assms)
+    done
+  done
+
+
+
 lemma wf_JsonList:
   assumes J_wf: "bidef_well_formed J"
   assumes J_error_empty: "is_error (parse J) []"
@@ -2489,6 +2872,10 @@ lemma inductive_Json_no_consume_past_closing_brace:
   assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
   assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
 
+  assumes J_fpci_no_ws: "\<And> i c. first_printed_chari (print (J ())) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_error_on_close_bracket: "\<And>l. is_error (parse (J ())) (CHR '']'' # l)"
+  assumes J_error_on_ws: "\<And>c l. c \<in>whitespace_chars \<Longrightarrow> is_error (parse (J ())) (c # l)"
+
   shows "does_not_consume_past_char3
           (parse
             (transform sum_take_many sum_untake_many
@@ -2576,8 +2963,8 @@ lemma inductive_Json_no_consume_past_closing_brace:
       done
     done
   subgoal
-    \<comment> \<open>I believe we should be able to get does not peek past end for this even.\<close>
-    sorry
+    apply (rule JsonList_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc, of \<open>CHR ''}''\<close>])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal by (rule JsonTrue_can_drop_leftover_on_error)
   subgoal for c by (cases c; clarsimp simp add: NER_simps JsonFalse_def JsonNull_def split: sum.splits)
@@ -2593,7 +2980,7 @@ lemma inductive_Json_no_consume_past_closing_brace:
   subgoal
     using JsonNull_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
     by blast
-  oops
+  done
 
 
 lemma inductive_Json_no_consume_past_ws:
@@ -2609,6 +2996,10 @@ lemma inductive_Json_no_consume_past_ws:
   assumes J_error_on_empty: "is_error (parse (J ())) []"
   assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
   assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
+
+  assumes J_fpci_no_ws: "\<And> i c. first_printed_chari (print (J ())) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_error_on_close_bracket: "\<And>l. is_error (parse (J ())) (CHR '']'' # l)"
+  assumes J_error_on_ws: "\<And>c l. c \<in>whitespace_chars \<Longrightarrow> is_error (parse (J ())) (c # l)"
 
   shows "\<forall>c. c \<in> whitespace_chars \<longrightarrow>
           does_not_consume_past_char3
@@ -2698,8 +3089,8 @@ lemma inductive_Json_no_consume_past_ws:
       done
     done
   subgoal
-    \<comment> \<open>JsonList no consume past ws\<close>
-    sorry
+    apply (rule JsonList_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal by (rule JsonTrue_can_drop_leftover_on_error)
   subgoal for c by (cases c; clarsimp simp add: NER_simps JsonFalse_def JsonNull_def split: sum.splits)
@@ -2715,7 +3106,7 @@ lemma inductive_Json_no_consume_past_ws:
   subgoal
     using JsonNull_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
     by blast
-  oops
+  done
 
 
 lemma inductive_Json_no_consume_past_comma:
@@ -2731,6 +3122,10 @@ lemma inductive_Json_no_consume_past_comma:
   assumes J_error_on_empty: "is_error (parse (J ())) []"
   assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
   assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
+
+  assumes J_fpci_no_ws: "\<And> i c. first_printed_chari (print (J ())) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_error_on_close_bracket: "\<And>l. is_error (parse (J ())) (CHR '']'' # l)"
+  assumes J_error_on_ws: "\<And>c l. c \<in>whitespace_chars \<Longrightarrow> is_error (parse (J ())) (c # l)"
 
   shows "does_not_consume_past_char3
             (parse
@@ -2818,8 +3213,8 @@ lemma inductive_Json_no_consume_past_comma:
       done
     done
   subgoal
-    \<comment> \<open>JsonList no consume past comma\<close>
-    sorry
+    apply (rule JsonList_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc, of \<open>CHR '',''\<close>])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal by (rule JsonTrue_can_drop_leftover_on_error)
   subgoal for c by (cases c; clarsimp simp add: NER_simps JsonFalse_def JsonNull_def split: sum.splits)
@@ -2835,7 +3230,7 @@ lemma inductive_Json_no_consume_past_comma:
   subgoal
     using JsonNull_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
     by blast
-  oops
+  done
 
 
 lemma inductive_Json_no_consume_past_closing_bracket:
@@ -2851,6 +3246,10 @@ lemma inductive_Json_no_consume_past_closing_bracket:
   assumes J_error_on_empty: "is_error (parse (J ())) []"
   assumes J_drop_leftover: "\<And>c l l' r. has_result (parse (J ())) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse (J ())) (c @ l) r l"
   assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse (J ())) (i @ i') \<Longrightarrow> is_error (parse (J ())) i"
+
+  assumes J_fpci_no_ws: "\<And> i c. first_printed_chari (print (J ())) i c \<Longrightarrow> c \<notin> whitespace_chars"
+  assumes J_error_on_close_bracket: "\<And>l. is_error (parse (J ())) (CHR '']'' # l)"
+  assumes J_error_on_ws: "\<And>c l. c \<in>whitespace_chars \<Longrightarrow> is_error (parse (J ())) (c # l)"
 
   shows "does_not_consume_past_char3
             (parse
@@ -2938,8 +3337,8 @@ lemma inductive_Json_no_consume_past_closing_bracket:
       done
     done
   subgoal
-    \<comment> \<open>JsonList no consume past comma\<close>
-    sorry
+    apply (rule JsonList_no_peek_past_end[of \<open>J ()\<close>, THEN dnppe_implies_dncpc, of \<open>CHR '']''\<close>])
+    by (auto simp add: assms)
   apply (rule or_no_consume_past_char[rotated, rotated])
   subgoal by (rule JsonTrue_can_drop_leftover_on_error)
   subgoal for c by (cases c; clarsimp simp add: NER_simps JsonFalse_def JsonNull_def split: sum.splits)
@@ -2955,7 +3354,7 @@ lemma inductive_Json_no_consume_past_closing_bracket:
   subgoal
     using JsonNull_no_peek_past_end does_not_consume_past_any_char3_eq_not_peek_past_end
     by blast
-  oops
+  done
 
 
 
@@ -3066,15 +3465,19 @@ lemma Json_well_formed:
     subgoal using inductive_Json_no_empty_result by blast
     subgoal by (rule inductive_Json_fpc_not_ws)
     subgoal
+      using inductive_Json_no_consume_past_closing_brace
       \<comment> \<open>Does not consume past closing brace\<close>
       sorry
     subgoal
+      using inductive_Json_no_consume_past_ws
       \<comment> \<open>Does not consume past whitespace chars\<close>
       sorry
     subgoal
+      using inductive_Json_no_consume_past_comma
       \<comment> \<open>Does not consume past comma\<close>
       sorry
     subgoal
+      using inductive_Json_no_consume_past_closing_bracket
       \<comment> \<open>Does not consume past closing bracket\<close>
       sorry
     subgoal
