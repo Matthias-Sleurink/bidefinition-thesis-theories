@@ -2518,6 +2518,7 @@ partial_function (bd) JsonR :: "unit \<Rightarrow> JSON bidef" where
             (or JsonFalse
                 JsonNull
              ))))))"
+print_theorems
 abbreviation "Json \<equiv> JsonR ()"
 
 \<comment> \<open>Note that this is not provable using the induction method as the bottom type does not error on empty.\<close>
@@ -3450,6 +3451,9 @@ lemma inductive_Json_drop_past_leftover:
   \<forall>l. is_error (parse (J ())) (CHR '']'' # l)
   are not possible using the induction rule because the bottom parser always nonterms.
   We can prove both of these for JSON, but how do we include that in this proof?
+
+  
+  assumes I_error_on_empty: "\<exists>i. \<not>is_nonterm (parse I) i \<Longrightarrow> is_error (parse I) []"
   
 \<close>
 \<comment> \<open>We can use this but then the assms require us to prove is_error [] from nothing.\<close>
@@ -3461,6 +3465,39 @@ lemma drop_the_is_error_part:
   apply (insert assms)
   by (auto simp add: is_error_def)
 
+
+lemma admissible_not_nonterm_means_error_empty:
+  "bd.admissible (\<lambda>JsonR. (\<exists>i. \<not> is_nonterm (parse (JsonR ())) i \<longrightarrow> is_error (parse (JsonR ())) []))"
+  apply (clarsimp simp add: is_nonterm_def is_error_def)
+  find_theorems bd.admissible
+  oops
+
+
+lemma admissible_exist_result_means_error_empty[cont_intro]:
+  "bd.admissible (\<lambda>JsonR. (\<exists>i r l. has_result (parse (JsonR ())) i r l \<longrightarrow> is_error (parse (JsonR ())) []))"
+  apply (clarsimp simp add: has_result_def is_error_def)
+  
+  oops
+
+
+lemma admissible_exist_error_means_error_empty[cont_intro]:
+  "bd.admissible (\<lambda>JsonR. (\<exists>i. is_error (parse (JsonR ())) i \<longrightarrow> is_error (parse (JsonR ())) []))"
+  by clarsimp
+
+
+find_theorems name: fixp name: induct name: stron
+
+
+term Json
+thm JsonR.simps[of "()"]
+
+
+
+
+
+lemma bottom_nonterm:
+  "is_nonterm (\<lambda>a. None) i"
+  by (clarsimp simp add: is_nonterm_def)
 
 \<comment> \<open>Definitely write in the thesis that this process is shit.\<close>
 \<comment> \<open>It would be amazing if we could create some sort of "state" that all proofs for these inner things are in,\<close>
@@ -3477,13 +3514,14 @@ lemma Json_well_formed:
   \<and> (does_not_consume_past_char3 (parse Json) CHR '','')
   \<and> (does_not_consume_past_char3 (parse Json) CHR '']'')
   \<and> (\<forall>c l l' r. has_result (parse Json) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse Json) (c @ l) r l)
+  
 "
   apply (induction rule: JsonR.fixp_induct)
   subgoal
     by clarsimp
   subgoal
     apply (clarsimp simp add: strict_WF strict_PNGI)
-    using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3 bottom_drop_past_leftover
+    using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3 bottom_drop_past_leftover bottom_nonterm
     by fast
   subgoal for J
     apply clarsimp
