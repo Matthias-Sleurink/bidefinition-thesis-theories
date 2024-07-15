@@ -620,8 +620,15 @@ lemma JsonNameColonObject_drop_leftover_on_error:
     subgoal by (clarsimp simp add: NER_simps)
     subgoal for i3' l3
       apply (insert result_of_ws_char_ws_from_c_must_be_empty[of i3' \<open>CHR '':''\<close> i2 l3 \<open>()\<close>]; clarsimp)
-      using I_error_empty
-      by (metis (full_types) has_result_exhaust(2) old.unit.exhaust ws_char_ws_is_nonterm)
+      apply (subgoal_tac \<open>\<exists>i. \<not>is_nonterm (parse I) i\<close>)
+      subgoal
+        using I_error_empty
+        by (metis (full_types) has_result_exhaust(2) old.unit.exhaust ws_char_ws_is_nonterm)
+      subgoal
+        apply (rule exI[of _ l3])
+        using is_error_def[of \<open>parse I\<close>] is_nonterm_def[of \<open>parse I\<close>]
+        by force
+      done
     subgoal by (rule ws_char_ws_can_drop_past_leftover)
     subgoal by (rule I_drop_leftover_on_error)
     done
@@ -2007,7 +2014,6 @@ lemma many_comma_then_I_no_peek_past_parse_of_closing_bracket:
 
 
 lemma I_sepBy_comma_then_closing_bracket_no_peek_past_end:
-  assumes I_error_on_empty: "is_error (parse I) []"
   assumes I_wf: "bidef_well_formed I"
   assumes I_fpci_no_ws: "\<And> i c. first_printed_chari (print I) i c \<Longrightarrow> c \<notin> whitespace_chars"
 
@@ -2093,9 +2099,8 @@ lemma I_sepBy_comma_then_closing_bracket_no_peek_past_end:
     done
   done
 
-
 lemma JsonList_no_peek_past_end:
-  assumes I_error_on_empty: "is_error (parse I) []"
+  assumes I_error_on_empty: "\<exists>i. \<not>is_nonterm (parse I) i \<Longrightarrow> is_error (parse I) []"
   assumes I_wf: "bidef_well_formed I"
   assumes I_fpci_no_ws: "\<And> i c. first_printed_chari (print I) i c \<Longrightarrow> c \<notin> whitespace_chars"
 
@@ -2137,7 +2142,9 @@ lemma JsonList_no_peek_past_end:
               apply (cases cI; clarsimp)
               subgoal
                 apply (insert I_drop_leftover[of \<open>[]\<close> \<open>[]\<close> \<open>cb@l\<close> rb', simplified]; clarsimp)
-                using I_error_on_empty is_error_implies_not_has_result by blast
+                using I_error_on_empty[OF exI[of _ \<open>[]\<close>], OF has_result_implies_not_is_nonterm]
+                      is_error_implies_not_has_result
+                by blast
               subgoal for cI' cIs
                 apply (insert I_fpc_no_ws[of rb' cI', unfolded fpc_def, OF exI[of _ cIs], OF exI[of _ lI]]; clarsimp)
                 apply (insert many_PNGI[OF then_PASI_from_pasi_pngi, OF ws_char_ws_PASI I_pngi, of \<open>CHR '',''\<close>,
