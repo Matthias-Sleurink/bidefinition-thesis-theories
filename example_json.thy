@@ -250,6 +250,10 @@ definition JsonString :: "JSON bidef" where
                   | _ \<Rightarrow> None)
                  str_literal"
 
+lemma fpci_JsonString[fpci_simps]:
+  "first_printed_chari (print JsonString) i c \<Longrightarrow> c = quot_chr"
+  by (clarsimp simp add: JsonString_def fpci_simps)
+
 lemma has_result_JsonString[NER_simps]:
   "has_result (parse (JsonString)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonString)) i (String str) l \<longleftrightarrow> has_result (parse str_literal) i str l"
@@ -332,6 +336,10 @@ definition JsonNumber :: "JSON bidef" where
                   | _ \<Rightarrow> None)
                  int_b"
 
+lemma fpci_JsonNumber[fpci_simps]:
+  "first_printed_chari (print JsonNumber) i c \<Longrightarrow> c \<in> digit_chars \<or> c = CHR ''-''"
+  by (clarsimp simp add: JsonNumber_def fpci_simps split: if_splits)
+
 lemma has_result_JsonNumber[NER_simps]:
   "has_result (parse (JsonNumber)) [] r l \<longleftrightarrow> False"
   "has_result (parse (JsonNumber)) i (String str) l \<longleftrightarrow> False"
@@ -363,11 +371,6 @@ lemma PASI_PNGI_JsonNumber[PASI_PNGI_intros]:
         "PNGI (parse JsonNumber)"
   unfolding JsonNumber_def
   by pasi_pngi+
-
-lemma fpci_JsonNumber[fpci_simps]:
-  "first_printed_chari (print JsonNumber) i c \<Longrightarrow> c \<in> digit_chars \<or> c = CHR ''-''"
-  unfolding JsonNumber_def
-  by (clarsimp simp add: fpci_simps split: JSON.splits if_splits)
 
 lemma fpc_JsonNumber[fpc_simps]:
   "fpc (parse JsonNumber) a c \<Longrightarrow> c \<in> digit_chars \<or> c = CHR ''-''"
@@ -2534,6 +2537,7 @@ lemma Json_error_on_close_bracket:
   by (clarsimp simp add: NER_simps)
 
 
+
 lemma char_ws_not_eat_into_object:
   shows "pa_does_not_eat_into_pb_nondep
            (char_ws CHR ''{'')
@@ -3441,6 +3445,29 @@ lemma inductive_Json_drop_past_leftover:
   subgoal by (rule JsonNull_drop_leftover)
   done
 
+lemma inductive_Json_fpci_not_in_ws:
+  "first_printed_chari
+      (print
+        (transform sum_take_many sum_untake_many
+          (derived_or.or JsonString
+          (derived_or.or JsonNumber
+          (derived_or.or (JsonObject (J ()))
+          (derived_or.or (JsonList (J ()))
+          (derived_or.or JsonTrue
+          (derived_or.or JsonFalse
+                         JsonNull
+          ))))))))
+            i c
+     \<Longrightarrow> c \<notin> whitespace_chars"
+  apply (auto simp add: fpci_simps split: sum.splits)
+  subgoal using fpci_JsonString by force
+  subgoal using fpci_JsonNumber by force
+  subgoal using fpci_JsonObject by force
+  subgoal using fpci_JsonList by force
+  subgoal using fpci_JsonTrue by force
+  subgoal using fpci_JsonFalse by force
+  subgoal using fpci_JsonNull by force
+  done
 
 
 \<comment> \<open>Other needed premises:
@@ -3479,25 +3506,9 @@ lemma admissible_exist_result_means_error_empty[cont_intro]:
   
   oops
 
-
-lemma admissible_exist_error_means_error_empty[cont_intro]:
-  "bd.admissible (\<lambda>JsonR. (\<exists>i. is_error (parse (JsonR ())) i \<longrightarrow> is_error (parse (JsonR ())) []))"
-  by clarsimp
-
-
+\<comment> \<open>Meeting note: Possibly use this instead of the basic fixp_induct?\<close>
 find_theorems name: fixp name: induct name: stron
 
-
-term Json
-thm JsonR.simps[of "()"]
-
-
-
-
-
-lemma bottom_nonterm:
-  "is_nonterm (\<lambda>a. None) i"
-  by (clarsimp simp add: is_nonterm_def)
 
 \<comment> \<open>Definitely write in the thesis that this process is shit.\<close>
 \<comment> \<open>It would be amazing if we could create some sort of "state" that all proofs for these inner things are in,\<close>
@@ -3514,14 +3525,14 @@ lemma Json_well_formed:
   \<and> (does_not_consume_past_char3 (parse Json) CHR '','')
   \<and> (does_not_consume_past_char3 (parse Json) CHR '']'')
   \<and> (\<forall>c l l' r. has_result (parse Json) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse Json) (c @ l) r l)
-  
+  \<and> (\<forall>i c. first_printed_chari (print Json) i c \<longrightarrow> c \<notin> whitespace_chars)
 "
   apply (induction rule: JsonR.fixp_induct)
   subgoal
     by clarsimp
   subgoal
     apply (clarsimp simp add: strict_WF strict_PNGI)
-    using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3 bottom_drop_past_leftover bottom_nonterm
+    using bottom_no_empty_result bottom_has_no_fpc bottom_no_consume_past_char3 bottom_drop_past_leftover bottom_nonterm fpci_bottom2
     by fast
   subgoal for J
     apply clarsimp
@@ -3541,24 +3552,38 @@ lemma Json_well_formed:
     subgoal using inductive_Json_no_empty_result by blast
     subgoal by (rule inductive_Json_fpc_not_ws)
     subgoal
-      using inductive_Json_no_consume_past_closing_brace
-      \<comment> \<open>Does not consume past closing brace\<close>
-      sorry
+      apply (rule inductive_Json_no_consume_past_closing_brace; auto?)
+      subgoal \<comment> \<open>Error on empty\<close> sorry
+      subgoal \<comment> \<open>Can drop leftover on error\<close> sorry
+      subgoal \<comment> \<open>Error on ]\<close> sorry
+      subgoal \<comment> \<open>Error on ws\<close> sorry
+      done
     subgoal
-      using inductive_Json_no_consume_past_ws
-      \<comment> \<open>Does not consume past whitespace chars\<close>
-      sorry
+      apply (rule inductive_Json_no_consume_past_ws; auto?)
+      subgoal \<comment> \<open>Error on empty\<close> sorry
+      subgoal \<comment> \<open>Can drop leftover on error\<close> sorry
+      subgoal \<comment> \<open>Error on ]\<close> sorry
+      subgoal \<comment> \<open>Error on ws\<close> sorry
+      done
     subgoal
-      using inductive_Json_no_consume_past_comma
-      \<comment> \<open>Does not consume past comma\<close>
-      sorry
+      apply (rule inductive_Json_no_consume_past_comma; auto?)
+      subgoal \<comment> \<open>Error on empty\<close> sorry
+      subgoal \<comment> \<open>Can drop leftover on error\<close> sorry
+      subgoal \<comment> \<open>Error on ]\<close> sorry
+      subgoal \<comment> \<open>Error on ws\<close> sorry
+      done
     subgoal
-      using inductive_Json_no_consume_past_closing_bracket
-      \<comment> \<open>Does not consume past closing bracket\<close>
-      sorry
+      apply (rule inductive_Json_no_consume_past_closing_bracket; auto?)
+      subgoal \<comment> \<open>Error on empty\<close> sorry
+      subgoal \<comment> \<open>Can drop leftover on error\<close> sorry
+      subgoal \<comment> \<open>Error on ]\<close> sorry
+      subgoal \<comment> \<open>Error on ws\<close> sorry
+      done
     subgoal
       \<comment> \<open>Drop past leftover\<close>
       sorry
+    subgoal \<comment> \<open>fpci not in ws\<close>
+      by (clarsimp simp add: inductive_Json_fpci_not_in_ws)
     done
   oops
 

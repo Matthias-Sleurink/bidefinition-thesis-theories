@@ -1125,6 +1125,21 @@ lemma admissible_error_on_empty[cont_intro]:
   "bd.admissible (\<lambda>I. is_error (parse (I ())) [])"
   by (clarsimp simp add: is_error_def)
 
+
+lemma admissible_exist_error_means_error_empty[cont_intro]:
+  "bd.admissible (\<lambda>JsonR. (\<exists>i. is_error (parse (JsonR ())) i \<longrightarrow> is_error (parse (JsonR ())) []))"
+  by clarsimp
+
+lemma bottom_nonterm:
+  "is_nonterm (\<lambda>a. None) i"
+  by (clarsimp simp add: is_nonterm_def)
+
+lemma fpci_bottom2:
+  "first_printed_chari (\<lambda>a. None) i c \<Longrightarrow> False"
+  unfolding first_printed_chari_def p_has_result_def
+  by clarsimp
+
+
 \<comment> \<open>Is false.\<close>
 lemma bottom_error_empty[cont_intro]:
   "is_error (\<lambda>a. None) []"
