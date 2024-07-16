@@ -92,6 +92,9 @@ lemma this_char_fpci[fpci_simps]:
   "first_printed_chari (print (this_char c)) i c' \<longleftrightarrow> i = c \<and> c' = c"
   by (clarsimp simp add: this_char_def fpci_simps; fast)
 
+lemma this_char_fpc[fpc_simps]:
+  "fpc (parse (this_char c)) i c' \<longleftrightarrow> c' = c \<and> c = i"
+  by (auto simp add: fpc_def NER_simps)
 
 
 \<comment> \<open>Well Formed\<close>
