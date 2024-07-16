@@ -243,4 +243,12 @@ lemma wf_or_pair_from_fpci:
     done
   done
 
+lemma or_well_formed2:
+  assumes "well_formed_or_pair b1 b2"
+  assumes "bidef_well_formed b1"
+  assumes "bidef_well_formed b2"
+  shows "bidef_well_formed (or b1 b2)"
+  by (rule or_well_formed; insert assms; assumption)
+
+
 end
