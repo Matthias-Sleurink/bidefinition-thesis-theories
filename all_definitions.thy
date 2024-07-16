@@ -124,6 +124,39 @@ lemma in_ws_and_digits_eq_false[simp]:
 
 
 
+definition takeMiddle :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> 'c bidef \<Rightarrow> 'a \<Rightarrow> 'c \<Rightarrow> 'b bidef" where
+  "takeMiddle ab bb cb a c = transform
+                              (fst o snd)
+                              (\<lambda>b. (a, b, c))
+                              (b_then ab (b_then bb cb))"
+
+lemma PNGI_takeMiddle[PASI_PNGI_intros]:
+  assumes "PNGI (parse A)"
+  assumes "PNGI (parse B)"
+  assumes "PNGI (parse C)"
+  shows "PNGI (parse (takeMiddle A B C a c))"
+  unfolding takeMiddle_def apply (insert assms)
+  by pasi_pngi
+
+lemma PASI_takeMiddle[PASI_PNGI_intros]: \<comment> \<open>Probably the most common usage, where the outer ones are a mandatory character.\<close>
+  assumes "PASI (parse A)"
+  assumes "PNGI (parse B)"
+  assumes "PNGI (parse C)"
+  shows "PASI (parse (takeMiddle A B C a c))"
+  unfolding takeMiddle_def apply (insert assms)
+  by pasi_pngi
+
+
+
+lemma mono_takeMiddle[partial_function_mono]:
+  assumes ma: "mono_bd A"
+  assumes mb: "mono_bd B"
+  assumes mc: "mono_bd C"
+  shows "mono_bd (\<lambda>f. takeMiddle (A f) (B f) (C f) a c)"
+  unfolding takeMiddle_def using ma mb mc
+  by pf_mono_prover
+
+
 
 
 end
