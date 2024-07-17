@@ -1578,6 +1578,9 @@ lemma JsonObject_no_peek_past_end:
 
 lemma JsonObject_drop_leftover:
   assumes J_pngi: "PNGI (parse J)"
+  assumes J_error_empty: "is_error (parse J) []"
+  assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse J) (i @ i') \<Longrightarrow> is_error (parse J) i"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) r l"
   shows "has_result (parse (JsonObject J)) (c @ c' @ l) r (c' @ l)
              \<Longrightarrow> has_result (parse (JsonObject J)) (c @ c') r c'"
   unfolding JsonObject_def
@@ -1593,9 +1596,27 @@ lemma JsonObject_drop_leftover:
         apply (rule then_can_drop_leftover[of _ _ cb lb lb' rb]; assumption?)
         subgoal for cc lc lc' rc
           \<comment> \<open>Probably want to do a rule in that file.\<close>
-          using separated_by_def
-          
-          sorry
+          apply (rule separated_by_drop_past_leftover[of _ _ \<open>()\<close> cc lc lc' rc]; clarsimp?)
+          subgoal using J_pngi by pasi_pngi
+          subgoal by pasi_pngi
+          subgoal using J_pngi by pasi_pngi
+          subgoal for ld ld'
+            apply (rule JsonNameColonObject_drop_leftover_on_error[of J ld ld']; clarsimp?)
+            subgoal by (rule J_error_empty)
+            subgoal by (rule J_drop_leftover_on_error)
+            done                     
+          subgoal for cd ld ld' rda rdb
+            apply (rule JsonNameColonObject_drop_leftover[OF J_pngi, of cd ld ld' \<open>(rda, rdb)\<close>]; clarsimp?)
+            subgoal by (rule J_drop_leftover)
+            done
+          subgoal by (rule ws_char_ws_drop_input_on_error)
+          subgoal by (rule ws_char_ws_can_drop_past_leftover)
+          subgoal by (clarsimp simp add: ws_char_ws_is_nonterm)
+          subgoal for cws cws' lws
+            apply (insert result_of_ws_char_ws_from_c_must_be_empty[of cws' \<open>CHR '',''\<close> cws lws \<open>()\<close>]; clarsimp)
+            using is_error_JsonNameColonObject(1)[of J]
+            by (metis (full_types) has_result_exhaust(1) old.unit.exhaust ws_char_ws_is_nonterm)
+          done
         subgoal using J_pngi by pasi_pngi
         subgoal using ws_char_can_drop_past_leftover[of \<open>CHR ''}''\<close>] by force
         subgoal by pasi_pngi
@@ -1603,7 +1624,7 @@ lemma JsonObject_drop_leftover:
       subgoal using J_pngi by pasi_pngi
       done
     done
-  oops
+  done
 
 
 
@@ -3369,7 +3390,10 @@ lemma inductive_Json_no_consume_past_closing_bracket:
 
 
 lemma inductive_Json_drop_past_leftover:
-  assumes J_drop_leftover: "\<forall>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<longrightarrow> has_result (parse J) (c @ l) r l"
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_error_empty: "is_error (parse J) []"
+  assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse J) (i @ i') \<Longrightarrow> is_error (parse J) i"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) r l"
   shows "has_result
              (parse
                (transform sum_take_many sum_untake_many
@@ -3391,8 +3415,12 @@ lemma inductive_Json_drop_past_leftover:
 
   apply (rule or_can_drop_leftover; assumption?)
   subgoal for _ _ _ _ _ _ _ _ _ _ _ _ c c' l r \<comment> \<open>JsonObject can drop leftover\<close>
-    
-    sorry
+    apply (rule JsonObject_drop_leftover[of J c c' l r]; clarsimp?)
+    subgoal by (rule J_pngi)
+    subgoal by (rule J_error_empty)
+    subgoal by (rule J_drop_leftover_on_error)
+    subgoal by (rule J_drop_leftover)
+    done
   subgoal \<comment> \<open>JsonObject can drop lefter on error\<close>
     sorry
 
