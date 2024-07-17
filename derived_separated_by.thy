@@ -311,6 +311,59 @@ lemma separated_by_no_consume_past_char:
   done
 
 
+lemma separated_by_drop_past_leftover:
+  assumes E_pngi: "PNGI (parse E)"
+  assumes S_pngi: "PNGI (parse S)"
+  assumes SE_pasi: "PASI (parse (b_then S E))"
+
+  assumes E_drop_leftover_error: "\<And>l l'. is_error (parse E) (l @ l') \<Longrightarrow> is_error (parse E) l"
+  assumes E_drop_leftover: "\<And> c l l' r. has_result (parse E) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse E) (c @ l) r l"
+
+  assumes S_drop_leftover_error: "\<And>l l'. is_error (parse S) (l @ l') \<Longrightarrow> is_error (parse S) l"
+  assumes S_drop_leftover: "\<And> c l l' r. has_result (parse S) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse S) (c @ l) r l"
+
+  assumes SE_error_no_S_nonterm: "\<And>i i'. is_error (parse (b_then S E)) (i @ i') \<Longrightarrow> \<not> is_nonterm (parse S) i"
+
+  assumes remove_into_S_means_error_S_or_error_E: "\<And>i i' r l. \<lbrakk>i'\<noteq> []; has_result (parse S) (i @ i' @ l) r l; is_error (parse E) l\<rbrakk> \<Longrightarrow> (is_error (parse S) i \<or> (\<exists>r l. has_result (parse S) i r l \<and> is_error (parse E) l))"
+
+  shows "has_result (parse (separated_by S E oracle)) (c @ l @ l') r (l @ l')
+            \<Longrightarrow> has_result (parse (separated_by S E oracle)) (c @ l) r l"
+  apply (cases r; clarsimp)
+  subgoal by (clarsimp simp add: NER_simps E_drop_leftover_error)
+  subgoal for r' rs
+    apply (clarsimp simp add: NER_simps)
+    subgoal for lE s_rs
+      apply (insert E_pngi[unfolded PNGI_def, rule_format, of \<open>c@l@l'\<close> r' lE]; clarsimp)
+      apply (insert many_PNGI[OF SE_pasi, unfolded PNGI_def, rule_format, of lE \<open>(zip s_rs rs)\<close> \<open>l@l'\<close>]; clarsimp)
+      subgoal for cE cMSE
+        apply (rule exI[of _ \<open>cMSE @ l\<close>]; rule conjI)
+        subgoal by (clarsimp simp add: E_drop_leftover)
+        subgoal
+          apply (rule exI[of _ s_rs]; clarsimp)
+          apply (rule many_can_drop_leftover[of \<open>b_then S E\<close> cMSE l l' \<open>zip s_rs rs\<close>]; assumption?)
+          subgoal for c2 l2 l2' r2
+            apply (rule then_can_drop_leftover[of S E c2 l2 l2' r2]; assumption?)
+            subgoal by (rule S_drop_leftover)
+            subgoal by (rule S_pngi)
+            subgoal by (rule E_drop_leftover)
+            subgoal by (rule E_pngi)
+            done
+          subgoal for l2 l2'
+            apply (rule then_can_drop_leftover_on_error; assumption?)
+            subgoal by (rule S_drop_leftover_error)
+            subgoal by (rule S_pngi)
+            subgoal by (rule SE_error_no_S_nonterm)
+            subgoal by (rule remove_into_S_means_error_S_or_error_E)
+            subgoal by (rule S_drop_leftover)
+            subgoal by (rule E_drop_leftover_error)
+            done
+          subgoal by (rule SE_pasi)
+          done
+        done
+      done
+    done
+  done
+
 
 \<comment> \<open>First printed char\<close>
 lemma serparated_by_fpci[fpci_simps]:
