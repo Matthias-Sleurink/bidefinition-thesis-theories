@@ -198,4 +198,44 @@ lemma wf_MJ:
     done
   done
 
+
+thm bd.fixp_strong_induct_uc
+
+
+lemma wf_MJ_strong_induct:
+  "bidef_well_formed MJ_bd
+   \<and> (does_not_consume_past_char3 (parse MJ_bd) CHR '']'') \<comment> \<open>Needed as assm in the WF proof.\<close>
+"
+  using bd.fixp_strong_induct_uc[OF ]
+        MJ_bd_R.mono
+  oops
+  find_theorems case_prod
+  thm bd.fixp_strong_induct_uc
+  thm bd.fixp_strong_induct_uc[where P = \<open>\<lambda>inner. bidef_well_formed (inner ()) \<and> (does_not_consume_past_char3 (parse (inner ())) CHR '']'')\<close>
+      ,where f = \<open>MJ_bd_R\<close>]
+        MJ_bd_R_def
+        MJ_bd_R.fixp_induct
+        MJ_bd_R.mono
+  thm MJ_bd_R.fixp_induct
+
+
+
+lemma use_le_fun:
+  assumes le: "bd.le_fun I I'"
+  shows "False"
+  apply (insert le)
+  unfolding bd_ord_def fun_ord_def flat_ord_def
+  
+  oops
+
+
+lemma use_le_fun:
+  assumes "bd.le_fun I I'"
+  shows "\<not>is_nonterm (parse (I ())) i \<Longrightarrow> \<not>is_nonterm (parse (I' ())) i"
+  using assms unfolding is_nonterm_def bd_ord_def fun_ord_def flat_ord_def
+  apply auto
+  by (metis option.distinct(1))
+
+find_theorems bd.le_fun
+
 end

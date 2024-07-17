@@ -482,8 +482,8 @@ abbreviation "mono_bd \<equiv> monotone (fun_ord bd_ord) bd_ord"
 
 \<comment> \<open>TODO: We don't have a fixp_induct rule.\<close>
 declaration \<open>Partial_Function.init "bd" \<^term>\<open>bd.fixp_fun\<close>
-  \<^term>\<open>bd.mono_body\<close> @{thm bd.fixp_rule_uc} @{thm bd.fixp_induct_uc}
-  (NONE)\<close> (*SOME @{thm fixp_induct_option}*)
+  \<^term>\<open>bd.mono_body\<close> @{thm bd.fixp_rule_uc} @{thm bd.fixp_strong_induct_uc} (*was: fixp_induct_uc*)
+  (NONE)\<close> (*SOME @{thm bd.fixp_strong_induct_uc} or NONE*)
 
 \<comment> \<open>This is the same prover that the partial_function package uses under the hood to proof mono for function bodies.\<close>
 method_setup pf_mono_prover = \<open>Scan.succeed (fn ctxt => SIMPLE_METHOD' (Partial_Function.mono_tac ctxt))\<close> \<open>Monotonicity prover of the partial function package.\<close>

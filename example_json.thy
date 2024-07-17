@@ -3478,6 +3478,23 @@ lemma admissible_exist_result_means_error_empty[cont_intro]:
 find_theorems name: fixp name: induct name: stron
 
 
+lemma use_le_fun:
+  assumes le: "bd.le_fun I I'"
+  shows "False"
+  apply (insert le)
+  unfolding bd_ord_def fun_ord_def flat_ord_def
+  
+  oops
+
+
+lemma use_le_fun:
+  assumes "bd.le_fun I I'"
+  shows "\<not>is_nonterm (parse (I ())) i \<Longrightarrow> \<not>is_nonterm (parse (I' ())) i"
+  using assms unfolding is_nonterm_def bd_ord_def fun_ord_def flat_ord_def
+  apply auto
+  by (metis option.distinct(1))
+
+
 \<comment> \<open>Definitely write in the thesis that this process is shit.\<close>
 \<comment> \<open>It would be amazing if we could create some sort of "state" that all proofs for these inner things are in,\<close>
 \<comment> \<open>Wich automatically has all these premises as facts.\<close>
@@ -3511,6 +3528,7 @@ lemma Json_well_formed:
       subgoal by blast
       subgoal \<comment> \<open>\<forall>l. is_error (parse (J ())) (CHR '']'' # l)\<close>
         using Json_error_on_close_bracket \<comment> \<open>We break here!\<close>
+        using use_le_fun[of J JsonR]
         sorry
       subgoal \<comment> \<open>is_error (parse (J ())) []\<close>
         using Json_error_on_empty \<comment> \<open>We break here!\<close>
