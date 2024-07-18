@@ -1626,6 +1626,73 @@ lemma JsonObject_drop_leftover:
     done
   done
 
+lemma JsonObject_drop_leftover_on_error:
+  assumes J_pngi: "PNGI (parse J)"
+  assumes J_error_empty: "is_error (parse J) []"
+  assumes J_drop_leftover_on_error: "\<And>i i'. is_error (parse J) (i @ i') \<Longrightarrow> is_error (parse J) i"
+  assumes J_drop_leftover: "\<And>c l l' r. has_result (parse J) (c @ l @ l') r (l @ l') \<Longrightarrow> has_result (parse J) (c @ l) r l"
+  shows "is_error (parse (JsonObject J)) (i @ i') \<Longrightarrow> is_error (parse (JsonObject J)) i"
+  unfolding JsonObject_def
+  apply (clarsimp simp add: ftransform_is_error)
+  unfolding takeMiddle_def
+  apply (clarsimp simp add: transform_is_error)
+  apply (rule then_can_drop_leftover_on_error[of _ i _ i']; clarsimp?)
+  subgoal by (rule char_ws_drop_leftover_on_error)
+  subgoal by pasi_pngi
+  subgoal by (clarsimp simp add: char_ws_is_nonterm)
+  subgoal for i2 l2
+    apply (cases i; clarsimp)
+    subgoal by (clarsimp simp add: NER_simps)
+    subgoal for i1' i1s
+      apply (auto simp add: char_ws_has_result )
+      apply (subst (asm) (3) b_then_is_error; clarsimp simp add: separated_by_is_error)
+      apply (auto simp add: ws_char_is_error)
+      by (metis UnCI append.right_neutral dropWhile.simps(1) is_error_JsonNameColonObject(1) list.distinct(1) list.simps(4) separated_by_has_result_safe_Nil)
+    done
+  subgoal by (rule char_ws_can_drop_past_lefover)
+  subgoal for i2 i2'
+    apply (rule then_can_drop_leftover_on_error_when_first_no_error[of _ i2 _ i2']; clarsimp?)
+    subgoal by (clarsimp simp add: separated_by_is_error)
+    subgoal using J_pngi by pasi_pngi
+    subgoal for i2'' i2's r2
+      apply (subst (asm) b_then_is_error[of _ \<open>ws_char CHR ''}''\<close>])
+      apply auto
+      subgoal using separated_by_is_error by force
+      subgoal for sbr sbl
+        apply (insert result_leftover_determ[of \<open>parse (separated_by (ws_char_ws CHR '','') (JsonNameColonObject J) ())\<close> \<open>i2 @ i2'' # i2's @ l\<close> sbr sbl r2 l]; clarsimp)
+        
+        sorry
+      done
+    subgoal for i3' r3 l3 \<comment> \<open>remove_into_A_means_error_A_or_error_B\<close>
+      
+      sorry
+    subgoal for c3 l3 l3' r3
+      apply (rule separated_by_drop_past_leftover[of _ _ \<open>()\<close> c3 l3 l3' r3]; clarsimp?)
+      subgoal using J_pngi by pasi_pngi
+      subgoal by pasi_pngi
+      subgoal using J_pngi by pasi_pngi
+      subgoal for l4 l4'
+        apply (rule JsonNameColonObject_drop_leftover_on_error[of J l4 l4']; clarsimp?)
+        subgoal by (rule J_error_empty)
+        subgoal by (rule J_drop_leftover_on_error)
+        done
+      subgoal for c4 l4 l4' r4a r4b
+        apply (rule JsonNameColonObject_drop_leftover[of J c4 l4 l4' \<open>(r4a, r4b)\<close>]; clarsimp?)
+        subgoal by (rule J_pngi)
+        subgoal by (rule J_drop_leftover)
+        done
+      subgoal by (rule ws_char_ws_drop_input_on_error)
+      subgoal by (rule ws_char_ws_can_drop_past_leftover)
+      subgoal by (clarsimp simp add: ws_char_ws_is_nonterm)
+      subgoal for i4 i4' l4
+        using result_of_ws_char_ws_from_c_must_be_empty[of i4' \<open>CHR '',''\<close> i4 l4 \<open>()\<close>]
+              is_error_JsonNameColonObject(1)
+        by (metis (full_types) has_result_exhaust(1) old.unit.exhaust ws_char_ws_is_nonterm)
+      done
+    subgoal by (rule ws_char_drop_leftover_on_error)
+    done
+  oops
+
 
 
 abbreviation "betweenSquareBrackets bd \<equiv> takeMiddle (char_ws CHR ''['') bd (ws_char CHR '']'') () ()"
