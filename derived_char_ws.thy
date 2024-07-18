@@ -166,6 +166,10 @@ lemma char_ws_can_drop_past_lefover:
     by (clarsimp simp add: NER_simps)
   done
 
+lemma char_ws_drop_leftover_on_error:
+  shows "is_error (parse (char_ws C)) (i @ i') \<Longrightarrow> is_error (parse (char_ws C)) i"
+  by (clarsimp simp add: NER_simps)
+
 
 
 section \<open>Well formed\<close>
