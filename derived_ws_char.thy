@@ -194,6 +194,10 @@ lemma ws_char_can_drop_past_leftover:
     by (metis (mono_tags, lifting) assms does_not_peek_past_end_def hd_dropWhile ws_char_does_not_peek_past_end ws_char_has_result)
   done
 
+lemma ws_char_drop_leftover_on_error:
+  "is_error (parse (ws_char C)) (i @ i') \<Longrightarrow> is_error (parse (ws_char C)) i"
+  apply (clarsimp simp add: NER_simps)
+  by (metis Cons_eq_appendI dropWhile_append1 dropWhile_eq_Nil_conv list.simps(3))
 
 
 section \<open>Well formed\<close>
