@@ -69,6 +69,7 @@ lemma MJ_J_result_head:
   done
 
 
+thm separated_by_result_when_elem_result_always_same
 lemma MJ_j_wf:
   "bidef_well_formed MJ_J"
   unfolding MJ_J_def
@@ -76,15 +77,62 @@ lemma MJ_j_wf:
   subgoal
     apply (auto simp add: well_formed_ftransform_funcs_def)
     subgoal for i r l
-      apply (cases r; clarsimp)
-      subgoal for r' rs
-        apply (clarsimp simp add: separated_by_has_result_safe_Cons this_char_has_result)
-        subgoal for l'
-          apply (induction rs arbitrary: l'; clarsimp)
-          apply (clarsimp simp add: NER_simps)
-      sorry
-    sorry
-  oops
+      apply (rule separated_by_result_when_elem_result_always_same[of \<open>ws_char_ws CHR '',''\<close> \<open>this_char E_chr\<close> E_chr \<open>()\<close> \<open>()\<close> i r l]; clarsimp?)
+      subgoal by pasi_pngi
+      subgoal by (clarsimp simp add: NER_simps)
+      done
+    subgoal by (clarsimp simp add: fp_NER split: MJ.splits)
+    done
+  apply (rule separated_by_well_formed2)
+  subgoal by (clarsimp simp add: good_separated_by_oracle_def fp_NER)
+  subgoal
+    apply (rule first_printed_does_not_eat_into3; clarsimp?)
+    subgoal by (rule ws_char_ws_well_formed; clarsimp)
+    subgoal for i c
+      apply (clarsimp simp add: fpci_simps)
+      using ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> E_chr, simplified]
+      by blast
+    done
+  subgoal by (rule this_char_well_formed)
+  subgoal by (rule ws_char_ws_well_formed; clarsimp)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal
+    apply (rule does_not_peek_past_end_implies_does_not_eat_into)
+    subgoal by (rule this_char_does_not_peek_past_end)
+    subgoal by (rule this_char_well_formed)
+    done
+  subgoal
+    apply (rule cannot_be_grown_by_when_no_peek_past)
+    subgoal
+      apply (rule then_does_not_peek_past_end_from_fpc; clarsimp?)
+      subgoal for i c
+        apply (clarsimp simp add: fpc_simps)
+        using ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> E_chr, simplified]
+        by blast
+      subgoal for ca l b
+        using this_char_PASI[of E_chr, unfolded PASI_def, rule_format, of l b l]
+        by blast
+      subgoal by pasi_pngi
+      subgoal by (rule this_char_does_not_peek_past_end)
+      subgoal by pasi_pngi
+      done
+    subgoal
+      apply (rule b_then_well_formed)
+      subgoal by (rule ws_char_ws_well_formed; clarsimp)
+      subgoal by (rule this_char_well_formed)
+      subgoal
+        apply (rule first_printed_does_not_eat_into3; clarsimp?)
+        subgoal by (rule ws_char_ws_well_formed; clarsimp)
+        subgoal for i c
+          apply (clarsimp simp add: fpci_simps)
+          using ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> E_chr, simplified]
+          by blast
+        done
+      done
+    done
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by pasi_pngi
+  done
 
 
 definition MJ_RJ :: "MJ bd \<Rightarrow> MJ bd" where
