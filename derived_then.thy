@@ -93,6 +93,11 @@ lemma b_then_has_result_ci[NER_simps]:
     done
   done
 
+lemma then_result_always_same:
+  assumes E_rs_eq: "\<And> i r l. has_result (parse E) i r l \<Longrightarrow> E_r = r"
+  assumes S_rs_eq: "\<And> i r l. has_result (parse S) i r l \<Longrightarrow> S_r = r"
+  shows "has_result (parse (b_then S E)) i r l \<Longrightarrow> (S_r, E_r) = r"
+  by (clarsimp simp add: NER_simps assms)
 
 
 \<comment> \<open>FP NER\<close>

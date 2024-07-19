@@ -160,6 +160,34 @@ lemma separated_by_print_empty:
         p_has_result (print (many (b_then sep elem))) (map (Pair sep_oracle) is) [])"
   by (clarsimp simp add: print_empty split: list.splits)+
 
+lemma replicate_tuples:
+  assumes "length Es1 = length Es2"
+  assumes "replicate (length Es2) (E1, E2) = zip Es1 Es2"
+  shows "replicate (length Es2) E1 = Es1 \<and> replicate (length Es2) E2 = Es2"
+  using assms
+  apply (induction Es1 arbitrary: Es2)
+  subgoal by clarsimp
+  apply auto
+  subgoal by (metis (no_types, lifting) length_Cons length_replicate length_zip map_fst_zip zip_replicate)
+  subgoal by (metis (no_types, lifting) length_Cons length_replicate length_zip map_snd_zip zip_replicate)
+  done
+
+lemma separated_by_result_when_elem_result_always_same:
+  assumes SE_pasi: "PASI (parse (b_then S E))"
+  assumes E_rs_eq: "\<And> i r l. has_result (parse E) i r l \<Longrightarrow> r = E_r"
+  assumes S_rs_eq: "\<And> i r l. has_result (parse S) i r l \<Longrightarrow> r = S_r"
+  shows "has_result (parse (separated_by S E S_oracle)) i r l \<Longrightarrow> replicate (length r) E_r = r"
+  apply (cases r; clarsimp simp add: NER_simps)
+  subgoal for r' rs lE rsMS
+    apply (rule conjI)
+    subgoal using E_rs_eq[of i r' lE] by blast
+    using many_has_result_when_result_always_same[OF SE_pasi, of \<open>(S_r, E_r)\<close> lE \<open>(zip rsMS rs)\<close> l]
+    using then_result_always_same[of E E_r S S_r]
+    using S_rs_eq E_rs_eq
+    apply clarsimp
+    using replicate_tuples[of rsMS rs S_r r'] by fastforce
+  done
+
 \<comment> \<open>PASI, PNGI\<close>
 lemma separated_by_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes PNGI_elem: "PNGI (parse elem)"

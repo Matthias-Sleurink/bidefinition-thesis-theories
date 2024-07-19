@@ -252,6 +252,13 @@ lemma many0_induct:
 
 
 
+lemma many_has_result_when_result_always_same:
+  assumes I_pasi: "PASI (parse I)"
+  assumes rs_eq: "\<And>i r l. has_result (parse I) i r l \<Longrightarrow> I_r = r"
+  shows "has_result (parse (many I)) i r l \<Longrightarrow> replicate (length r) I_r = r"
+  by (rule many0_induct[OF I_pasi, rule_format, of _ i r l]; clarsimp simp add: rs_eq)
+
+
 subsection \<open>PNGI PASI\<close>
 lemma many_PNGI_from_PNGI:
   assumes "PNGI (parse bd)"
