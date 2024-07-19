@@ -30,6 +30,10 @@ lemma MJ_J_is_nonterm[NER_simps]:
         b_then_is_nonterm this_char_is_nonterm ws_char_ws_is_nonterm
   by blast
 
+lemma MJ_J_has_result[NER_simps]:
+  "has_result (parse MJ_J) i (RJ n) l \<longleftrightarrow> False"
+  by (clarsimp simp add: MJ_J_def NER_simps)
+
 \<comment> \<open>Note sure if this is all that good.\<close>
 lemma MJ_J_p_has_result[fp_NER]:
   "p_has_result (print MJ_J) i r \<longleftrightarrow> (case i of
@@ -159,6 +163,11 @@ lemma MJ_RJ_is_error[NER_simps]:
   by (clarsimp simp add: NER_simps MJ_RJ_def takeMiddle_def)+
 
 
+lemma MJ_RJ_has_result[NER_simps]:
+  "has_result (parse (MJ_RJ I)) i (J n) l \<longleftrightarrow> False"
+  unfolding MJ_RJ_def by (clarsimp simp add: NER_simps)
+
+
 partial_function (bd) MJ_bd_R :: "unit \<Rightarrow> MJ bd" where
   "MJ_bd_R _ = transform
                 (sum_take)
@@ -172,24 +181,27 @@ print_theorems
 abbreviation "MJ_bd \<equiv> MJ_bd_R ()"
 
 lemma test_flat:
-  "has_result (parse MJ_bd) ''EE'' (J 2) []"
-  "p_has_result (print MJ_bd) (J 2) ''EE'' "
+  "has_result (parse MJ_bd) ''E , E'' (J 2) []"
+  "p_has_result (print MJ_bd) (J 2) ''E,E'' "
   subgoal
     apply (subst MJ_bd_R.simps)
-    by (clarsimp simp add: NER_simps MJ_RJ_def takeMiddle_def MJ_J_def this_char_def any_from_set_def split: sum.splits)
+    apply (clarsimp simp add: NER_simps MJ_RJ_def takeMiddle_def MJ_J_def this_char_def any_from_set_def split: sum.splits)
+    by (rule exI[of _ \<open>[E_chr, E_chr]\<close>]; clarsimp simp add: NER_simps)
   subgoal
     apply (subst MJ_bd_R.simps)
     by (clarsimp simp add: fp_NER MJ_J_def this_char_def any_from_set_def numeral_2_eq_2)
   done
 
 lemma tests_deeper:
-  "has_result (parse MJ_bd) ''[EE]'' (RJ (J 2)) []"
-  "p_has_result (print MJ_bd) (RJ (J 2)) ''[EE]''"
+  "has_result (parse MJ_bd) ''[E , E]'' (RJ (J 2)) []"
+  "p_has_result (print MJ_bd) (RJ (J 2)) ''[E,E]''"
   subgoal
     apply (subst MJ_bd_R.simps)
     apply (clarsimp simp add: NER_simps MJ_RJ_def takeMiddle_def MJ_J_def this_char_def any_from_set_def split: sum.splits)
+    apply (rule exI[of _ \<open>Inl (RJ (J 2))\<close>]; clarsimp)
     apply (subst MJ_bd_R.simps)
-    by (clarsimp simp add: NER_simps MJ_RJ_def takeMiddle_def MJ_J_def this_char_def any_from_set_def split: sum.splits)
+    apply (clarsimp simp add: NER_simps MJ_RJ_def takeMiddle_def MJ_J_def this_char_def any_from_set_def split: sum.splits)
+    by (rule exI[of _ \<open>[E_chr, E_chr]\<close>]; clarsimp simp add: NER_simps)
   subgoal
     apply (subst MJ_bd_R.simps)
     apply (clarsimp simp add: fp_NER MJ_RJ_def takeMiddle_def MJ_J_def)
@@ -210,9 +222,14 @@ lemma wf_MJ:
     subgoal \<comment> \<open>WF\<close>
       apply (rule transform_well_formed4)
       subgoal
-        apply (auto simp add: well_formed_transform_funcs4_def NER_simps fp_NER MJ_RJ_def takeMiddle_def split: sum.splits MJ.splits)
-        subgoal by (metis MJ.distinct(1) sum_take.elims)
-        subgoal by (metis sum_take.elims)
+        unfolding well_formed_transform_funcs4_def
+        apply (clarsimp; rule conjI; clarsimp simp add: NER_simps)
+        subgoal for i r l
+          apply (cases r; clarsimp simp add: NER_simps)
+          subgoal for a by (cases a; clarsimp simp add: NER_simps)
+          subgoal for a by (cases a; clarsimp simp add: NER_simps)
+          done
+        subgoal for pr t by (cases t; clarsimp simp add: fp_NER)
         done
       apply (rule or_well_formed2)
       subgoal by (auto simp add: well_formed_or_pair_def fp_NER NER_simps MJ_RJ_def takeMiddle_def split: MJ.splits)
@@ -257,9 +274,20 @@ lemma wf_MJ:
       subgoal \<comment> \<open>does_not_consume_past_char3 (parse MJ_J) CHR '']''\<close>
         unfolding MJ_J_def
         apply (rule ftransform_does_not_consume_past_char3)
-        unfolding this_char_def any_from_set_def
-        apply (rule many_char_for_predicate_does_not_consume_past_char3[THEN iffD2])
-        by clarsimp
+        apply (rule separated_by_no_consume_past_char; clarsimp; (clarsimp simp add: NER_simps bi_well_formed_simps | fail)? ; pasi_pngi?)
+        subgoal
+          apply (rule WF_many_then; (clarsimp simp add: NER_simps bi_well_formed_simps | fail)? ; pasi_pngi?)
+          subgoal for i c
+            apply (clarsimp simp add: fpci_simps)
+            by (rule ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> E_chr, simplified])
+          subgoal by (rule this_char_does_not_consume_past_char3)
+          done
+        subgoal by (rule this_char_does_not_consume_past_char3)
+        subgoal by (rule this_char_does_not_consume_past_char3)
+        subgoal
+          apply (clarsimp simp add: fpc_simps)
+          by (rule ws_char_ws_does_not_consume_past_char3[of \<open>CHR '',''\<close> E_chr, simplified])
+        done
       subgoal for c l r
         apply (insert MJ_J_result_head[of c l r]; cases c; clarsimp)
         subgoal by (rule MJ_RJ_is_error)

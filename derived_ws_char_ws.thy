@@ -258,7 +258,7 @@ lemma many_ws_no_consume_past:
   by blast
 
 
-lemma ws_char_ws_well_formed:
+lemma ws_char_ws_well_formed[bi_well_formed_simps]:
   assumes "c \<notin> whitespace_chars"
   shows "bidef_well_formed (ws_char_ws c)"
   unfolding ws_char_ws_def
