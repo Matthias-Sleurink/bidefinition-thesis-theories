@@ -10,8 +10,8 @@ definition until :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> 'a list bidef
   "until a s = many (ftransform (\<lambda>Inl l \<Rightarrow> None | Inr r \<Rightarrow> Some r) (Some o Inr) (or s a))"
 
 lemma PNGI_until[PASI_PNGI_intros]:
-  assumes "PASI (parse A)"
-  assumes "PASI (parse B)"
+  assumes "PNGI (parse A)"
+  assumes "PNGI (parse B)"
   shows "PNGI (parse (until A B))"
   unfolding until_def apply (insert assms)
   by pasi_pngi
@@ -3556,6 +3556,12 @@ lemma drop_the_is_error_part:
   by (auto simp add: is_error_def)
 
 
+
+
+
+
+
+
 lemma admissible_not_nonterm_means_error_empty:
   "bd.admissible (\<lambda>JsonR. (\<exists>i. \<not> is_nonterm (parse (JsonR ())) i \<longrightarrow> is_error (parse (JsonR ())) []))"
   apply (clarsimp simp add: is_nonterm_def is_error_def)
@@ -3595,6 +3601,24 @@ lemma use_le_fun:
 \<comment> \<open>Wich automatically has all these premises as facts.\<close>
 \<comment> \<open>Because right now we have to thread these premises though all kinds of proofs to reach the right place, which is whack.\<close>
 \<comment> \<open>In essence, the transitive assumption story isn't great.\<close>
+
+
+
+
+lemma induct_test:
+(*  fixes A_ord :: "'a rel"*)
+(*  assumes a_wf: "wf A_ord"*)
+  assumes p_def: "(P :: 'a bd) = (F ) P"
+  assumes IH: "\<And>string ast. \<lbrakk>\<And>string' ast'. \<lbrakk> length string' < length string \<rbrakk> \<Longrightarrow> Q (parse P string') (print P ast') \<rbrakk>
+                   \<Longrightarrow> Q (parse (F P) string) (print (F P) ast)"
+  shows "Q (parse P string) (print P ast)"
+  apply (induction string arbitrary: ast rule: length_induct)
+  apply (subst p_def)
+  apply (subst (2) p_def)
+  using IH by blast
+  
+  find_theorems wf name: lex
+  find_theorems wf name: prod
 lemma Json_well_formed:
   "bidef_well_formed Json
   \<and> (PNGI (parse Json))

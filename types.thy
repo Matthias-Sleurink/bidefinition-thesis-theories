@@ -993,7 +993,7 @@ text \<open>These lemmas are needed for admissibility proving, which are require
 
 \<comment> \<open>TODO: move these to types\<close>
 lemma mcont_parse[cont_intro]:
-  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. parse (x ()) i)"
+  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. parse (x U) i)"
   apply (rule)
   subgoal
     apply (rule monotoneI)
@@ -1006,7 +1006,7 @@ lemma mcont_parse[cont_intro]:
   by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
 
 lemma mcont_print[cont_intro]:
-  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. print (x ()) i)"
+  "mcont bd.lub_fun bd.le_fun (flat_lub None) (flat_ord None) (\<lambda>x. print (x U) i)"
   apply (rule)
   subgoal
     apply (rule monotoneI)
@@ -1019,7 +1019,7 @@ lemma mcont_print[cont_intro]:
   by (smt (verit, ccfv_SIG) Inf.INF_cong fun_lub_apply image_image)
 
 lemma admissible_PNGI[cont_intro]:
-  "bd.admissible (\<lambda>expressionR. PNGI (parse (expressionR ())))"
+  "bd.admissible (\<lambda>expressionR. PNGI (parse (expressionR U)))"
   unfolding PNGI_def
   unfolding has_result_def
   by simp
@@ -1030,7 +1030,7 @@ lemma strict_PNGI[cont_intro]:
 
 
 lemma admissible_PASI[cont_intro]:
-  "bd.admissible (\<lambda>expressionR. PASI (parse (expressionR ())))"
+  "bd.admissible (\<lambda>expressionR. PASI (parse (expressionR U)))"
   unfolding PASI_def
   unfolding has_result_def
   by simp
@@ -1041,7 +1041,7 @@ lemma strict_PASI[cont_intro]:
 
 
 lemma admissible_no_empty_print_result[cont_intro]:
-  "bd.admissible (\<lambda>r. \<not> p_has_result (print (r ())) e [])"
+  "bd.admissible (\<lambda>r. \<not> p_has_result (print (r U)) e [])"
   unfolding p_has_result_def
   by simp
 

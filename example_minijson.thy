@@ -127,7 +127,7 @@ lemma wf_MJ:
    \<and> (does_not_consume_past_char3 (parse MJ_bd) CHR '']'') \<comment> \<open>Needed as assm in the WF proof.\<close>
 "
   apply (induction rule: MJ_bd_R.fixp_induct)
-  subgoal by clarsimp
+  subgoal supply [[simp_trace]] supply [[simp_trace_depth_limit=10]] by clarsimp
   subgoal using strict_WF bottom_no_consume_past_char3 by auto
   subgoal for I
     apply (repeat_new \<open>rule conjI\<close>) \<comment> \<open>Split all the mutual-recursion conjunctions.\<close>

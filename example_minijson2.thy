@@ -211,7 +211,7 @@ lemma tests_deeper:
 
 \<comment> \<open>So now we try to use the same technique for getting WF to see if there is a fundamental problem or not.\<close>
 lemma wf_MJ:
-  "bidef_well_formed MJ_bd
+  shows "bidef_well_formed MJ_bd
    \<and> (does_not_consume_past_char3 (parse MJ_bd) CHR '']'') \<comment> \<open>Needed as assm in the WF proof.\<close>
 "
   apply (induction rule: MJ_bd_R.fixp_induct)

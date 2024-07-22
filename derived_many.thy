@@ -260,16 +260,16 @@ lemma many_has_result_when_result_always_same:
 
 
 subsection \<open>PNGI PASI\<close>
-lemma many_PNGI_from_PNGI:
+lemma many_PNGI_from_PNGI[PASI_PNGI, PASI_PNGI_intros]:
   assumes "PNGI (parse bd)"
   shows "PNGI (parse (many bd))"
+  apply (induction rule: many.fixp_induct)
+  subgoal by simp
+  subgoal unfolding PNGI_def has_result_def by simp
   using assms
-  unfolding PNGI_def
-  apply (subst many_has_result)
-  apply (auto split: list.splits)
-  oops
+  by pasi_pngi
 
-lemma many_PNGI[PASI_PNGI, PASI_PNGI_intros]:
+lemma many_PNGI:
   assumes "PASI (parse p)"
   shows "PNGI (parse (many p))"
   (*Should really figure out some way of exposing the input so that we can say is PASI when at least one success*)
@@ -1069,7 +1069,7 @@ lemma WF_many_then:
 
   shows "bidef_well_formed (many (b_then A B))"
   apply wf_init
-  subgoal by (intro PASI_PNGI_intros; simp add: pa_a pa_b)
+  subgoal using pa_a[THEN PASI_implies_PNGI_meta] pa_b[THEN PASI_implies_PNGI_meta] by pasi_pngi
   subgoal
     unfolding parser_can_parse_print_result_def
     apply clarsimp
