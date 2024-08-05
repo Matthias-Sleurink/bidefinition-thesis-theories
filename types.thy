@@ -853,6 +853,25 @@ lemma no_peek_past_end_wf_stronger:
   apply auto
   by (metis append.right_neutral)
 
+lemma consecutive_parses_proof_for_thesis:
+  assumes wfa: "bidef_well_formed A"
+  assumes wfb: "bidef_well_formed B"
+  assumes dnppea: "does_not_peek_past_end (parse A)"
+  assumes printeda: "p_has_result (print A) a ar"
+  assumes printedb: "p_has_result (print B) b br"
+  shows "has_result (parse A) (ar@br) a br \<and> has_result (parse B) br b []"
+  apply (insert printeda printedb)
+  apply (rule conjI)
+  subgoal
+    apply (insert dnppea[unfolded does_not_peek_past_end_def, rule_format, of ar \<open>[]\<close> a br, simplified])
+    apply (insert wfa[THEN get_parser_can_parse_unfold, rule_format, of a ar])
+    by blast
+  subgoal
+    using wfb[THEN get_parser_can_parse_unfold]
+    by blast
+  done
+
+
 
 (*Attempt 3, hd being a partial function is biting us in the ass, so let's not use it.*)
 definition does_not_consume_past_char3 :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where

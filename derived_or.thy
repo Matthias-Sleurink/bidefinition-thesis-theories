@@ -251,4 +251,43 @@ lemma or_well_formed2:
   by (rule or_well_formed; insert assms; assumption)
 
 
+lemma or_well_formed_for_thesis:
+  assumes "bidef_well_formed b1"
+  assumes "bidef_well_formed b2"
+  assumes "well_formed_or_pair b1 b2"
+  shows "bidef_well_formed (or b1 b2)"
+  apply wf_init
+  subgoal
+    using assms(1,2)[THEN get_pngi] or_PNGI
+    by blast
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply clarsimp
+    unfolding or_has_result_non_split
+    unfolding or_p_has_result_non_split
+    subgoal for t pr
+      apply (cases t; clarsimp)
+      subgoal for t'
+        using assms(1)[THEN get_parser_can_parse_unfold] by blast
+      subgoal for t'
+        using assms(2)[THEN get_parser_can_parse_unfold]
+              assms(3)[unfolded well_formed_or_pair_def]
+        by blast
+      done
+    done
+  subgoal
+    unfolding printer_can_print_parse_result_def
+    unfolding or_has_result_non_split
+    unfolding or_p_has_result_non_split
+    apply clarsimp
+    subgoal for t i l
+      apply (cases t; clarsimp)
+      subgoal for t' using assms(1)[THEN get_printer_can_print_unfold] by blast
+      subgoal for t' using assms(2)[THEN get_printer_can_print_unfold] by blast
+      done
+    done
+  done
+
+
+
 end

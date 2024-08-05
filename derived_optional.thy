@@ -214,7 +214,7 @@ lemma optional_well_formed:
     apply (unfold optional_has_result(3))
     by (clarsimp split: option.splits)
   subgoal
-    using assms
+    using assms(2)
     unfolding printer_can_print_parse_result_def
               bidef_well_formed_def
     apply (unfold optional_p_has_result(3))
@@ -251,6 +251,37 @@ lemma optional_well_formed_minimal2:
   subgoal by (simp add: option.case_eq_if)
   subgoal by (metis (mono_tags, lifting) option.case_eq_if)
   done
+
+
+lemma optional_well_formed_for_thesis:
+  assumes "is_error (parse b) []"
+  assumes "bidef_well_formed b"
+  shows "bidef_well_formed (optional b)"
+  apply wf_init
+  subgoal by (rule optional_PNGI[OF assms(2)[THEN get_pngi]])
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply (subst optional_p_has_result(3))
+    apply (unfold optional_has_result(3))
+    apply clarsimp
+    subgoal for t pr
+      apply (cases t; clarsimp)
+      subgoal using assms(1) by blast
+      subgoal using assms(2)[THEN get_parser_can_parse_unfold] by blast
+      done
+    done
+  subgoal
+    unfolding printer_can_print_parse_result_def
+    apply (unfold optional_p_has_result(3))
+    apply (unfold optional_has_result(3))
+    apply clarsimp
+    subgoal for t i l
+      apply (cases t; clarsimp)
+      using assms(2)[THEN get_printer_can_print_unfold]
+      by blast
+    done
+  done
+
 
 
 

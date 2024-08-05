@@ -905,7 +905,7 @@ lemma b_then_well_formed:
     using assms(2, 3)
     unfolding bidef_well_formed_def (* assms(2) *)
                 parser_can_parse_print_result_def
-              pa_does_not_eat_into_pb_nondep_def (* assms(4) *)
+              pa_does_not_eat_into_pb_nondep_def (* assms(3) *)
     apply (unfold b_then_has_result(3))
     apply (unfold b_then_p_has_result(3))
     by fast
@@ -927,6 +927,40 @@ lemma b_then_well_formed_does_not_peek_past:
   shows "bidef_well_formed (b_then A B)"
   by (clarsimp simp add: assms b_then_well_formed
                          does_not_peek_past_end_implies_does_not_eat_into)
+
+
+
+\<comment> \<open>Note that this is not the most general, as here we require pr2 to be the leftover.\<close>
+\<comment> \<open>It could be better to require that the parser for bb can still parse the leftover into the same result.\<close>
+definition no_collision:
+  "no_collision ba bb \<longleftrightarrow> (\<forall> t1 pr1 t2 pr2. p_has_result (print ba) t1 pr1 \<and> p_has_result (print bb) t2 pr2
+        \<longrightarrow> has_result (parse ba) (pr1@pr2) t1 pr2)"
+
+thm no_collision[of b1 b2]
+
+lemma b_then_well_formed_for_thesis:
+  assumes "bidef_well_formed b1"
+  assumes "bidef_well_formed b2"
+  assumes "no_collision b1 b2"
+  shows   "bidef_well_formed (b_then b1 b2)"
+  apply wf_init
+  subgoal by (rule then_PNGI[OF assms(1,2)[THEN get_pngi]])
+  subgoal
+    unfolding parser_can_parse_print_result_def
+    apply (unfold b_then_has_result(3))
+    apply (unfold b_then_p_has_result(3))
+    apply clarsimp
+    using assms(3)[unfolded no_collision]
+    using assms(1,2)[THEN get_parser_can_parse_unfold]
+    by fast
+  subgoal
+    unfolding printer_can_print_parse_result_def
+    apply (unfold b_then_has_result(3))
+    apply (unfold b_then_p_has_result(3))
+    apply auto
+    using assms(1,2)[THEN get_printer_can_print_unfold]
+    by fast
+  done
 
 
 

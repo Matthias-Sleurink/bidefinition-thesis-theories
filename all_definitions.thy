@@ -160,6 +160,4 @@ lemma mono_takeMiddle[partial_function_mono]:
   by pf_mono_prover
 
 
-
-
 end
