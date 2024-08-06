@@ -60,6 +60,38 @@ lemma example_does_not_peek_past_char:
   subgoal by pasi_pngi
   done
 
+lemma many_two_chars_no_peek_past:
+  "does_not_consume_past_char3 (parse (many (b_then (this_char CHR ''A'') (this_char CHR ''B'')))) (CHR ''C'')"
+  apply (rule many_does_not_consume_past_char3)
+  subgoal by pasi_pngi
+  subgoal by pasi_pngi
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal for c l l' r
+    apply (rule then_can_drop_leftover[of _ _ c l l' r]; clarsimp?)
+    subgoal by (rule this_char_drop_leftover)
+    subgoal by pasi_pngi
+    subgoal by (rule this_char_drop_leftover)
+    subgoal by pasi_pngi
+    done
+  subgoal
+    apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+    subgoal by (rule this_char_does_not_peek_past_end)
+    subgoal by pasi_pngi
+    subgoal by (rule this_char_does_not_consume_past_char3)
+    subgoal by pasi_pngi
+    done
+  subgoal for i c
+    using then_does_not_peek_past_end[OF this_char_does_not_peek_past_end this_char_PNGI this_char_does_not_peek_past_end this_char_PNGI, of \<open>CHR ''A''\<close> \<open>CHR ''B''\<close>]
+    using dnppe_implies_dncpc by blast
+  done
 
+lemma many_this_char_no_peek_past_any_other_char:
+  assumes "C \<noteq> C'"
+  shows "does_not_consume_past_char3 (parse (many (this_char C))) C'"
+  using assms
+  unfolding this_char_def any_from_set_def
+  using many_char_for_predicate_does_not_consume_past_char3[of _ \<open>C'\<close>]
+  by blast
 
 end

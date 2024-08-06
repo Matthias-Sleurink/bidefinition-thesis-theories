@@ -959,7 +959,7 @@ lemma b_then_well_formed_for_thesis:
     apply (unfold b_then_p_has_result(3))
     apply auto
     using assms(1,2)[THEN get_printer_can_print_unfold]
-    by fast
+    by fast+
   done
 
 
