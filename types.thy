@@ -504,7 +504,6 @@ named_theorems PASI_PNGI_intros
 \<comment> \<open>Do for this subgoal and repeat for each newly created subgoal, try to solve via assumption, if not, apply an intro rule, if not, use mp with intro rule, if not, use clarsimp with PASI_PNGI_intros.\<close>
 method pasi_pngi = (repeat_new \<open>assumption | rule PASI_PNGI_intros |  rule mp, rule PASI_PNGI_intros | clarsimp simp add: PASI_PNGI_intros\<close>)
 
-
 \<comment> \<open>PASI, Parser Always Shrinks Input (Including it being a tail of the input)\<close>
 definition PASI :: "'\<alpha> parser \<Rightarrow> bool" where
   "PASI p \<longleftrightarrow> (\<forall> i r l. has_result p i r l \<longrightarrow> (\<exists> c. (i = c @ l \<and> c \<noteq> [])))"
