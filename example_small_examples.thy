@@ -4,8 +4,6 @@ begin
 
 definition "apple = b_then (this_string ''apple'') (optional (this_char CHR ''s''))"
 
-find_theorems "?A \<longleftrightarrow> ?B" "?B \<Longrightarrow> ?A"
-
 lemma apple_errors_on_empty:
   "is_error (parse apple) []"
   unfolding apple_def
@@ -146,6 +144,70 @@ lemma empty_list_example_proof:
   subgoal by (auto simp add: NER_simps)
   done
 
-thm print_empty
+
+\<comment> \<open>many\<close>
+\<comment> \<open>Note that this fails on purpose.\<close>
+fun many' where
+  "many' a = transform
+              sum_take
+              (\<lambda>l. if l = [] then Inr [] else Inl l) \<comment> \<open>Print time transform: if the list is empty it can from the else branch, else the then branch\<close>
+              (if_then_else
+                a                                                 \<comment> \<open>test\<close>
+                (\<lambda>r. dep_then (many' a) (\<lambda> rr. return (r#rr)) tl) \<comment> \<open>then\<close> \<comment> \<open>tl is the print time transform that tells us to skip printing the first as it came from the test.\<close>
+                (return [])                                       \<comment> \<open>else\<close>
+                (hd) \<comment> \<open>'a list \<Rightarrow> 'a (print time transform print input to the then branch to one for the test.)\<close>
+               )
+"
+
+
+\<comment> \<open>Illogical applications of many\<close>
+definition many_fail :: "unit list bidef" where
+  "many_fail = many fail"
+
+lemma many_fail_eq_return_empty:
+  "has_result (parse many_fail) = has_result (parse (return []))"
+  "is_error (parse many_fail) = is_error (parse (return []))"
+  "is_nonterm (parse many_fail) = is_nonterm (parse (return []))"
+
+  "p_has_result (print many_fail) = p_has_result (print (return []))"
+  "p_is_error (print many_fail) = p_is_error (print (return []))"
+  "p_is_nonterm (print many_fail) = p_is_nonterm (print (return []))"
+  unfolding many_fail_def
+  subgoal
+    apply rule
+    apply rule
+    apply rule
+    subgoal for i r l
+      apply (auto simp add: NER_simps)
+      subgoal by (meson fail_is_error(1) many_has_result_when_first_parse_fails result_leftover_determ)
+      subgoal using \<open>has_result (parse (many fail)) i r l \<Longrightarrow> [] = r\<close> many_has_result_safe(1) by blast
+      done
+    done
+  subgoal by (auto simp add: NER_simps)
+  subgoal
+    apply rule
+    apply (auto simp add: NER_simps)
+    using many_is_nonterm fail_is_nonterm(1) fail_has_result(1)
+    by fast
+  subgoal
+    apply rule
+    apply rule
+    apply (auto simp add: fp_NER)
+    subgoal by (metis fail_p_has_result(1) many1_p_has_result many1_p_has_result_eq_many_p_has_result many_p_has_result_safe(1))
+    subgoal by (metis fail_p_has_result(1) many1_p_has_result many1_p_has_result_eq_many_p_has_result)
+    done
+  subgoal
+    apply rule
+    by (auto simp add: fp_NER list_nonempty_induct)
+  subgoal
+    apply rule
+    by (auto simp add: fp_NER)
+  done
+
+definition many_return:
+  "many_return = many (return ())"
+  
+
+
 
 end
