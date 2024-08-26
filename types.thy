@@ -470,7 +470,9 @@ lemma bd_partial_function_definitions:
 
 lemma bd_lub_bdc:
   "bd_lub {} = bdc (\<lambda>_. None) (\<lambda>_. None)"
-  unfolding bd_lub_def flat_lub_def
+  unfolding bd_lub_def
+  unfolding fun_lub_def
+  unfolding flat_lub_def
   by clarsimp
 
 interpretation bd:
