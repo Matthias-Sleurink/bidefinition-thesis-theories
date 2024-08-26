@@ -344,7 +344,9 @@ lemma DIMACS_wf:
                       this_char_PASI
                       this_char_does_not_consume_past_char3
                       fpci_simps
-                      line_no_consume_past_to_newline_then_line_no_consume_past \<comment> \<open>This should kick in once we have the first.\<close>
+                      line_no_consume_past_newline
+                      line_no_consume_past_to_newline_then_line_no_consume_past
+                      header_newline_no_eat_into_line
                       )
   oops
 
