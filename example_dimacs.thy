@@ -227,6 +227,70 @@ lemma line_no_consume_past_newline:
     oops
 
 
+lemma line_no_consume_past_newline:
+  "does_not_consume_past_char3 (parse DIMACS_line) CHR ''\<newline>''"
+  unfolding DIMACS_line_def separated_by1_def
+  apply (rule ftransform_does_not_consume_past_char3)
+  apply (rule then_does_not_consume_past3_from_can_drop_leftover)
+  subgoal by (rule int_b_well_formed)
+  subgoal
+    apply (rule wf_many_then; clarsimp?)
+    subgoal by (rule int_b_well_formed)
+    subgoal by (rule this_char_well_formed)
+    subgoal using int_b_is_error(1) by blast
+    subgoal using this_char_is_error(1) by blast
+    subgoal by pasi_pngi
+    subgoal by (rule this_char_does_not_consume_past_char3)
+    subgoal for i i' c
+      apply (clarsimp simp add: fpci_simps print_empty split: if_splits)
+      apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+      subgoal by (rule this_char_does_not_peek_past_end)
+      subgoal by pasi_pngi
+      subgoal using int_b_does_not_consume_past_char3 by force
+      subgoal by pasi_pngi
+      done
+    done
+  subgoal
+    apply (rule many_does_not_consume_past_char3)
+    subgoal by pasi_pngi
+    subgoal by pasi_pngi
+    subgoal by (simp add: b_then_is_error_from_first this_char_is_error)
+    subgoal by (simp add: b_then_is_error_from_first this_char_is_error)
+    subgoal for c l l' r
+      apply (rule then_can_drop_leftover[of _ _ c l l' r]; clarsimp?)
+      subgoal by (rule this_char_drop_leftover)
+      subgoal by pasi_pngi
+      subgoal for c l l' r by (rule int_b_leftover_can_be_dropped_gen[of \<open>c@l\<close> l' r l, simplified])
+      subgoal by pasi_pngi
+      done
+    subgoal
+      apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+      subgoal by (rule this_char_does_not_peek_past_end)
+      subgoal by pasi_pngi
+      subgoal by (simp add: int_b_does_not_consume_past_char3)
+      subgoal by pasi_pngi
+      done
+    subgoal for i c
+      unfolding fpc_def
+      apply (clarsimp simp add: NER_simps)
+      subgoal premises prems \<comment> \<open>Ugly but it's the result of the NER rule\<close>
+        apply (insert prems(2)[THEN sym]; clarsimp)
+        apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+        subgoal by (rule this_char_does_not_peek_past_end)
+        subgoal by pasi_pngi
+        subgoal using int_b_does_not_consume_past_char3 by force
+        subgoal by pasi_pngi
+        done
+      done
+    done
+  subgoal for i c
+    apply (induction i; clarsimp simp add: fpc_def NER_simps)
+    by (simp add: int_b_does_not_consume_past_char3)
+  subgoal by (simp add: int_b_does_not_consume_past_char3)
+  subgoal for c l l' r using int_b_leftover_can_be_dropped_gen[of \<open>c@l\<close> l' r l, simplified] by blast
+  done
+
+
 lemma line_no_consume_past_to_newline_then_line_no_consume_past:
   assumes "does_not_consume_past_char3 (parse DIMACS_line) CHR ''\<newline>''"
   shows "does_not_consume_past_char3 (parse (b_then (this_char CHR ''\<newline>'') DIMACS_line)) CHR ''\<newline>''"
