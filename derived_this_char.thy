@@ -30,6 +30,10 @@ lemma this_char_has_result_ci[NER_simps]:
   unfolding this_char_def
   by (auto simp add: NER_simps)
 
+lemma this_char_no_result_consume_nothing:
+  "\<not>has_result (parse (this_char c)) i r i"
+  by (clarsimp simp add: NER_simps)
+
 
 
 \<comment> \<open>FP NER\<close>

@@ -78,6 +78,10 @@ lemma this_string_does_not_peek_past_end[peek_past_end_simps]:
   unfolding this_string_def
   by (clarsimp simp add: peek_past_end_simps this_char_PNGI)
 
+lemma this_string_no_consume_past_char3:
+  "does_not_consume_past_char3 (parse (this_string s)) c"
+  using dnppe_implies_dncpc this_string_does_not_peek_past_end by blast
+
 
 
 \<comment> \<open>Drop leftover\<close>
