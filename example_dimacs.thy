@@ -308,6 +308,30 @@ lemma this_char_does_not_eat_into:
   unfolding pa_does_not_eat_into_pb_nondep_def
   by (clarsimp simp add: NER_simps fp_NER)
 
+lemma header_newline_no_eat_into_line:
+  "pa_does_not_eat_into_pb_nondep
+    (then_drop_second DIMACS_header (this_char CHR ''\<newline>'') CHR ''\<newline>'')
+    (separated_by (this_char CHR ''\<newline>'') DIMACS_line CHR ''\<newline>'')"
+  apply (rule does_not_peek_past_end_implies_does_not_eat_into)
+  subgoal
+    unfolding then_drop_second_def
+    apply (rule transform_does_not_peek_past_end)
+    apply (rule then_does_not_peek_past_end_from_fpc; clarsimp?)
+    subgoal by (clarsimp simp add: this_char_fpc header_does_not_consume_past_newline)
+    subgoal using this_char_no_result_consume_nothing by blast
+    subgoal by pasi_pngi
+    subgoal by (rule this_char_does_not_peek_past_end)
+    subgoal by pasi_pngi
+    done
+  apply (rule then_drop_second_well_formed)
+  subgoal by (rule header_WF)
+  subgoal by (rule this_char_well_formed)
+  subgoal by (rule header_no_eat_into_newline)
+  subgoal by (clarsimp simp add: NER_simps)
+  done
+
+
+
 lemma DIMACS_wf:
   shows  "bidef_well_formed DIMACS"
   unfolding DIMACS_def
