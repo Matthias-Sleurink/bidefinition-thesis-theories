@@ -39,6 +39,46 @@ lemma header_no_eat_into_newline:
   unfolding pa_does_not_eat_into_pb_nondep_def
   by (auto simp add: NER_simps fp_NER DIMACS_header_def takeWhile_tail)
 
+lemma header_does_not_consume_past_newline:
+  "does_not_consume_past_char3 (parse DIMACS_header) CHR ''\<newline>''"
+  unfolding DIMACS_header_def then_drop_first_def
+  apply (rule transform_does_not_consume_past_char3)
+  apply (rule then_does_not_consume_past3)
+  subgoal by (rule this_string_wf)
+  subgoal
+    apply (auto intro!: b_then_well_formed transform_well_formed4
+              simp add: nat_b_well_formed this_char_well_formed)
+    subgoal by (clarsimp simp add: NER_simps well_formed_transform_funcs4_def)
+    subgoal
+      using does_not_peek_past_end_implies_does_not_eat_into[OF this_char_does_not_peek_past_end this_char_well_formed]
+      by blast
+    subgoal
+      apply (rule first_printed_does_not_eat_into3; clarsimp?)
+      subgoal by (rule nat_b_well_formed)
+      subgoal by (clarsimp simp add: fpci_simps print_empty nat_does_not_consume_past3)
+      done
+    done
+  subgoal
+    apply (rule then_does_not_consume_past3)
+    subgoal by (rule nat_b_well_formed)
+    subgoal
+      by (auto intro!: transform_well_formed4 b_then_well_formed
+             simp add: nat_b_well_formed this_char_well_formed well_formed_transform_funcs4_def NER_simps
+                       does_not_peek_past_end_implies_does_not_eat_into[OF this_char_does_not_peek_past_end])
+    subgoal
+      apply (rule transform_does_not_consume_past_char3)
+      apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+      subgoal by (rule this_char_does_not_peek_past_end)
+      subgoal by pasi_pngi
+      subgoal using nat_does_not_consume_past3 by force
+      subgoal by pasi_pngi
+      done
+    subgoal by (clarsimp simp add: fpc_def NER_simps nat_does_not_consume_past3)
+    subgoal by (clarsimp simp add: NER_simps)
+    done
+  subgoal using this_string_no_consume_past_char3 by blast
+  subgoal by (clarsimp simp add: NER_simps)
+  done
 
 
 definition DIMACS_line :: "int list bidef" where
