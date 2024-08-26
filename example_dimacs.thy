@@ -10,6 +10,18 @@ No support for comments. (Which are lines starting with c).
 definition DIMACS_header :: "(nat \<times> nat) bidef" where
   "DIMACS_header = then_drop_first (this_string ''p cnf '') (b_then nat_b (then_drop_first (this_char CHR '' '') nat_b (CHR '' ''))) ''p cnf ''"
 
+lemma header_example:
+  "has_result (parse DIMACS_header) ''p cnf 12 13'' (12, 13) []"
+  apply (auto simp add: NER_simps DIMACS_header_def)
+  subgoal by (rule parse_nat_s2[of \<open>''1''\<close> \<open>CHR ''2''\<close>, simplified])
+  subgoal by (rule parse_nat_s2[of \<open>''1''\<close> \<open>CHR ''3''\<close>, simplified])
+  done
+
+lemma header_pngi[PASI_PNGI_intros]:
+  "PNGI (parse DIMACS_header)"
+  unfolding DIMACS_header_def
+  by pasi_pngi
+
 lemma header_WF:
   "bidef_well_formed DIMACS_header"
   unfolding DIMACS_header_def
