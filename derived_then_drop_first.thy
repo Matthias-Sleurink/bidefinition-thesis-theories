@@ -144,7 +144,7 @@ lemma then_drop_first_well_formed:
           then_drop_first_PNGI
     by fast
   subgoal
-    using assms(2, 3, 4) (*It seems to me like for assm(4) here we don't really need this specific print, just any print for b2 or b1.*)
+    using assms(2, 3) (*It seems to me like for assm(4) here we don't really need this specific print, just any print for b2 or b1.*)
     unfolding bidef_well_formed_def (* assms(2) *)
                 parser_can_parse_print_result_def
                 parser_can_parse_print_result_def
