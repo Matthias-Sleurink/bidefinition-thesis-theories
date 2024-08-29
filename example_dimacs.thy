@@ -208,35 +208,6 @@ lemma line_error_empty:
   "is_error (parse DIMACS_line) []"
   unfolding DIMACS_line_def by (clarsimp simp add: NER_simps)
 
-\<comment> \<open>Where lc basically stands for some stopper char after which nothing influences it.\<close>
-\<comment> \<open>If lc is somewhere in the string then we will never look behind it.\<close>
-definition does_not_backtrack_past :: "'a parser \<Rightarrow> char \<Rightarrow> bool" where
-  "does_not_backtrack_past p lc = (\<forall>c r l. has_result p (c@l) r l \<longrightarrow> (\<forall>l'. has_result p (c@lc#l') r (lc#l')))"
-
-lemma line_no_eat_into_newline:
-  assumes "does_not_backtrack_past (parse DIMACS_line) CHR ''\<newline>''"
-  shows "pa_does_not_eat_into_pb_nondep DIMACS_line (this_char CHR ''\<newline>'')"
-  unfolding pa_does_not_eat_into_pb_nondep_def
-  apply (subst this_char_p_has_result; clarsimp)
-  subgoal for t1 pr1
-    using assms[unfolded does_not_backtrack_past_def, rule_format, of pr1 \<open>[]\<close> t1 \<open>[]\<close>, simplified,
-                OF line_WF[THEN get_parser_can_parse_unfold, rule_format, of t1 pr1]]
-    by blast
-  done
-
-lemma line_no_eat_into_many_newline_line:
-  assumes "does_not_backtrack_past (parse DIMACS_line) CHR ''\<newline>''"
-  shows "pa_does_not_eat_into_pb_nondep DIMACS_line (many (b_then (this_char CHR ''\<newline>'') DIMACS_line))"
-  unfolding pa_does_not_eat_into_pb_nondep_def
-  apply clarsimp
-  subgoal for t1 pr1 t2 pr2
-    apply (cases t2)
-    subgoal by (clarsimp simp add: NER_simps fp_NER line_WF[THEN get_parser_can_parse_unfold])
-    apply (clarsimp simp add: fp_NER)
-    using assms[unfolded does_not_backtrack_past_def, rule_format, of pr1 \<open>[]\<close> t1, simplified,
-                OF line_WF[THEN get_parser_can_parse_unfold, rule_format, of t1 pr1]]
-    by fast
-  done
 
 lemma fpci_line[fpci_simps]:
   "first_printed_chari (print DIMACS_line) [] c \<longleftrightarrow> False"
