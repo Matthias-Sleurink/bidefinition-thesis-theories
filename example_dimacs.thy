@@ -34,6 +34,31 @@ lemma header_WF:
          simp add: this_string_wf nat_b_well_formed this_char_well_formed NER_simps
                    pa_does_not_eat_into_pb_nondep_def fp_NER takeWhile_tail)
 
+lemma header_wf_proof_for_thesis:
+  "bidef_well_formed DIMACS_header"
+  unfolding DIMACS_header_def
+  apply (rule then_drop_first_well_formed)
+  subgoal by (rule this_string_wf)
+  subgoal
+    apply (rule b_then_well_formed)
+    subgoal by (rule nat_b_well_formed)
+    subgoal
+      apply (rule then_drop_first_well_formed)
+      subgoal by (rule this_char_well_formed)
+      subgoal by (rule nat_b_well_formed)
+      subgoal
+        unfolding pa_does_not_eat_into_pb_nondep_def
+        apply (clarsimp simp add: fp_NER)
+        by (clarsimp simp add: NER_simps)
+      subgoal by (clarsimp simp add: NER_simps)
+      done
+    subgoal by (auto simp add: pa_does_not_eat_into_pb_nondep_def NER_simps fp_NER takeWhile_tail)
+    done
+  subgoal by (clarsimp simp add: pa_does_not_eat_into_pb_nondep_def NER_simps fp_NER)
+  subgoal by (clarsimp simp add: NER_simps)
+  done
+
+
 lemma mono_header[partial_function_mono]:
   shows "mono_bd (\<lambda>f. DIMACS_header)"
   unfolding DIMACS_header_def
@@ -126,7 +151,43 @@ lemma this_char_int_no_grown_by_many_this_char_int:
       done
     done
   done
-    
+
+
+lemma line_WF_for_thesis:
+  "bidef_well_formed DIMACS_line"
+  unfolding DIMACS_line_def
+  apply (rule separated_by1_well_formed)
+  subgoal by (clarsimp simp add: fp_NER)
+  subgoal by (rule int_b_well_formed)
+  apply (rule b_then_well_formed)
+  subgoal by (rule int_b_well_formed)
+   apply (rule well_formed_does_not_grow_by_printer)
+  subgoal by (rule this_char_int_no_grown_by_many_this_char_int)
+     apply (rule b_then_well_formed)
+  subgoal by (rule this_char_well_formed)
+  subgoal by (rule int_b_well_formed)
+  subgoal by (clarsimp simp add: fp_NER NER_simps pa_does_not_eat_into_pb_nondep_def)
+  subgoal by (clarsimp simp add: NER_simps)
+  subgoal by pasi_pngi
+  apply (rule int_does_not_eat_into_if_first_char_not_digit)
+  apply (clarsimp simp add: fpci_simps many_fpci fp_NER split: list.splits)
+  done
+
+
+lemma line_WF_for_thesis_2:
+  "bidef_well_formed DIMACS_line"
+  unfolding DIMACS_line_def
+  by (auto intro!: separated_by1_well_formed b_then_well_formed wf_many_then
+                   int_does_not_eat_into_if_first_char_not_digit
+                   then_does_not_consume_past_char_from_first_no_peek_past_end
+         simp add: fp_NER NER_simps
+                   int_b_well_formed this_char_well_formed
+                   fpci_simps many_fpci
+                   PASI_PNGI
+                   this_char_does_not_consume_past_char3
+                   this_char_does_not_peek_past_end
+                   int_b_does_not_consume_past_char3
+            split: list.splits if_splits)
 
 lemma line_WF:
   "bidef_well_formed DIMACS_line"
