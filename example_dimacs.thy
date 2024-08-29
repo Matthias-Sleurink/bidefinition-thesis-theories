@@ -17,6 +17,11 @@ lemma header_example:
   subgoal by (rule parse_nat_s2[of \<open>''1''\<close> \<open>CHR ''3''\<close>, simplified])
   done
 
+lemma header_example_print:
+  "p_has_result (print DIMACS_header) (12, 13) ''p cnf 12 13''"
+  by (auto simp add: fp_NER DIMACS_header_def print_nat_def numeral_2_eq_2)
+
+
 lemma header_pngi[PASI_PNGI_intros]:
   "PNGI (parse DIMACS_header)"
   unfolding DIMACS_header_def
