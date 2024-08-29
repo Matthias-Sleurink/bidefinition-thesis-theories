@@ -119,6 +119,10 @@ lemma PNGI_line:
   unfolding DIMACS_line_def
   by (auto intro!: separated_by1_PNGI then_PASI simp add: PASI_PNGI)
 
+lemma fpci_DIMACS_line:
+  "first_printed_chari (print DIMACS_line) i c \<Longrightarrow> c \<in> digit_chars \<or> c = CHR ''-''"
+  by (clarsimp simp add: fpci_simps fp_NER separated_by1_def DIMACS_line_def split: if_splits list.splits)
+
 
 lemma ex_result:
   "\<exists>ar al. (has_result (parse (this_char c)) i ar al \<and> P ar al)
@@ -203,7 +207,6 @@ lemma line_WF:
                split: list.splits)
   done
 
-\<comment> \<open>TODO: This is a problem! We need to have this be true. How can we resolve this?\<close>
 lemma line_error_empty:
   "is_error (parse DIMACS_line) []"
   unfolding DIMACS_line_def by (clarsimp simp add: NER_simps)
@@ -341,7 +344,7 @@ definition DIMACS :: "((nat \<times> nat) \<times> int list list) bidef" where
                    (separated_by (this_char CHR ''\<newline>'') DIMACS_line CHR ''\<newline>'')"
 
 lemma this_char_does_not_eat_into:
-  "pa_does_not_eat_into_pb_nondep (this_char CHR ''\<newline>'') A"
+  "pa_does_not_eat_into_pb_nondep (this_char C) A"
   unfolding pa_does_not_eat_into_pb_nondep_def
   by (clarsimp simp add: NER_simps fp_NER)
 
@@ -367,6 +370,28 @@ lemma header_newline_no_eat_into_line:
   subgoal by (clarsimp simp add: NER_simps)
   done
 
+
+
+lemma DIMACS_wf_for_thesis:
+  shows  "bidef_well_formed DIMACS"
+  unfolding DIMACS_def
+  supply [[goals_limit=20]]
+  apply (auto intro!: b_then_well_formed then_drop_second_well_formed
+                      separated_by_well_formed_no_consume_past_char
+            simp add: NER_simps line_error_empty
+                      header_WF this_char_well_formed line_WF
+                      PASI_PNGI
+                      good_separated_by_oracle_def
+                      fpci_simps fp_NER
+                      line_no_consume_past_newline                      
+                      this_char_does_not_consume_past_char3
+                      header_no_eat_into_newline
+                      header_newline_no_eat_into_line
+                      line_no_consume_past_to_newline_then_line_no_consume_past
+               split: if_splits
+  )
+  
+  oops
 
 
 lemma DIMACS_wf:
