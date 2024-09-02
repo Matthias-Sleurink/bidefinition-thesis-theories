@@ -2,6 +2,51 @@ theory example_small_examples
   imports all_definitions
 begin
 
+
+\<comment> \<open>Small example showing how a basic bidef could be made:\<close>
+
+fun a_char_parser :: "char parser" where
+  "a_char_parser [] = Some None"
+| "a_char_parser (c#cs) = Some (Some (c, cs))"
+
+fun a_char_printer :: "char printer" where
+  "a_char_printer c = Some (Some [c])"
+
+definition a_char :: "char bidef" where
+  "a_char = bdc a_char_parser a_char_printer"
+
+\<comment> \<open>Basic composition operator\<close>
+fun compose_parser :: "'a parser \<Rightarrow> 'b parser \<Rightarrow> ('a \<times> 'b) parser" where
+  "compose_parser A B i = (case A i of
+      None \<Rightarrow> None
+    | Some None \<Rightarrow> Some None
+    | Some (Some (ra, i')) \<Rightarrow> (case B i' of
+        None \<Rightarrow> None
+      | Some None \<Rightarrow> Some None
+      | Some (Some (rb, l)) \<Rightarrow> Some (Some ((ra, rb), l))))"
+
+fun compose_printer :: "'a printer \<Rightarrow> 'b printer \<Rightarrow> ('a \<times> 'b) printer" where
+  "compose_printer A B (a,b) = (case A a of
+      None \<Rightarrow> None
+    | Some None \<Rightarrow> Some None
+    | Some (Some ra) \<Rightarrow> (case B b of
+        None \<Rightarrow> None
+      | Some None \<Rightarrow> Some None
+      | Some (Some rb) \<Rightarrow> Some (Some (ra @ rb))))"
+
+definition compose :: "'a bidef \<Rightarrow> 'b bidef \<Rightarrow> ('a \<times> 'b) bidef" where
+  "compose A B = bdc (compose_parser (parse A) (parse B)) (compose_printer (print A) (print B))"
+
+
+definition two_chars :: "(char \<times> char) bidef" where
+  "two_chars = compose a_char a_char"
+
+lemma two_chars_test:
+  "has_result (parse two_chars) ''AB'' (CHR ''A'', CHR ''B'') []"
+  unfolding two_chars_def a_char_def compose_def has_result_def
+  by force
+
+\<comment> \<open>apple apples example\<close>
 definition "apple = b_then (this_string ''apple'') (optional (this_char CHR ''s''))"
 
 lemma apple_errors_on_empty:
