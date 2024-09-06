@@ -1,4 +1,4 @@
-theory basic_transform
+theory derived_transform
   imports types
           basic_fallible_transform
 begin

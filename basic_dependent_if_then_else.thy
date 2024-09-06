@@ -1,6 +1,5 @@
 theory basic_dependent_if_then_else
   imports types
-          basic_transform
 begin
 
 text \<open>This is the second base combinator.

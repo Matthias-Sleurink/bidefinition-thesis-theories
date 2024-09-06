@@ -1,7 +1,6 @@
 theory basic_definitions
   imports types
           basic_fallible_transform
-          basic_transform
           basic_dependent_if_then_else
           basic_fail
           basic_return

@@ -54,7 +54,7 @@ lemma numberlist_comma_unit_well_formed:
                         print_empty fpc_def
                         PASI_implies_no_result_from_empty)
   subgoal
-    using is_error_implies_not_has_result nat_is_error ws_not_digit(2)
+    using is_error_implies_not_has_result nat_is_error
     by fastforce
   done
 

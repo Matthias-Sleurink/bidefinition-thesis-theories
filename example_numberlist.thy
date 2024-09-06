@@ -35,12 +35,11 @@ lemma ws_not_digit:
 lemma nat_does_not_eat_into_many1_whitespace:
   "pa_does_not_eat_into_pb_nondep nat_b (many1 whitespace_char)"
   unfolding pa_does_not_eat_into_pb_nondep_def
-  apply (auto simp add: fp_NER NER_simps ws_not_digit)
+  apply (auto simp add: fp_NER NER_simps)
   subgoal for n ws ws_pr
     apply (cases ws; clarsimp)
     using takeWhile_tail[of \<open>\<lambda>x. x \<in> derived_digit_char.digit_chars\<close> _ \<open>print_nat n\<close> ws_pr]
-          ws_not_digit(1)
-    by clarsimp
+    using print_nat_takeWhile(1) ws_not_digit(1) by presburger
   done
 
 lemma takeWhileAllNot:
@@ -62,7 +61,7 @@ lemma no_space_hd_nat:
 lemma many1_whitespace_does_not_eat_into_nat:
   "pa_does_not_eat_into_pb_nondep (many1 whitespace_char) nat_b"
   unfolding pa_does_not_eat_into_pb_nondep_def
-  apply (auto simp add: fp_NER NER_simps ws_not_digit)
+  apply (auto simp add: fp_NER NER_simps)
   subgoal for ws_i ws_pr n
     apply (subst (asm) whitespace_char_def)
     apply (subst (asm) any_from_set_def)
@@ -89,10 +88,11 @@ lemma nat_does_not_into_ws_then_nat:
   subgoal for n pri pri_r
     apply (induction pri arbitrary: pri_r)
     apply (auto simp add: NER_simps fp_NER)
-    by (clarsimp simp add: takeWhile_tail ws_not_digit(1))
+    using takeWhile_tail
+    by (metis print_nat_takeWhile(1) ws_not_digit(1))
   subgoal for pri pri_r
     apply (induction pri arbitrary: pri_r)
-     by (auto simp add: NER_simps fp_NER ws_not_digit(1))
+     by (auto simp add: NER_simps fp_NER)
    done
 
 lemma p_has_result_many_whitespace_implies_i_eq_r:
@@ -107,7 +107,7 @@ lemma aux1:
   shows "pr = [] \<or> hd pr \<notin> digit_chars"
   using assms
   apply (cases i)
-  by (auto simp add: fp_NER ws_not_digit(1))
+  by (auto simp add: fp_NER)
 
 
 lemma can_parse_print_result_then_many1_ws_nat:

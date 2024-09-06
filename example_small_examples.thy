@@ -192,6 +192,7 @@ lemma empty_list_example_proof:
 
 \<comment> \<open>many\<close>
 \<comment> \<open>Note that this fails on purpose.\<close>
+(*
 fun many' where
   "many' a = transform
               sum_take
@@ -203,7 +204,7 @@ fun many' where
                 (hd) \<comment> \<open>'a list \<Rightarrow> 'a (print time transform print input to the then branch to one for the test.)\<close>
                )
 "
-
+*)
 
 \<comment> \<open>Illogical applications of many\<close>
 definition many_fail :: "unit list bidef" where
@@ -251,7 +252,7 @@ lemma many_fail_eq_return_empty:
 
 definition many_return:
   "many_return = many (return ())"
-  
+
 
 
 

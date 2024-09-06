@@ -1,5 +1,6 @@
 theory all_definitions
   imports basic_definitions
+          derived_transform
           derived_or
           derived_dep_then
           derived_then

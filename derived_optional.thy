@@ -1,5 +1,6 @@
 theory derived_optional
   imports basic_definitions
+          derived_transform
 begin
 
 definition optional :: "'\<alpha> bidef \<Rightarrow> '\<alpha> option bidef" where

@@ -1,6 +1,7 @@
 theory derived_eof
   imports basic_definitions
           derived_or
+          derived_transform
 begin
 
 \<comment> \<open>

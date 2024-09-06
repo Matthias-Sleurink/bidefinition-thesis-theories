@@ -199,11 +199,11 @@ lemma numberlist_comma_well_formed:
                         nat_is_error separator_empty_input
                         nat_b_PASI)
   subgoal for i c
-    using separator_no_consume_past3 nat_fpci ws_not_digit(1)
+    using separator_no_consume_past3 nat_fpci
     by force
   subgoal for w1 s w2 c
     using separator_fpci nat_does_not_consume_past3
-          comma_not_digit(1) ws_not_digit(1)
+          comma_not_digit(1)
     by fastforce
   subgoal for w1 s w2 n c
     \<comment> \<open>Why does this not unfold separator_fpci?\<close>
@@ -212,9 +212,10 @@ lemma numberlist_comma_well_formed:
     apply (auto intro!: then_does_not_consume_past3
                 simp add: separator_wf nat_b_well_formed
                           nat_does_not_consume_past3
-                          ws_not_digit(1)
                           separator_no_consume_past3
                           fpc_def NER_simps)
+    subgoal by (meson list.simps(3) ws_not_digit(1))
+    subgoal by (meson list.simps(3) ws_not_digit(1))
     done
   done
 

@@ -1,5 +1,6 @@
 theory derived_dep_then
   imports basic_definitions
+          derived_transform
 begin
 
 definition dep_then :: "'\<alpha> bidef \<Rightarrow> ('\<alpha> \<Rightarrow> '\<beta> bidef) \<Rightarrow> ('\<beta> \<Rightarrow> '\<alpha>) \<Rightarrow> '\<beta> bidef" where

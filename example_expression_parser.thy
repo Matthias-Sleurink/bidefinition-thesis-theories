@@ -101,7 +101,7 @@ lemma paren_drop_leftover:
           apply (insert ws_char_ws_PASI[of \<open>CHR '')''\<close>, unfolded PASI_def, rule_format, of l'' \<open>()\<close> l]; clarsimp)
           subgoal for cc
             apply (insert list_upto_self[of \<open>cb @ cc\<close> l]; clarsimp)
-            by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR ''(''\<close> ca \<open>cb @ cc\<close> l, simplified])
+            by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR ''(''\<close> ca \<open>cb @ cc\<close> l, simplified])
           done
         done
       done
@@ -121,7 +121,7 @@ lemma paren_drop_leftover:
         apply (insert ws_char_ws_PASI[of \<open>CHR '')''\<close>, unfolded PASI_def, rule_format, of l'' \<open>()\<close> l]; clarsimp)
         subgoal for ca
           apply (subst list_upto_self[of ca l])
-          by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR '')''\<close> ca \<open>[]\<close> l, simplified])
+          by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR '')''\<close> ca \<open>[]\<close> l, simplified])
         done
       done
     done
@@ -247,7 +247,7 @@ lemma NOE_can_drop_leftover_on_error:
   apply (cases \<open>is_error (parse star) (i @ i')\<close>; clarsimp)
   subgoal
     apply (clarsimp simp add: NER_simps)
-    by (metis Cons_eq_appendI dropWhile_append1 expression_punctuation_charsets(7) list.set_intros(1) set_dropWhileD)
+    by (metis Cons_eq_appendI dropWhile_append1 dropWhile_eq_Nil_conv list.simps(3))
   subgoal for l
     unfolding NOE_def
     apply (clarsimp simp add: ftransform_is_error or_is_error inner_cases_cannot_be_true)
@@ -295,11 +295,11 @@ lemma NOE_can_drop_leftover:
               subgoal for cClose
                 apply (rule exI[of _ \<open>cE @ cClose @ l\<close>]; rule conjI)
                 subgoal
-                  by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR ''(''\<close> cOpen \<open>cE@cClose@l\<close> l', simplified])
+                  by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR ''(''\<close> cOpen \<open>cE@cClose@l\<close> l', simplified])
                 subgoal
                   apply (rule exI[of _ \<open>cClose @ l\<close>]; rule conjI)
                   subgoal by (rule E_can_drop_leftover[of cE \<open>cClose@l\<close> l' b, simplified])
-                  subgoal by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR '')''\<close> cClose l l', simplified])
+                  subgoal by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR '')''\<close> cClose l l', simplified])
                   done
                 done
               done
@@ -458,7 +458,7 @@ lemma MultE_can_drop_leftover:
               apply (rule then_can_drop_leftover; assumption?)
               subgoal for cs l l' rs
                 apply (cases \<open>rs = ()\<close>; clarsimp) \<comment> \<open>Case where not () is trivially false. Needed to apply the below rule.\<close>
-                by (rule ws_char_ws_can_drop_past_lefover[of \<open>CHR ''*''\<close> cs l l']; assumption)
+                by (rule ws_char_ws_can_drop_past_leftover[of \<open>CHR ''*''\<close> cs l l']; assumption)
               subgoal by pasi_pngi
               subgoal
                 apply (rule NOE_can_drop_leftover; assumption?)
@@ -765,7 +765,7 @@ lemma Expression_can_drop_leftover:
               apply (rule many_can_drop_leftover; assumption?)
               subgoal
                 apply (rule then_can_drop_leftover; assumption?)
-                subgoal using ws_char_ws_can_drop_past_lefover[of \<open>CHR ''+''\<close>] by force
+                subgoal using ws_char_ws_can_drop_past_leftover[of \<open>CHR ''+''\<close>] by force
                 subgoal by pasi_pngi
                 subgoal
                   \<comment> \<open>Blocked on MultE_can_drop_leftover, which is dropped on NOE can drop leftover on error\<close>
@@ -776,8 +776,7 @@ lemma Expression_can_drop_leftover:
                 \<comment> \<open>Blocked on then can drop leftover on error.\<close>
                 sorry
               subgoal apply (insert E_pngi)
-                apply pasi_pngi back \<comment> \<open>Again, solved with a 'back', how do we make it do this without the back?\<close>
-                done
+                by pasi_pngi
               done
             done
           done
@@ -801,7 +800,7 @@ lemma paren_E_well_formed:
   apply (rule transform_well_formed4)
   subgoal by (clarsimp simp add: fp_NER well_formed_transform_funcs4_def)
   apply (rule b_then_well_formed)
-  subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
+  subgoal by (clarsimp simp add: ws_char_ws_well_formed)
   subgoal
     \<comment> \<open>This is there we need to create something like "chars can be taken from start of input"\<close>
     \<comment> \<open>Because the inner parser (Expression) may end in ws)ws, which will eat into ws)ws (by eating away the ws.)\<close>
@@ -811,11 +810,10 @@ lemma paren_E_well_formed:
     sorry
   subgoal
     apply (rule first_printed_does_not_eat_into3)
-    subgoal by (rule ws_char_ws_well_formed[OF expression_punctuation_charsets(9)])
+    subgoal by (clarsimp simp add: ws_char_ws_well_formed)
     subgoal
-      apply (subst ws_char_ws_does_not_consume_past_char3[of \<open>CHR ''(''\<close>, OF expression_punctuation_charsets(9)])
-      apply (subst then_fpci)
-      by (clarsimp simp add: E_no_print_empty fpci_E_no_ws)
+      apply (subst ws_char_ws_does_not_consume_past_char3 expression_punctuation_charsets(9))
+      by (auto simp add: then_fpci E_no_print_empty fpci_E_no_ws)
     done
   oops
 
