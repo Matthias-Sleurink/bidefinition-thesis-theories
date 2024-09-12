@@ -769,6 +769,7 @@ lemma many_char_for_pred_well_formed:
 \<comment> \<open>Now for parsers that cannot be grown by any text.\<close>
 definition parse_result_cannot_be_grown :: "'a parser \<Rightarrow> bool" where
   "parse_result_cannot_be_grown p \<longleftrightarrow> (\<forall>i r l i'. has_result p i r l \<longrightarrow> has_result p (i@i') r (l@i'))"
+\<comment> \<open>Note that this is very similar but not exactly the same as does not peek past end\<close>
 
 lemma parse_result_cannot_be_grown_char_for_predicate:
   "parse_result_cannot_be_grown (parse (char_for_predicate p))"

@@ -103,8 +103,10 @@ lemma example_does_not_peek_past_char:
   subgoal by pasi_pngi
   done
 
-lemma many_two_chars_no_peek_past:
-  "does_not_consume_past_char3 (parse (many (b_then (this_char CHR ''A'') (this_char CHR ''B'')))) (CHR ''C'')"
+lemma many_two_chars_no_peek_past_anything_but_A:
+  assumes "char \<noteq> CHR ''A''"
+  shows "does_not_consume_past_char3 (parse (many (b_then (this_char CHR ''A'') (this_char CHR ''B'')))) char"
+  apply (insert assms)
   apply (rule many_does_not_consume_past_char3)
   subgoal by pasi_pngi
   subgoal by pasi_pngi
@@ -128,6 +130,7 @@ lemma many_two_chars_no_peek_past:
     using then_does_not_peek_past_end[OF this_char_does_not_peek_past_end this_char_PNGI this_char_does_not_peek_past_end this_char_PNGI, of \<open>CHR ''A''\<close> \<open>CHR ''B''\<close>]
     using dnppe_implies_dncpc by blast
   done
+
 
 lemma many_this_char_no_peek_past_any_other_char:
   assumes "C \<noteq> C'"
@@ -254,6 +257,29 @@ definition many_return:
   "many_return = many (return ())"
 
 
+
+\<comment> \<open>bidef that eats into two of itself and not one.\<close>
+definition eat_into_two:
+  "eat_into_two = b_then (this_char CHR ''A'') (optional (this_string ''AA''))"
+
+
+lemma eat_into_two_can_print:
+  "p_has_result (print eat_into_two) (CHR ''A'', Some ''AA'') ''AAA''"
+  "p_has_result (print eat_into_two) (CHR ''A'', None) ''A''"
+  by (clarsimp simp add: eat_into_two fp_NER)+
+
+lemma can_parse_from_many:
+  "has_result (parse eat_into_two) ''AAA'' (CHR ''A'', Some ''AA'') []"
+  "has_result (parse eat_into_two) ''A'' (CHR ''A'', None) []"
+  by (clarsimp simp add: eat_into_two NER_simps)+
+
+lemma many_print:
+  "p_has_result (print (many eat_into_two)) [(CHR ''A'', None), (CHR ''A'', None), (CHR ''A'', None)] ''AAA''"
+  by (clarsimp simp add: eat_into_two fp_NER)
+
+lemma many_parse:
+  "has_result (parse (many eat_into_two)) ''AAA'' [(CHR ''A'', Some ''AA'')] []"
+  by (clarsimp simp add: eat_into_two NER_simps)
 
 
 end

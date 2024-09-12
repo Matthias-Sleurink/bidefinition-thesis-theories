@@ -289,5 +289,32 @@ lemma or_well_formed_for_thesis:
   done
 
 
+lemma or_wf_from_ite_rule:
+  assumes wf_A: "bidef_well_formed A"
+  assumes wf_B: "bidef_well_formed B"
+  assumes or_pair: "well_formed_or_pair A B"
+  shows "bidef_well_formed (or A B)"
+  unfolding or_def
+  apply (rule if_then_else_well_formed)
+  subgoal by (rule wf_A)
+  subgoal by (clarsimp simp add: b2_wf_for_res_of_b1_def b_return_well_formed)
+  subgoal by (rule wf_B)
+  subgoal by (clarsimp simp add: b2_res_trans_is_b1_res_def NER_simps)
+  subgoal
+    apply (clarsimp simp add: b1_then_b2_print_parse_loop_def NER_simps fp_NER)
+    using wf_A[THEN get_parser_can_parse_unfold, simplified] by blast
+  subgoal
+    using or_pair
+    unfolding well_formed_or_pair_def
+    unfolding b1_cannot_parse_b3_print_result_def
+    by blast
+  subgoal
+    by (clarsimp simp add: pa_does_not_eat_into_pb_def
+                           NER_simps fp_NER
+                          wf_A[THEN get_parser_can_parse_unfold, simplified])
+  done
+
+
+
 
 end
