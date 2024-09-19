@@ -76,6 +76,11 @@ lemma char_not_in_set_set_does_not_peek_past_end[peek_past_end_simps]:
   unfolding char_not_in_set_def
   by (clarsimp simp add: peek_past_end_simps)
 
+lemma char_not_in_set_does_not_peek_past_char:
+  "does_not_consume_past_char3 (parse (char_not_in_set s)) C"
+  using does_not_consume_past_any_char3_eq_not_peek_past_end
+    and char_not_in_set_set_does_not_peek_past_end
+  by blast
 
 
 \<comment> \<open>First printed char\<close>
