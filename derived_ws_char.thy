@@ -228,20 +228,5 @@ lemma ws_char_well_formed:
     done
   by (clarsimp simp add: fp_NER)
 
-lemma ws_char_well_formed:
-  shows "bidef_well_formed (ws_char c)"
-  unfolding ws_char_def
-  apply (rule drop_well_formed)
-  subgoal
-    apply (rule b_then_well_formed)
-    subgoal by (rule many_ws_wf)
-    subgoal by (rule this_char_well_formed)
-    subgoal
-      apply (rule first_printed_does_not_eat_into3)
-      subgoal by (rule many_ws_wf)
-      by (clarsimp simp add: this_char_fpci many_ws_no_consume_past)
-    done
-  by (clarsimp simp add: fp_NER)
-
 
 end
