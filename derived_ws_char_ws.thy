@@ -264,7 +264,7 @@ lemma ws_char_ws_well_formed[bi_well_formed_simps]:
   unfolding ws_char_ws_def
   apply (auto intro!: b_then_well_formed first_printed_does_not_eat_into3
                intro: drop_well_formed
-            simp add: assms 
+            simp add: assms
                       fp_NER
                       many_ws_wf this_char_well_formed
                       this_char_does_not_consume_past_char3 then_fpci this_char_fpci

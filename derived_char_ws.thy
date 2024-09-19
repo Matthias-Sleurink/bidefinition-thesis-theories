@@ -190,11 +190,22 @@ lemma char_ws_well_formed:
   unfolding char_ws_def
   apply (auto intro!: b_then_well_formed first_printed_does_not_eat_into3
                intro: drop_well_formed
-            simp add: assms
-                      fp_NER
+            simp add: fp_NER
                       many_ws_wf this_char_well_formed
                       this_char_does_not_consume_past_char3 this_char_fpci)
   done
+
+lemma char_ws_well_formed_no_assms:
+  shows "bidef_well_formed (char_ws c)"
+  unfolding char_ws_def
+  apply (auto intro!: b_then_well_formed first_printed_does_not_eat_into3
+               intro: drop_well_formed
+            simp add: fp_NER
+                      many_ws_wf this_char_well_formed
+                      this_char_does_not_consume_past_char3 this_char_fpci)
+  done
+
+
 
 
 end
