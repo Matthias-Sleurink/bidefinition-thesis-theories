@@ -52,9 +52,16 @@ lemma header_wf_proof_for_thesis:
         by (clarsimp simp add: NER_simps)
       subgoal by (clarsimp simp add: NER_simps)
       done
-    subgoal by (auto simp add: pa_does_not_eat_into_pb_nondep_def NER_simps fp_NER takeWhile_tail)
+    subgoal
+      apply (rule first_printed_does_not_eat_into3)
+      subgoal by (rule nat_b_well_formed)
+      by (clarsimp simp add: fpci_simps print_empty nat_does_not_consume_past3)
     done
-  subgoal by (clarsimp simp add: pa_does_not_eat_into_pb_nondep_def NER_simps fp_NER)
+  subgoal
+    apply (rule does_not_peek_past_end_implies_does_not_eat_into)
+    subgoal by (rule this_string_does_not_peek_past_end)
+    subgoal by (rule this_string_wf)
+    done
   subgoal by (clarsimp simp add: NER_simps)
   done
 
@@ -177,6 +184,20 @@ lemma line_WF_for_thesis:
   apply (clarsimp simp add: fpci_simps many_fpci fp_NER split: list.splits)
   done
 
+\<comment> \<open>We're setting this up to create some example proof states.\<close>
+lemma line_WF_section:
+  "bidef_well_formed (many (b_then (this_char CHR '' '') int_b))"
+  apply (rule wf_many_then)
+  subgoal sorry
+  subgoal sorry
+  subgoal sorry
+  subgoal sorry
+  subgoal sorry
+  subgoal sorry
+  apply (clarsimp simp add: fpci_simps print_empty)
+  apply (rule then_does_not_consume_past_char_from_first_no_peek_past_end)
+  
+  oops
 
 lemma line_WF_for_thesis_2:
   "bidef_well_formed DIMACS_line"
