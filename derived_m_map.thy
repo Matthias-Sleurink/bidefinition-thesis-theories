@@ -260,6 +260,8 @@ lemma dep_from_nondep:
 
 lemma m_map_well_formed_derived[bi_well_formed_simps]:
   assumes all_wf: "\<forall>i\<in>set is. bidef_well_formed (a2bi i)"
+  \<comment> \<open>Not eat into here is not really satisfying but allows users to choose the method themselves.\<close>
+  assumes not_eat_into: "\<And>i is. pa_does_not_eat_into_pb_nondep (a2bi i) (derived_m_map.m_map a2bi is)"
   shows "bidef_well_formed (m_map a2bi is)"
   using all_wf
   apply (induction \<open>is\<close>; clarsimp)
@@ -284,8 +286,7 @@ lemma m_map_well_formed_derived[bi_well_formed_simps]:
       subgoal by (clarsimp simp add: reversed_b2_result_is_b1_result_def NER_simps)
       apply (rule return_can_be_ignored)
       apply (rule dep_from_nondep)
-      find_theorems pa_does_not_eat_into_pb_nondep
-      sorry
+      using not_eat_into by blast
     subgoal by blast
     done
   done
