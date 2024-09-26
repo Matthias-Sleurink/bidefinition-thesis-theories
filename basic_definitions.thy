@@ -6,7 +6,6 @@ theory basic_definitions
           basic_return
           basic_peek_result
           basic_one_char
-          basic_m_map
                 \<comment> \<open>Add other basic definitions here.\<close>
 begin
 

@@ -1,5 +1,6 @@
 theory derived_this_string
   imports basic_definitions
+          derived_m_map
           derived_this_char
 begin
 
@@ -10,7 +11,7 @@ definition this_string :: "char list \<Rightarrow> char list bidef" where
 \<comment> \<open>NER\<close>
 lemma this_string_is_nonterm[NER_simps]:
   "is_nonterm (parse (this_string s)) i \<longleftrightarrow> False"
-  unfolding this_string_def m_map_def
+  unfolding this_string_def
   by (simp add: this_char_is_nonterm mmap_not_nonterm_if_param_never_nonterm)
 
 lemma this_string_is_error[NER_simps]:
@@ -46,18 +47,19 @@ lemma this_string_p_is_error[fp_NER]:
   unfolding this_string_def
   apply (induction s arbitrary: i)
   subgoal by (auto simp add: fp_NER)
-  apply (auto simp add: fp_NER)
+  apply (auto simp del: m_map.simps simp add: fp_NER)
   by (metis one_char_parser.cases)
+  
 
 lemma this_string_p_has_result[fp_NER]:
   "p_has_result (print (this_string s)) i r \<longleftrightarrow> r = s \<and> i = s"
   unfolding this_string_def
   apply (induction s arbitrary: i r)
-  by (auto simp add: fp_NER)
+  by (auto simp add: fp_NER simp del: m_map.simps)
 
 lemma this_string_print_empty[print_empty, fp_NER]:
   "p_has_result (print (this_string c)) i [] \<longleftrightarrow> c = [] \<and> i = []"
-  by (cases c; clarsimp simp add: this_string_def fp_NER)
+  by (cases c; clarsimp simp add: this_string_def fp_NER simp del: m_map.simps)
 
 
 
@@ -143,7 +145,7 @@ lemma this_string_drop_leftover_on_error:
 \<comment> \<open>First printed char\<close>
 lemma this_string_fpci[fpci_simps]:
   "first_printed_chari (print (this_string s)) i c \<longleftrightarrow> s\<noteq>[] \<and> i = s \<and> c = (hd s)"
-  apply (cases s; auto simp add: this_string_def fpci_simps fp_NER)
+  apply (cases s; auto simp add: this_string_def fpci_simps fp_NER simp del: m_map.simps)
   subgoal by (metis first_printed_chari_def this_string_def this_string_p_has_result)
   subgoal by (metis first_printed_chari_def this_string_def this_string_p_has_result list.sel(1))
   subgoal using this_string_def this_string_p_has_result by presburger
@@ -167,6 +169,17 @@ lemma this_string_wf:
   subgoal by (auto simp add: printer_can_print_parse_result_def fp_NER NER_simps)
   done
 
+lemma this_string_wf_derived:
+  "bidef_well_formed (this_string s)"
+  unfolding this_string_def
+  apply (rule m_map_well_formed_derived)
+  subgoal using this_char_well_formed by blast
+  subgoal for i "is"
+    apply (rule does_not_peek_past_end_implies_does_not_eat_into)
+    subgoal by (rule this_char_does_not_peek_past_end)
+    subgoal by (rule this_char_well_formed)
+    done
+  done
 
 
 end

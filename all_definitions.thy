@@ -31,6 +31,7 @@ theory all_definitions
           derived_char_ws
           derived_separated_by1
           derived_int
+          derived_m_map
           \<comment> \<open>Add all derived definitions here\<close>
 begin
 
