@@ -225,6 +225,15 @@ lemma dep_then_well_formed:
     by metis
   done
 
+lemma monad_left_identity:
+  "has_result (parse (dep_then (return a) f id)) i r l = has_result (parse (f a)) i r l"
+  "is_error (parse (dep_then (return a) f id)) i = is_error (parse (f a)) i"
+  "is_nonterm (parse (dep_then (return a) f id)) i = is_nonterm (parse (f a)) i"
 
+  "p_has_result (print (dep_then (return a) f id)) i r = p_has_result (print (f a)) i r"
+  "p_is_error (print (dep_then (return a) f id)) i = p_is_error (print (f a)) i"
+  "p_is_nonterm (print (dep_then (return a) f id)) i = p_is_nonterm (print (f a)) i"
+  apply (auto simp add: NER_simps fp_NER)+
+  oops
 
 end
